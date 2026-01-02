@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""
+Personal OS - Quick command interface
+
+Usage:
+    ./pos "new task: Buy groceries due: 2026-01-10 details: Get milk tags: personal"
+    ./pos "/today"
+    ./pos "/weekly"
+"""
+
+import sys
+from pathlib import Path
+
+# Add scripts directory to path
+scripts_dir = Path(__file__).parent / "scripts"
+sys.path.insert(0, str(scripts_dir))
+
+from parse_command import execute_command
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: ./pos \"<command>\"")
+        print()
+        print("Examples:")
+        print('  ./pos "new task: Finish report due: 2026-01-15 details: Complete Q1 analysis tags: work"')
+        print('  ./pos "new idea: Improve onboarding details: Add tutorial videos tags: product"')
+        print('  ./pos "new feature: Export to PDF details: Add PDF export tags: feature"')
+        print('  ./pos "/today"')
+        print('  ./pos "/weekly"')
+        return 1
+
+    command = sys.argv[1]
+
+    try:
+        result = execute_command(command)
+        print(result)
+        return 0
+    except Exception as e:
+        print(f"✗ Error: {e}", file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

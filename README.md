@@ -28,10 +28,124 @@ Built on three core components:
 2. **Claude Code Terminal** - Execution environment for automation commands
 3. **3-Layer Context System** - Global preferences, project instructions, and reference files
 
-## Setup
+## Installation
 
-(Setup instructions will be added as we build the system)
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/autodesk-chris/chief-of-staff.git
+   cd chief-of-staff
+   ```
+
+2. **Requirements:**
+   - Python 3.6 or higher
+   - Obsidian (optional, for viewing your vault)
+
+3. **Open your Obsidian vault:**
+   - Point Obsidian to the `Work/` folder in this project
+   - Your tasks, ideas, and features will appear automatically
+
+## Usage
+
+### Quick Start
+
+Use the `./pos` command to interact with your Personal OS:
+
+```bash
+# Create a task
+./pos "new task: Buy groceries due: 2026-01-10 details: Get milk and bread tags: personal, shopping"
+
+# Capture an idea
+./pos "new idea: Improve dashboard UI details: Redesign the analytics view tags: product, ui"
+
+# Document a feature request
+./pos "new feature: Dark mode support details: Add dark theme to the app tags: ui, frontend"
+
+# Generate today's summary
+./pos "/today"
+
+# Generate weekly summary
+./pos "/weekly"
+```
+
+### Command Syntax
+
+**Create a Task:**
+```bash
+./pos "new task: [Title] due: [YYYY-MM-DD] details: [Description] tags: [tag1, tag2]"
+```
+- `due:` - Optional due date in YYYY-MM-DD format
+- `details:` - Optional description
+- `tags:` - Optional comma-separated tags
+
+**Create an Idea:**
+```bash
+./pos "new idea: [Title] details: [Description] tags: [tag1, tag2]"
+```
+
+**Create a Feature:**
+```bash
+./pos "new feature: [Title] details: [Description] tags: [tag1, tag2]"
+```
+
+**Generate Summaries:**
+```bash
+./pos "/today"    # Daily summary
+./pos "/weekly"   # Weekly summary
+```
+
+## Project Structure
+
+```
+Chief_of_staff/
+├── pos                    # Main command interface
+├── CLAUDE.md             # Project context for Claude
+├── scripts/
+│   ├── create_item.py    # Create tasks/ideas/features
+│   ├── summary.py        # Generate summaries
+│   ├── parse_command.py  # Parse natural language commands
+│   └── utils.py          # Helper functions
+└── Work/                 # Obsidian vault
+    ├── Inbox/
+    │   ├── Tasks/        # All tasks
+    │   ├── Ideas/        # All ideas
+    │   └── Features/     # All features
+    ├── LLM_Context/      # Reference files for Claude
+    ├── Notes/
+    └── Research/
+```
+
+## File Format
+
+All items are stored as Markdown files with YAML frontmatter:
+
+**Task Example:**
+```markdown
+---
+type: task
+due-date: 2026-01-15
+tags: [work, urgent]
+---
+# Task: Complete Q1 Report
+
+## Details
+
+Compile sales data and create presentation slides.
+```
+
+**Idea Example:**
+```markdown
+---
+type: idea
+tags: [product, ux]
+due-date: null
+---
+# Idea: Improve onboarding flow
+
+## Details
+
+Add interactive tutorial for new users.
+```
 
 ## Status
 
-🚧 Currently in development - MVP Phase
+✅ MVP Complete - Ready to use!
