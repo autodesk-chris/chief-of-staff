@@ -24,7 +24,7 @@ from summary import generate_today_summary, generate_weekly_summary
 
 def parse_creation_command(command_text):
     """
-    Parse a creation command (new task, new idea, new feature).
+    Parse a creation command (new task, new idea, new feature, new action).
 
     Args:
         command_text: The full command string
@@ -39,8 +39,10 @@ def parse_creation_command(command_text):
         item_type = 'idea'
     elif command_text.startswith('new feature:'):
         item_type = 'feature'
+    elif command_text.startswith('new action:'):
+        item_type = 'action'
     else:
-        raise ValueError("Command must start with 'new task:', 'new idea:', or 'new feature:'")
+        raise ValueError("Command must start with 'new task:', 'new idea:', 'new feature:', or 'new action:'")
 
     # Extract title (everything between 'new X:' and the first keyword)
     type_prefix = f'new {item_type}:'

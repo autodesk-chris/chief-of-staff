@@ -101,7 +101,7 @@ def get_inbox_path(item_type):
     Get the path to the appropriate Inbox subfolder.
 
     Args:
-        item_type: Type of item ('task', 'idea', or 'feature')
+        item_type: Type of item ('task', 'idea', 'feature', or 'action')
 
     Returns:
         Path object to the appropriate subfolder
@@ -111,7 +111,8 @@ def get_inbox_path(item_type):
     folder_map = {
         'task': 'Tasks',
         'idea': 'Ideas',
-        'feature': 'Features'
+        'feature': 'Features',
+        'action': 'Actions'
     }
 
     folder_name = folder_map.get(item_type)

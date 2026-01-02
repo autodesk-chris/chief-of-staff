@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__SlackMCPServer__channels_list"
+      "mcp__SlackMCPServer__channels_list",
+      "Bash(./pos \"new task: Share offsite pre-work\")"
     ]
   }
 }

@@ -39,14 +39,14 @@ def create_frontmatter(item_type, due_date=None, tags=None):
     """
     tags_formatted = format_tags_yaml(tags) if tags else "[]"
 
-    # For tasks with due dates
-    if item_type == 'task' and due_date:
+    # For tasks and actions with due dates
+    if item_type in ['task', 'action'] and due_date:
         frontmatter = f"""---
 type: {item_type}
 due-date: {due_date}
 tags: {tags_formatted}
 ---"""
-    # For tasks without due dates, ideas, and features
+    # For tasks/actions without due dates, ideas, and features
     else:
         frontmatter = f"""---
 type: {item_type}
@@ -84,12 +84,12 @@ def create_content(item_type, title, details):
 
 def create_item(item_type, title, due_date=None, details="", tags=None):
     """
-    Create a new task, idea, or feature file.
+    Create a new task, idea, feature, or action file.
 
     Args:
-        item_type: Type of item ('task', 'idea', or 'feature')
+        item_type: Type of item ('task', 'idea', 'feature', or 'action')
         title: Title of the item
-        due_date: Due date (YYYY-MM-DD) for tasks, optional
+        due_date: Due date (YYYY-MM-DD) for tasks and actions, optional
         details: Detailed description
         tags: List of tag strings
 
@@ -97,10 +97,10 @@ def create_item(item_type, title, due_date=None, details="", tags=None):
         Path to the created file
     """
     # Validate inputs
-    if item_type not in ['task', 'idea', 'feature']:
-        raise ValueError(f"Invalid item type: {item_type}. Must be 'task', 'idea', or 'feature'.")
+    if item_type not in ['task', 'idea', 'feature', 'action']:
+        raise ValueError(f"Invalid item type: {item_type}. Must be 'task', 'idea', 'feature', or 'action'.")
 
-    if item_type == 'task' and due_date and not validate_date(due_date):
+    if item_type in ['task', 'action'] and due_date and not validate_date(due_date):
         raise ValueError(f"Invalid date format: {due_date}. Must be YYYY-MM-DD.")
 
     # Get the appropriate folder
