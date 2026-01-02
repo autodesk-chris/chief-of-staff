@@ -1,7 +1,9 @@
 # Product Requirements Document: Personal Operating System (MVP)
 
 **Author:** Manus AI
-**Date:** December 31, 2025
+**Original Date:** December 31, 2025
+**Updated:** January 2, 2026
+**Status:** ✅ MVP Complete
 
 ## 1. Introduction
 
@@ -11,7 +13,7 @@ To create a personal operating system that streamlines daily workflows, reduces 
 
 ### 1.2. Goal
 
-This document outlines the requirements for building a Minimum Viable Product (MVP) of a personal operating system using Claude Code and Obsidian. The MVP will focus on a core set of commands for creating tasks, ideas, and features directly from the Claude Code terminal, as well as commands for reviewing daily and weekly activity. The system is inspired by Teresa Torres' 3-layer context model and uses an "Inbox" folder structure to capture and organize all work items.
+This document outlines the implementation of a Minimum Viable Product (MVP) of a personal operating system using Claude Code and Obsidian. The MVP includes commands for creating tasks, ideas, features, and actions (team commitments) directly through Claude Code, as well as commands for generating daily and weekly activity summaries. The system is inspired by Teresa Torres' 3-layer context model and uses an "Inbox" folder structure to capture and organize all work items.
 
 ## 2. Core Architecture
 
@@ -27,43 +29,70 @@ The system will be built on a foundation of three core components:
 A dedicated Obsidian vault will be used to store all system-related files. The structure follows Teresa Torres' model with a clear separation between context and work items:
 
 ```
-Obsidian Vault/
-├── LLM_Context/
-│   ├── global_CLAUDE.md
-│   ├── business_profile.md
-│   ├── team_members.md
-│   └── [other reference files]
-├── Inbox/
-│   ├── CLAUDE.md (project-specific instructions)
-│   ├── Tasks/
-│   ├── Ideas/
-│   └── Features/
-├── Notes/
-├── Research/
-└── [other folders as needed]
+Chief_of_staff/
+├── pos                    # Command line interface
+├── CLAUDE.md              # Project-specific instructions
+├── scripts/               # Python automation scripts
+│   ├── create_item.py     # Create tasks/ideas/features/actions
+│   ├── summary.py         # Generate summaries
+│   ├── parse_command.py   # Parse natural language commands
+│   └── utils.py           # Helper functions
+└── Work/                  # Obsidian vault
+    ├── LLM_Context/       # Reference files for Claude
+    │   ├── business_profile.md
+    │   └── team_members.md
+    ├── Inbox/
+    │   ├── Tasks/         # User's own tasks
+    │   ├── Ideas/         # Ideas and brainstorming
+    │   ├── Features/      # Feature requests
+    │   └── Actions/       # Team member commitments
+    ├── Notes/
+    └── Research/
 ```
 
 **Key Folders**:
-- `LLM_Context/`: The heart of the system, containing all context files for Claude (global preferences and reference materials).
-- `Inbox/`: The primary workspace containing all tasks, ideas, and features. This is where Claude operates from the terminal. The folder includes a `CLAUDE.md` file with project-specific instructions for the new commands.
+- `LLM_Context/`: Reference files for Claude (business context, team members, etc.)
+- `Inbox/`: The primary workspace containing all tasks, ideas, features, and actions
+- `scripts/`: Python automation scripts that power the commands
+- `pos`: Simple command-line interface for executing commands
 
 ### 2.3. The 3-Layer Context System
 
-**Layer 1: Global Preferences (`~/.claude/CLAUDE.md`)**
-- **Purpose**: Universal working preferences for Claude.
-- **Examples**: "Always create a plan before acting," "Use bullet points for summaries."
+**Layer 1: Global Preferences (`/Users/smallc/AI/CLAUDE.md`)**
+- **Purpose**: Universal working preferences for Claude across all AI projects
+- **Location**: In the parent AI folder for use across multiple projects
+- **Examples**: "Write in layman's terms," "Remind to commit changes to git"
 
-**Layer 2: Project-Specific Instructions (`Inbox/CLAUDE.md`)**
-- **Purpose**: Rules and workflows for the Inbox project (e.g., command syntax, file naming conventions).
-- **Examples**: File naming conventions, integration details.
+**Layer 2: Project-Specific Instructions (`Chief_of_staff/CLAUDE.md`)**
+- **Purpose**: Instructions specific to the Personal OS project
+- **Content**: Command syntax, file naming conventions, development guidelines
+- **Location**: Project root where Claude operates
 
-**Layer 3: Reference Context Files (`LLM_Context/`)**
-- **Purpose**: Detailed, reusable context that Claude loads on demand.
-- **Examples**: `business_profile.md`, `team_members.md`, `product_specs.md`.
+**Layer 3: Reference Context Files (`Work/LLM_Context/`)**
+- **Purpose**: Work-specific reference context that Claude can load on demand
+- **Examples**: `business_profile.md`, `team_members.md`
 
 ## 3. Key Features (MVP)
 
-The MVP will focus on five core commands: three for creating new items and two for summarizing and reviewing work. All commands operate on tasks, ideas, and features created through the new commands.
+The MVP includes six core commands: four for creating items and two for generating summaries. All items are stored in the Obsidian vault with consistent markdown formatting.
+
+### 3.0. Command Interface
+
+**Method 1: Natural Language with Claude**
+- Simply tell Claude what you want in natural language
+- Example: "Create a task to review the budget by Friday"
+- Claude will create the item and prompt for optional fields
+
+**Method 2: Direct Command Syntax**
+- Use the exact command syntax from terminal or through Claude
+- Example: `./pos "new task: Review budget due: 2026-01-10"`
+- All fields specified upfront
+
+**Workflow:**
+1. Item is created immediately
+2. User is prompted for due date (if not provided)
+3. User is prompted for details (if not provided)
+4. User can skip any prompt by saying "skip" or providing the information
 
 ### 3.1. `new task` Command
 
@@ -128,7 +157,28 @@ due-date: null
 Implement a dark mode theme for the user interface.
 ```
 
-### 3.4. `/today` Command
+### 3.4. `new action` Command
+
+- **Functionality**: Creates a new action file in the `Inbox/Actions/` folder with an `action_` prefix. Actions track commitments from team members.
+- **Syntax**: `new action: [Person] to [Action] due: [Due Date] details: [Action Details] tags: [comma-separated tags]`
+- **Example**: `new action: Sarah to review budget proposal due: 2026-01-08 details: Needs approval before board meeting tags: finance, urgent`
+- **Output**: A new Markdown file (e.g., `Inbox/Actions/action_Sarah_to_review_budget_proposal.md`) with the following content:
+
+```markdown
+---
+type: action
+due-date: 2026-01-08
+tags: [finance, urgent]
+---
+
+# Action: Sarah to review budget proposal
+
+## Details
+
+Needs approval before board meeting
+```
+
+### 3.5. `/today` Command
 
 - **Functionality**: Generates a daily summary of work items due today and upcoming tasks for the next week.
 - **Syntax**: `/today`
@@ -142,7 +192,7 @@ Implement a dark mode theme for the user interface.
 
 **Recent Features**: Lists all features created today.
 
-### 3.5. `/weekly` Command
+### 3.6. `/weekly` Command
 
 - **Functionality**: Generates a summary of all activity from the past 7 days, including tasks created, ideas captured, and features proposed.
 - **Syntax**: `/weekly`
@@ -156,38 +206,42 @@ Implement a dark mode theme for the user interface.
 
 **Activity Summary**: Provides counts of total tasks, ideas, and features created during the week.
 
-## 4. Implementation Roadmap
+## 4. Implementation Summary
 
-### Phase 1: Setup and Configuration
-1.  Create the Obsidian vault and folder structure (`LLM_Context/`, `Inbox/Tasks/`, `Inbox/Ideas/`, `Inbox/Features/`).
-2.  Create the `LLM_Context/global_CLAUDE.md` global context file with universal working preferences.
-3.  Create the `Inbox/CLAUDE.md` project context file with instructions for the new commands.
+### ✅ Stage 1: Setup and Configuration (Completed)
+- Created GitHub repository at https://github.com/autodesk-chris/chief-of-staff
+- Created Obsidian vault folder structure with Tasks, Ideas, Features, and Actions folders
+- Set up global CLAUDE.md in `/Users/smallc/AI/` for all AI projects
+- Created project-specific CLAUDE.md with command instructions
+- Configured .gitignore for Python and Obsidian files
 
-### Phase 2: Command Implementation - Creation Commands
-1.  Develop a Python script to parse the `new task`, `new idea`, and `new feature` commands.
-2.  Implement the logic to create new Markdown files in the appropriate folders with the correct content and formatting.
-3.  Ensure the script handles file naming (replacing spaces with underscores, sanitizing special characters).
-4.  Implement frontmatter generation with `type`, `due-date`, and `tags` fields.
-5.  For ideas and features, set `due-date` to `null` since they don't have due dates.
-6.  For tasks, parse and include the due date from the command.
-7.  Parse and include tags from the command (comma-separated input converted to YAML list format).
+### ✅ Stage 2: Folder Structure (Completed)
+- Created `Work/Inbox/` with Tasks, Ideas, Features, Actions subfolders
+- Set up `Work/LLM_Context/` for reference files (business_profile.md, team_members.md)
+- Created Notes and Research folders for additional organization
 
-### Phase 3: Command Implementation - Summary Commands
-1.  Develop a Python script to parse the `/today` command.
-2.  Implement the logic to scan the `Inbox/Tasks/` folder and filter tasks by due date.
-3.  Implement the logic to scan the `Inbox/Ideas/` and `Inbox/Features/` folders for items created today.
-4.  Generate a formatted Markdown summary file.
+### ✅ Stage 3: Creation Commands (Completed)
+- Built `scripts/create_item.py` - Main creation script supporting all item types
+- Built `scripts/utils.py` - Helper functions for file naming, tag parsing, date validation
+- Implemented file naming sanitization (special characters, spaces to underscores)
+- Implemented YAML frontmatter generation with type, due-date, and tags
+- Added support for optional fields (due dates, details, tags)
+- Tested with normal inputs, special characters, and edge cases
 
-### Phase 4: Weekly Command Implementation
-1.  Develop a Python script to parse the `/weekly` command.
-2.  Implement the logic to scan all folders and identify items created in the last 7 days.
-3.  Organize results by item type and due date.
-4.  Generate a formatted Markdown summary file with activity counts.
+### ✅ Stage 4: Summary Commands (Completed)
+- Built `scripts/summary.py` - Summary generation for daily and weekly reports
+- Implemented `/today` command with tasks due today/this week, recent ideas/features
+- Implemented `/weekly` command with 7-day activity and counts
+- Added frontmatter parsing to extract metadata from markdown files
+- Tested summary generation with various date ranges
 
-### Phase 5: Integration and Testing
-1.  Integrate all Python scripts with Claude Code to make the commands executable from the terminal.
-2.  Thoroughly test each command to ensure they create files correctly and generate accurate summaries.
-3.  Test edge cases (e.g., no tasks due today, special characters in titles).
+### ✅ Stage 5: Integration (Completed)
+- Built `scripts/parse_command.py` - Natural language command parser
+- Created `pos` CLI interface for simple command execution
+- Integrated all scripts with Claude Code
+- Tested end-to-end workflow with Claude
+- Added Actions feature for tracking team commitments
+- Documented complete system in README.md
 
 ## 5. Non-Functional Requirements
 
@@ -198,10 +252,15 @@ Implement a dark mode theme for the user interface.
 
 ## 6. Future Enhancements
 
-- **Slack Integration**: Enhance the `/today` and `/weekly` commands to include:
-  - **Slack Digest**: A summary of key conversations and action items from specified Slack channels.
-  - **Slack Action Items**: Automatically extract action items from Slack messages.
+### Potential Integrations
+- **Slack Integration**: Enhance summaries with Slack conversation digests and automatically extracted action items
+- **Email Integration**: Add email digest and action item extraction from important messages
+- **Calendar Integration**: Sync tasks with calendar applications (Google Calendar, Outlook)
 
-- **Outlook Integration**: Enhance the `/today` and `/weekly` commands to include:
-  - **Outlook Email Digest**: A summary of important emails and action items.
-  - **Outlook Calendar Summary**: A list of today's meetings and any preparation materials.
+### Additional Features
+- **Search Functionality**: Add ability to search across all items by keyword, tag, or date range
+- **Templates**: Create item templates for recurring tasks or standard action types
+- **Bulk Operations**: Archive completed items, bulk tag updates, or status changes
+- **Analytics**: Visualize productivity trends, completion rates, and time-to-completion metrics
+- **Reminders**: Add automated reminders for tasks approaching due dates
+- **Sub-items**: Support for breaking down tasks into sub-tasks or checklists
