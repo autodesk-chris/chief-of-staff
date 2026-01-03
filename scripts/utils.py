@@ -120,3 +120,46 @@ def get_inbox_path(item_type):
         raise ValueError(f"Invalid item type: {item_type}")
 
     return vault_path / "Inbox" / folder_name
+
+
+def get_team_path():
+    """
+    Get the path to the Team folder.
+
+    Returns:
+        Path object pointing to Work/Team
+    """
+    vault_path = get_vault_path()
+    return vault_path / "Team"
+
+
+def get_observations_path():
+    """
+    Get the path to the Team/Observations folder.
+
+    Returns:
+        Path object pointing to Work/Team/Observations
+    """
+    return get_team_path() / "Observations"
+
+
+def extract_team_member_name(title):
+    """
+    Extract team member name from observation title.
+
+    Expects format: "Name - observation text"
+
+    Args:
+        title: The observation title
+
+    Returns:
+        Tuple of (name, observation) or (None, title) if no dash found
+    """
+    if " - " not in title:
+        return None, title
+
+    parts = title.split(" - ", 1)
+    name = parts[0].strip()
+    observation = parts[1].strip() if len(parts) > 1 else title
+
+    return name, observation

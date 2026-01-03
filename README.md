@@ -16,6 +16,7 @@ This system integrates with Obsidian and Claude Code to provide:
 - `new task` - Create a new task with due date and tags
 - `new idea` - Capture ideas quickly with tags
 - `new feature` - Document feature requests with details
+- `observation` - Record observations about team members
 
 ### Summary Commands
 - `/today` - Generate a daily summary of tasks, ideas, and features
@@ -87,6 +88,12 @@ Use the `./pos` command to interact with your Personal OS:
 ./pos "new feature: [Title] details: [Description] tags: [tag1, tag2]"
 ```
 
+**Create an Observation:**
+```bash
+./pos "observation: [Name] - [Observation] details: [Description] tags: [tag1, tag2]"
+./pos "I have feedback: [Name] - [Feedback] tags: [tag1, tag2]"
+```
+
 **Generate Summaries:**
 ```bash
 ./pos "/today"    # Daily summary
@@ -108,7 +115,11 @@ Chief_of_staff/
     ├── Inbox/
     │   ├── Tasks/        # All tasks
     │   ├── Ideas/        # All ideas
-    │   └── Features/     # All features
+    │   ├── Features/     # All features
+    │   └── Actions/      # Team actions
+    ├── Team/             # Team feedback
+    │   ├── Observations/ # Team member observations
+    │   └── 360_[name]_FY26.md  # 360 reviews
     ├── LLM_Context/      # Reference files for Claude
     ├── Notes/
     └── Research/
@@ -144,6 +155,21 @@ due-date: null
 ## Details
 
 Add interactive tutorial for new users.
+```
+
+**Observation Example:**
+```markdown
+---
+type: observation
+team-member: Sarah Johnson
+date: 2026-01-03
+tags: [leadership]
+---
+# Observation: Sarah Johnson - 2026-01-03
+
+## Details
+
+Excellent communication skills during presentation.
 ```
 
 ## Status

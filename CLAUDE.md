@@ -40,11 +40,21 @@ Chief_of_staff/
 
 ## Command Implementation Notes
 
-- All commands operate on the Obsidian vault at `./Work/Inbox/` (relative to project root)
+- Most commands operate on the Obsidian vault at `./Work/Inbox/` (relative to project root)
+- Observation commands operate on `./Work/Team/Observations/`
 - File naming must sanitize special characters and replace spaces with underscores
 - YAML frontmatter must be properly formatted
 - Date parsing should handle YYYY-MM-DD format
 - Tags should be converted from comma-separated strings to YAML list format
+
+## Observation Commands
+
+- **Trigger phrases**: "observation:", "I have feedback:", "feedback:"
+- **Required format**: `Name - observation text` (name before dash is required)
+- **Files stored in**: `Work/Team/Observations/`
+- **Filename format**: `observation_[name]_[date].md`
+- **Example**: `observation: Sarah Johnson - Great presentation details: Excellent communication tags: leadership`
+- If name format is incorrect, the command will error and you should ask the user conversationally for the proper format
 
 ## Testing Checklist
 

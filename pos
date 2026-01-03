@@ -26,6 +26,8 @@ def main():
         print('  ./pos "new task: Finish report due: 2026-01-15 details: Complete Q1 analysis tags: work"')
         print('  ./pos "new idea: Improve onboarding details: Add tutorial videos tags: product"')
         print('  ./pos "new feature: Export to PDF details: Add PDF export tags: feature"')
+        print('  ./pos "observation: Sarah - Great presentation details: Excellent communication skills tags: leadership"')
+        print('  ./pos "I have feedback: John - Excellent collaboration details: Strong team player tags: teamwork"')
         print('  ./pos "/today"')
         print('  ./pos "/weekly"')
         return 1

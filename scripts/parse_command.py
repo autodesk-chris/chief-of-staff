@@ -18,8 +18,91 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from create_item import create_item
+from create_observation import create_observation
 from utils import parse_tags
 from summary import generate_today_summary, generate_weekly_summary
+
+
+def is_observation_command(command_text):
+    """
+    Check if command is an observation/feedback command.
+
+    Args:
+        command_text: The full command string
+
+    Returns:
+        Boolean indicating if this is an observation command
+    """
+    observation_triggers = [
+        'observation:',
+        'i have an observation:',
+        'i have feedback:',
+        'feedback:',
+    ]
+
+    command_lower = command_text.lower()
+    return any(command_lower.startswith(trigger) for trigger in observation_triggers)
+
+
+def parse_observation_command(command_text):
+    """
+    Parse an observation command.
+
+    Args:
+        command_text: The full command string
+
+    Returns:
+        Dictionary with parsed observation data
+    """
+    # Remove trigger phrase
+    observation_triggers = [
+        'observation:',
+        'i have an observation:',
+        'i have feedback:',
+        'feedback:',
+    ]
+
+    command_lower = command_text.lower()
+    remaining = command_text
+
+    for trigger in observation_triggers:
+        if command_lower.startswith(trigger):
+            remaining = command_text[len(trigger):].strip()
+            break
+
+    # Find first keyword (details: or tags:)
+    keywords = ['details:', 'tags:']
+    first_keyword_pos = len(remaining)
+
+    for keyword in keywords:
+        pos = remaining.find(keyword)
+        if pos != -1 and pos < first_keyword_pos:
+            first_keyword_pos = pos
+
+    if first_keyword_pos == len(remaining):
+        # No keywords, entire remaining text is the title
+        title = remaining.strip()
+        return {
+            'title': title,
+            'details': '',
+            'tags': []
+        }
+
+    title = remaining[:first_keyword_pos].strip()
+
+    # Extract fields using regex
+    details_match = re.search(r'details:\s*(.*?)(?:\s+tags:|$)', remaining)
+    tags_match = re.search(r'tags:\s*(.+?)$', remaining)
+
+    details = details_match.group(1).strip() if details_match else ''
+    tags_str = tags_match.group(1).strip() if tags_match else ''
+    tags = parse_tags(tags_str)
+
+    return {
+        'title': title,
+        'details': details,
+        'tags': tags
+    }
 
 
 def parse_creation_command(command_text):
@@ -114,6 +197,18 @@ def execute_command(command_text):
         file_path.write_text(content)
         return f"✓ Generated weekly summary: {file_path}"
 
+    # Handle observation commands
+    if is_observation_command(command_text):
+        parsed = parse_observation_command(command_text)
+
+        file_path = create_observation(
+            title=parsed['title'],
+            details=parsed['details'],
+            tags=parsed['tags']
+        )
+
+        return f"✓ Created observation: {file_path}"
+
     # Handle creation commands
     if command_text.startswith('new '):
         parsed = parse_creation_command(command_text)
@@ -128,7 +223,7 @@ def execute_command(command_text):
 
         return f"✓ Created {parsed['type']}: {file_path}"
 
-    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', '/today', or '/weekly'")
+    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'observation:', '/today', or '/weekly'")
 
 
 def main():
