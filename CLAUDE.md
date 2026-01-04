@@ -47,6 +47,49 @@ Chief_of_staff/
 - Date parsing should handle YYYY-MM-DD format
 - Tags should be converted from comma-separated strings to YAML list format
 
+### Task Creation Best Practices
+
+When creating tasks from user input, extract short, meaningful titles:
+
+**Title extraction:**
+- Keep titles short and succinct (3-8 words maximum)
+- Extract core action + primary subject
+- Format: [Verb] + [Subject] + [Optional context]
+- Move detailed context, background, and specifics to the details field
+
+**Examples:**
+
+*Input:* "new task: I need to prepare the quarterly business review presentation for the executive team including slides on revenue, customer metrics, and product roadmap"
+- **Title:** "Prepare quarterly business review presentation"
+- **Details:** "For executive team. Include slides on revenue, customer metrics, and product roadmap."
+
+*Input:* "new task: Follow up with Sarah about the API integration issue she mentioned in the standup this morning where the authentication tokens are expiring too quickly and causing customer complaints"
+- **Title:** "Follow up with Sarah on API authentication"
+- **Details:** "Authentication tokens expiring too quickly, causing customer complaints. Mentioned in standup this morning."
+
+*Input:* "new task: Review and provide feedback on the new hiring process documentation that HR sent over, focusing on whether it aligns with our team's needs for the engineering roles we're planning to hire for in Q2"
+- **Title:** "Review hiring process documentation"
+- **Details:** "From HR. Focus on alignment with team needs for Q2 engineering roles."
+
+**Principles:**
+- **Actionable:** Title starts with verb when possible
+- **Scannable:** Easy to read in task lists
+- **Specific enough:** Clear what the task is about
+- **Context preserved:** Everything else goes in details field
+- **Due dates and tags:** Extract separately and preserve
+
+**Date extraction:**
+- Look for dates mentioned in the task text (e.g., "next Friday", "January 15th", "by end of month")
+- Extract and convert to YYYY-MM-DD format for the due date field
+- If date is ambiguous or unclear, ask the user to confirm
+- Remove date references from details field after extracting to avoid duplication
+
+**Example:**
+*Input:* "new task: Send proposal to client by next Wednesday and make sure to include the pricing breakdown"
+- **Title:** "Send proposal to client"
+- **Due:** [Calculate next Wednesday in YYYY-MM-DD format]
+- **Details:** "Include pricing breakdown"
+
 ## Team Feedback Commands
 
 ### Observation Commands
