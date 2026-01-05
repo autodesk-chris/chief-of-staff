@@ -144,9 +144,14 @@ def generate_today_summary():
     ideas = get_items_from_folder(inbox_path / "Ideas")
     features = get_items_from_folder(inbox_path / "Features")
 
-    # Filter tasks due today
+    # Filter tasks due today (only active tasks, treat missing status as active)
     tasks_due_today = []
     for task in tasks:
+        # Only include active tasks (missing status is treated as active for backward compatibility)
+        status = task['frontmatter'].get('status', 'active')
+        if status in ['completed', 'archived']:
+            continue
+
         due_date_str = task['frontmatter'].get('due-date')
         if due_date_str:
             try:
@@ -156,10 +161,15 @@ def generate_today_summary():
             except ValueError:
                 pass
 
-    # Filter tasks due this week (next 7 days, excluding today)
+    # Filter tasks due this week (next 7 days, excluding today, only active tasks)
     tasks_due_this_week = []
     week_end = today + timedelta(days=7)
     for task in tasks:
+        # Only include active tasks (missing status is treated as active for backward compatibility)
+        status = task['frontmatter'].get('status', 'active')
+        if status in ['completed', 'archived']:
+            continue
+
         due_date_str = task['frontmatter'].get('due-date')
         if due_date_str:
             try:
@@ -172,11 +182,11 @@ def generate_today_summary():
     # Sort tasks by due date
     tasks_due_this_week.sort(key=lambda x: x['frontmatter'].get('due-date', ''))
 
-    # Filter ideas created today
-    ideas_today = [idea for idea in ideas if idea['created'].date() == today]
+    # Filter ideas by status (show all active ideas, not just today's, treat missing status as active)
+    ideas_active = [idea for idea in ideas if idea['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
 
-    # Filter features created today
-    features_today = [feature for feature in features if feature['created'].date() == today]
+    # Filter features by status (show all active features, not just today's, treat missing status as active)
+    features_active = [feature for feature in features if feature['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
 
     # Generate summary content
     content = f"""# Daily Summary - {today.strftime('%B %d, %Y')}
@@ -202,25 +212,38 @@ def generate_today_summary():
 
     content += "\n## Recent Ideas\n\n"
 
-    if ideas_today:
-        for idea in ideas_today:
+    if ideas_active:
+        for idea in ideas_active:
             content += f"- {idea['title']}\n"
     else:
-        content += "*No ideas created today*\n"
+        content += "*No active ideas*\n"
 
     content += "\n## Recent Features\n\n"
 
-    if features_today:
-        for feature in features_today:
+    if features_active:
+        for feature in features_active:
             content += f"- {feature['title']}\n"
     else:
-        content += "*No features created today*\n"
+        content += "*No active features*\n"
 
     # Create file path
     file_name = f"today_{today.strftime('%Y-%m-%d')}.md"
     file_path = inbox_path / file_name
 
     return file_path, content
+
+
+def update_today_document():
+    """
+    Update today's document with current summary.
+    This is called automatically after creating tasks/ideas/features.
+
+    Returns:
+        Path to the updated today document
+    """
+    file_path, content = generate_today_summary()
+    file_path.write_text(content)
+    return file_path
 
 
 def generate_weekly_summary():

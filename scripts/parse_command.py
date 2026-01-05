@@ -17,10 +17,10 @@ from pathlib import Path
 # Add parent directory to path to import other scripts
 sys.path.insert(0, str(Path(__file__).parent))
 
-from create_item import create_item
-from create_observation import create_observation
+from create_item import create_item, update_item_status
+from create_observation import create_observation, create_360_review
 from utils import parse_tags
-from summary import generate_today_summary, generate_weekly_summary
+from summary import generate_today_summary, generate_weekly_summary, update_today_document
 
 
 def is_observation_command(command_text):
@@ -102,6 +102,50 @@ def parse_observation_command(command_text):
         'title': title,
         'details': details,
         'tags': tags
+    }
+
+
+def parse_status_command(command_text):
+    """
+    Parse a status update command (complete or archive).
+
+    Args:
+        command_text: The full command string
+
+    Returns:
+        Dictionary with parsed command data
+    """
+    # Determine command type
+    if command_text.startswith('complete '):
+        new_status = 'completed'
+        command_prefix = 'complete '
+    elif command_text.startswith('archive '):
+        new_status = 'archived'
+        command_prefix = 'archive '
+    else:
+        raise ValueError("Command must start with 'complete ' or 'archive '")
+
+    # Extract item type and title
+    remaining = command_text[len(command_prefix):].strip()
+
+    # Expected format: "complete task: Title" or "archive idea: Title"
+    item_types = ['task', 'idea', 'feature', 'action']
+    item_type = None
+    title = None
+
+    for itype in item_types:
+        if remaining.startswith(f'{itype}:'):
+            item_type = itype
+            title = remaining[len(itype) + 1:].strip()
+            break
+
+    if not item_type or not title:
+        raise ValueError(f"Invalid format. Use 'complete task: Title' or 'archive idea: Title'")
+
+    return {
+        'item_type': item_type,
+        'title': title,
+        'status': new_status
     }
 
 
@@ -197,6 +241,21 @@ def execute_command(command_text):
         file_path.write_text(content)
         return f"✓ Generated weekly summary: {file_path}"
 
+    # Handle 360 review commands
+    if command_text.lower().startswith('360 review:') or command_text.lower().startswith('360:'):
+        # Extract team member name after the trigger
+        if command_text.lower().startswith('360 review:'):
+            team_member = command_text[11:].strip()
+        else:  # starts with '360:'
+            team_member = command_text[4:].strip()
+
+        file_path, is_new = create_360_review(team_member)
+
+        if is_new:
+            return f"✓ Created 360 review: {file_path}"
+        else:
+            return f"✓ 360 review already exists: {file_path}"
+
     # Handle observation commands
     if is_observation_command(command_text):
         parsed = parse_observation_command(command_text)
@@ -221,9 +280,28 @@ def execute_command(command_text):
             tags=parsed['tags']
         )
 
-        return f"✓ Created {parsed['type']}: {file_path}"
+        # Auto-update today document
+        today_path = update_today_document()
 
-    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'observation:', '/today', or '/weekly'")
+        return f"✓ Created {parsed['type']}: {file_path}\n✓ Updated today summary: {today_path}"
+
+    # Handle complete/archive commands
+    if command_text.startswith('complete ') or command_text.startswith('archive '):
+        parsed = parse_status_command(command_text)
+
+        file_path = update_item_status(
+            item_type=parsed['item_type'],
+            title=parsed['title'],
+            new_status=parsed['status']
+        )
+
+        # Auto-update today document
+        today_path = update_today_document()
+
+        status_action = 'completed' if parsed['status'] == 'completed' else 'archived'
+        return f"✓ Marked {parsed['item_type']} as {status_action}: {file_path}\n✓ Updated today summary: {today_path}"
+
+    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/today', or '/weekly'")
 
 
 def main():

@@ -25,7 +25,7 @@ from utils import (
 )
 
 
-def create_frontmatter(item_type, due_date=None, tags=None):
+def create_frontmatter(item_type, due_date=None, tags=None, status='active'):
     """
     Generate YAML frontmatter for the file.
 
@@ -33,6 +33,7 @@ def create_frontmatter(item_type, due_date=None, tags=None):
         item_type: Type of item ('task', 'idea', or 'feature')
         due_date: Due date string (YYYY-MM-DD) or None
         tags: List of tag strings or None
+        status: Status of item ('active', 'completed', or 'archived')
 
     Returns:
         Formatted frontmatter string
@@ -43,6 +44,7 @@ def create_frontmatter(item_type, due_date=None, tags=None):
     if item_type in ['task', 'action'] and due_date:
         frontmatter = f"""---
 type: {item_type}
+status: {status}
 due-date: {due_date}
 tags: {tags_formatted}
 ---"""
@@ -50,6 +52,7 @@ tags: {tags_formatted}
     else:
         frontmatter = f"""---
 type: {item_type}
+status: {status}
 tags: {tags_formatted}
 due-date: null
 ---"""
@@ -123,6 +126,61 @@ def create_item(item_type, title, due_date=None, details="", tags=None):
     full_content = frontmatter + content
 
     file_path.write_text(full_content)
+
+    return file_path
+
+
+def update_item_status(item_type, title, new_status):
+    """
+    Update the status of an existing task, idea, feature, or action.
+
+    Args:
+        item_type: Type of item ('task', 'idea', 'feature', or 'action')
+        title: Title of the item (used to find the file)
+        new_status: New status ('completed' or 'archived')
+
+    Returns:
+        Path to the updated file
+
+    Raises:
+        FileNotFoundError: If the item doesn't exist
+        ValueError: If invalid item type or status
+    """
+    # Validate inputs
+    if item_type not in ['task', 'idea', 'feature', 'action']:
+        raise ValueError(f"Invalid item type: {item_type}. Must be 'task', 'idea', 'feature', or 'action'.")
+
+    if new_status not in ['completed', 'archived']:
+        raise ValueError(f"Invalid status: {new_status}. Must be 'completed' or 'archived'.")
+
+    # Get the appropriate folder
+    inbox_path = get_inbox_path(item_type)
+
+    # Create the expected filename
+    safe_title = sanitize_filename(title)
+    filename = f"{item_type}_{safe_title}.md"
+    file_path = inbox_path / filename
+
+    # Check if file exists
+    if not file_path.exists():
+        raise FileNotFoundError(f"Item not found: {file_path}")
+
+    # Read the current content
+    content = file_path.read_text()
+
+    # Update the status field in frontmatter
+    # Match the status line and replace it
+    import re
+    updated_content = re.sub(
+        r'^status:\s*\w+$',
+        f'status: {new_status}',
+        content,
+        count=1,
+        flags=re.MULTILINE
+    )
+
+    # Write back the updated content
+    file_path.write_text(updated_content)
 
     return file_path
 
