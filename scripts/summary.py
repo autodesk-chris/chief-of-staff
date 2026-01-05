@@ -144,28 +144,27 @@ def generate_today_summary():
     ideas = get_items_from_folder(inbox_path / "Ideas")
     features = get_items_from_folder(inbox_path / "Features")
 
-    # Filter tasks due today (only active tasks, treat missing status as active)
-    tasks_due_today = []
+    # Filter tasks due today (include completed/archived with status tracking)
+    tasks_due_today_active = []
+    tasks_due_today_completed = []
     for task in tasks:
-        # Only include active tasks (missing status is treated as active for backward compatibility)
         status = task['frontmatter'].get('status', 'active')
-        if status in ['completed', 'archived']:
-            continue
-
         due_date_str = task['frontmatter'].get('due-date')
         if due_date_str:
             try:
                 due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
                 if due_date == today:
-                    tasks_due_today.append(task)
+                    if status in ['completed', 'archived']:
+                        tasks_due_today_completed.append(task)
+                    else:
+                        tasks_due_today_active.append(task)
             except ValueError:
                 pass
 
-    # Filter tasks due this week (next 7 days, excluding today, only active tasks)
+    # Filter tasks due this week (next 7 days, excluding today, only active)
     tasks_due_this_week = []
     week_end = today + timedelta(days=7)
     for task in tasks:
-        # Only include active tasks (missing status is treated as active for backward compatibility)
         status = task['frontmatter'].get('status', 'active')
         if status in ['completed', 'archived']:
             continue
@@ -182,11 +181,13 @@ def generate_today_summary():
     # Sort tasks by due date
     tasks_due_this_week.sort(key=lambda x: x['frontmatter'].get('due-date', ''))
 
-    # Filter ideas by status (show all active ideas, not just today's, treat missing status as active)
+    # Filter ideas by status (active and completed separately)
     ideas_active = [idea for idea in ideas if idea['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
+    ideas_completed = [idea for idea in ideas if idea['frontmatter'].get('status', 'active') in ['completed', 'archived']]
 
-    # Filter features by status (show all active features, not just today's, treat missing status as active)
+    # Filter features by status (active and completed separately)
     features_active = [feature for feature in features if feature['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
+    features_completed = [feature for feature in features if feature['frontmatter'].get('status', 'active') in ['completed', 'archived']]
 
     # Generate summary content
     content = f"""# Daily Summary - {today.strftime('%B %d, %Y')}
@@ -195,9 +196,12 @@ def generate_today_summary():
 
 """
 
-    if tasks_due_today:
-        for task in tasks_due_today:
+    # Show active tasks first, then completed with strikethrough
+    if tasks_due_today_active or tasks_due_today_completed:
+        for task in tasks_due_today_active:
             content += f"- {task['title']}\n"
+        for task in tasks_due_today_completed:
+            content += f"- ~~{task['title']}~~\n"
     else:
         content += "*No tasks due today*\n"
 
@@ -212,23 +216,29 @@ def generate_today_summary():
 
     content += "\n## Recent Ideas\n\n"
 
-    if ideas_active:
+    if ideas_active or ideas_completed:
         for idea in ideas_active:
             content += f"- {idea['title']}\n"
+        for idea in ideas_completed:
+            content += f"- ~~{idea['title']}~~\n"
     else:
         content += "*No active ideas*\n"
 
     content += "\n## Recent Features\n\n"
 
-    if features_active:
+    if features_active or features_completed:
         for feature in features_active:
             content += f"- {feature['title']}\n"
+        for feature in features_completed:
+            content += f"- ~~{feature['title']}~~\n"
     else:
         content += "*No active features*\n"
 
-    # Create file path
+    # Create file path in Today folder
+    today_folder = inbox_path / "Today"
+    today_folder.mkdir(exist_ok=True)  # Create folder if it doesn't exist
     file_name = f"today_{today.strftime('%Y-%m-%d')}.md"
-    file_path = inbox_path / file_name
+    file_path = today_folder / file_name
 
     return file_path, content
 
