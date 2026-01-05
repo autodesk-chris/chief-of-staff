@@ -25,7 +25,7 @@ from utils import (
 )
 
 
-def create_frontmatter(item_type, due_date=None, tags=None, status='active'):
+def create_frontmatter(item_type, due_date=None, tags=None, status='active', status_note=None):
     """
     Generate YAML frontmatter for the file.
 
@@ -33,18 +33,20 @@ def create_frontmatter(item_type, due_date=None, tags=None, status='active'):
         item_type: Type of item ('task', 'idea', or 'feature')
         due_date: Due date string (YYYY-MM-DD) or None
         tags: List of tag strings or None
-        status: Status of item ('active', 'completed', or 'archived')
+        status: Status of item ('active', 'in-progress', 'blocked', 'waiting', 'on-hold', 'completed', or 'archived')
+        status_note: Optional note about the status
 
     Returns:
         Formatted frontmatter string
     """
     tags_formatted = format_tags_yaml(tags) if tags else "[]"
+    status_note_line = f"\nstatus-note: {status_note}" if status_note else ""
 
     # For tasks and actions with due dates
     if item_type in ['task', 'action'] and due_date:
         frontmatter = f"""---
 type: {item_type}
-status: {status}
+status: {status}{status_note_line}
 due-date: {due_date}
 tags: {tags_formatted}
 ---"""
@@ -52,7 +54,7 @@ tags: {tags_formatted}
     else:
         frontmatter = f"""---
 type: {item_type}
-status: {status}
+status: {status}{status_note_line}
 tags: {tags_formatted}
 due-date: null
 ---"""
@@ -130,14 +132,15 @@ def create_item(item_type, title, due_date=None, details="", tags=None):
     return file_path
 
 
-def update_item_status(item_type, title, new_status):
+def update_item_status(item_type, title, new_status, status_note=None):
     """
     Update the status of an existing task, idea, feature, or action.
 
     Args:
         item_type: Type of item ('task', 'idea', 'feature', or 'action')
         title: Title of the item (used to find the file)
-        new_status: New status ('completed' or 'archived')
+        new_status: New status ('active', 'in-progress', 'blocked', 'waiting', 'on-hold', 'completed', 'archived')
+        status_note: Optional note about the status change
 
     Returns:
         Path to the updated file
@@ -150,8 +153,9 @@ def update_item_status(item_type, title, new_status):
     if item_type not in ['task', 'idea', 'feature', 'action']:
         raise ValueError(f"Invalid item type: {item_type}. Must be 'task', 'idea', 'feature', or 'action'.")
 
-    if new_status not in ['completed', 'archived']:
-        raise ValueError(f"Invalid status: {new_status}. Must be 'completed' or 'archived'.")
+    valid_statuses = ['active', 'in-progress', 'blocked', 'waiting', 'on-hold', 'completed', 'archived']
+    if new_status not in valid_statuses:
+        raise ValueError(f"Invalid status: {new_status}. Must be one of: {', '.join(valid_statuses)}.")
 
     # Get the appropriate folder
     inbox_path = get_inbox_path(item_type)
@@ -169,15 +173,58 @@ def update_item_status(item_type, title, new_status):
     content = file_path.read_text()
 
     # Update the status field in frontmatter
-    # Match the status line and replace it
     import re
-    updated_content = re.sub(
-        r'^status:\s*\w+$',
-        f'status: {new_status}',
-        content,
-        count=1,
-        flags=re.MULTILINE
-    )
+
+    # Check if status field exists
+    if re.search(r'^status:', content, re.MULTILINE):
+        # Update existing status field
+        updated_content = re.sub(
+            r'^status:\s*[\w-]+$',
+            f'status: {new_status}',
+            content,
+            count=1,
+            flags=re.MULTILINE
+        )
+    else:
+        # Add status field after type field
+        updated_content = re.sub(
+            r'^(type:\s*\w+)$',
+            f'\\1\nstatus: {new_status}',
+            content,
+            count=1,
+            flags=re.MULTILINE
+        )
+
+    # Handle status-note field
+    if status_note:
+        # Check if status-note already exists
+        if re.search(r'^status-note:', updated_content, re.MULTILINE):
+            # Update existing note
+            updated_content = re.sub(
+                r'^status-note:.*$',
+                f'status-note: {status_note}',
+                updated_content,
+                count=1,
+                flags=re.MULTILINE
+            )
+        else:
+            # Add new note after status line
+            updated_content = re.sub(
+                r'^(status: [\w-]+)$',
+                f'\\1\nstatus-note: {status_note}',
+                updated_content,
+                count=1,
+                flags=re.MULTILINE
+            )
+    else:
+        # Remove status-note if it exists and no new note provided
+        updated_content = re.sub(
+            r'^status-note:.*\n',
+            '',
+            updated_content,
+            count=1,
+            flags=re.MULTILINE
+        )
 
     # Write back the updated content
     file_path.write_text(updated_content)

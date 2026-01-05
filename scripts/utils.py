@@ -5,6 +5,7 @@ Utility functions for the Personal OS command system.
 import re
 from datetime import datetime
 from pathlib import Path
+from difflib import SequenceMatcher
 
 
 def sanitize_filename(title):
@@ -173,3 +174,108 @@ def extract_team_member_name(title):
     observation = parts[1].strip() if len(parts) > 1 else title
 
     return name, observation
+
+
+def extract_title_from_file(file_path):
+    """
+    Extract the title from a markdown file's H1 heading.
+
+    Args:
+        file_path: Path to the markdown file
+
+    Returns:
+        Title string or None if not found
+    """
+    try:
+        content = file_path.read_text()
+        # Look for the first # heading after frontmatter
+        lines = content.split('\n')
+        in_frontmatter = False
+
+        for line in lines:
+            if line.strip() == '---':
+                in_frontmatter = not in_frontmatter
+                continue
+
+            if not in_frontmatter and line.startswith('#'):
+                # Extract title text (e.g., "# Task: Title" -> "Title")
+                title = line.lstrip('#').strip()
+                # Remove type prefix if present (e.g., "Task: " or "Idea: ")
+                if ':' in title:
+                    title = title.split(':', 1)[1].strip()
+                return title
+
+        return None
+    except Exception:
+        return None
+
+
+def similarity_ratio(a, b):
+    """
+    Calculate similarity ratio between two strings.
+
+    Args:
+        a: First string
+        b: Second string
+
+    Returns:
+        Float between 0 and 1 (1 = exact match)
+    """
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+
+def find_item_by_title(search_title, threshold=0.6):
+    """
+    Find items across all folders by title using fuzzy matching.
+
+    Args:
+        search_title: The title to search for
+        threshold: Minimum similarity ratio (0-1) for matches (default 0.6)
+
+    Returns:
+        List of tuples: (item_type, file_path, title, similarity_score)
+        Sorted by similarity score (highest first)
+    """
+    vault_path = get_vault_path()
+    inbox_path = vault_path / "Inbox"
+
+    matches = []
+    item_types = {
+        'Tasks': 'task',
+        'Ideas': 'idea',
+        'Features': 'feature',
+        'Actions': 'action'
+    }
+
+    for folder_name, item_type in item_types.items():
+        folder_path = inbox_path / folder_name
+        if not folder_path.exists():
+            continue
+
+        for file_path in folder_path.glob('*.md'):
+            # Skip summary files
+            if file_path.name.startswith('today_') or file_path.name.startswith('weekly_'):
+                continue
+
+            # Extract title from file
+            file_title = extract_title_from_file(file_path)
+            if not file_title:
+                continue
+
+            # Calculate similarity
+            score = similarity_ratio(search_title, file_title)
+
+            # Also check similarity with filename (without prefix and extension)
+            filename_base = file_path.stem.replace(f'{item_type}_', '', 1).replace('_', ' ')
+            filename_score = similarity_ratio(search_title, filename_base)
+
+            # Use the better score
+            best_score = max(score, filename_score)
+
+            if best_score >= threshold:
+                matches.append((item_type, file_path, file_title, best_score))
+
+    # Sort by similarity score (highest first)
+    matches.sort(key=lambda x: x[3], reverse=True)
+
+    return matches

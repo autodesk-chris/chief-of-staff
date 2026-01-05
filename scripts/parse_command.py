@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from create_item import create_item, update_item_status
 from create_observation import create_observation, create_360_review
-from utils import parse_tags
+from utils import parse_tags, find_item_by_title
 from summary import generate_today_summary, generate_weekly_summary, update_today_document
 
 
@@ -147,6 +147,154 @@ def parse_status_command(command_text):
         'title': title,
         'status': new_status
     }
+
+
+def parse_update_command(command_text):
+    """
+    Parse an update command with field-based syntax.
+
+    Expected format: "update: [title] status: [status] note: [optional note]"
+
+    Args:
+        command_text: The full command string
+
+    Returns:
+        Dictionary with parsed data or None if not an update command
+
+    Raises:
+        ValueError: If status is missing or invalid
+    """
+    if not command_text.startswith('update:'):
+        return None
+
+    # Remove 'update:' prefix
+    remaining = command_text[7:].strip()
+
+    # Extract status if present
+    status_match = re.search(r'\s+status:\s*([^\s]+)', remaining)
+    if not status_match:
+        # Status is required - return error that will prompt user
+        raise ValueError("Status is required. Please specify: status: [active|in-progress|blocked|waiting|on-hold|completed|archived]")
+
+    status = status_match.group(1).strip()
+
+    # Validate status
+    valid_statuses = ['active', 'in-progress', 'blocked', 'waiting', 'on-hold', 'completed', 'archived']
+    if status not in valid_statuses:
+        raise ValueError(f"Invalid status: {status}. Must be one of: {', '.join(valid_statuses)}")
+
+    # Extract note if present
+    note_match = re.search(r'\s+note:\s*(.+)$', remaining)
+    note = note_match.group(1).strip() if note_match else None
+
+    # Extract title (everything before 'status:')
+    title_end = remaining.find(' status:')
+    if title_end == -1:
+        title_end = remaining.find(' note:') if note_match else len(remaining)
+
+    title = remaining[:title_end].strip()
+
+    if not title:
+        raise ValueError("Item title is required")
+
+    return {
+        'title': title,
+        'status': status,
+        'note': note
+    }
+
+
+def parse_natural_language_status(command_text):
+    """
+    Parse natural language status update commands.
+
+    Recognizes patterns like:
+    - "Task X is complete"
+    - "Mark idea Y as archived"
+    - "X is done"
+    - "Update feature Z to in progress"
+    - "Block task X note: Waiting for approval"
+
+    Args:
+        command_text: The full command string
+
+    Returns:
+        Dictionary with parsed data or None if not a natural language status command
+    """
+    import re
+
+    # Status keywords and their mappings
+    status_keywords = {
+        'complete': 'completed',
+        'completed': 'completed',
+        'done': 'completed',
+        'finished': 'completed',
+        'archive': 'archived',
+        'archived': 'archived',
+        'in progress': 'in-progress',
+        'in-progress': 'in-progress',
+        'working on': 'in-progress',
+        'started': 'in-progress',
+        'block': 'blocked',
+        'blocked': 'blocked',
+        'waiting': 'waiting',
+        'wait': 'waiting',
+        'on hold': 'on-hold',
+        'on-hold': 'on-hold',
+        'pause': 'on-hold',
+        'paused': 'on-hold',
+        'active': 'active',
+        'resume': 'active',
+        'reopen': 'active'
+    }
+
+    # Extract note if present
+    note = None
+    note_match = re.search(r'\s+note:\s*(.+)$', command_text, re.IGNORECASE)
+    if note_match:
+        note = note_match.group(1).strip()
+        # Remove note from command for further parsing
+        command_text = command_text[:note_match.start()].strip()
+
+    # Pattern 1: "X is {status}" or "{status} X"
+    for keyword, status_value in status_keywords.items():
+        # Pattern: "X is {status}"
+        pattern1 = rf'^(.+?)\s+is\s+{re.escape(keyword)}$'
+        match = re.match(pattern1, command_text, re.IGNORECASE)
+        if match:
+            title = match.group(1).strip()
+            return {
+                'title': title,
+                'status': status_value,
+                'note': note
+            }
+
+        # Pattern: "{status} X"
+        pattern2 = rf'^{re.escape(keyword)}\s+(.+)$'
+        match = re.match(pattern2, command_text, re.IGNORECASE)
+        if match:
+            title = match.group(1).strip()
+            return {
+                'title': title,
+                'status': status_value,
+                'note': note
+            }
+
+    # Pattern 2: "mark X as {status}" or "set X to {status}" or "update X to {status}"
+    action_words = ['mark', 'set', 'update', 'change']
+    for action in action_words:
+        for keyword, status_value in status_keywords.items():
+            pattern = rf'^{action}\s+(.+?)\s+(?:as|to)\s+{re.escape(keyword)}$'
+            match = re.match(pattern, command_text, re.IGNORECASE)
+            if match:
+                title = match.group(1).strip()
+                return {
+                    'title': title,
+                    'status': status_value,
+                    'note': note
+                }
+
+    return None
 
 
 def parse_creation_command(command_text):
@@ -285,7 +433,7 @@ def execute_command(command_text):
 
         return f"✓ Created {parsed['type']}: {file_path}\n✓ Updated today summary: {today_path}"
 
-    # Handle complete/archive commands
+    # Handle complete/archive commands (legacy)
     if command_text.startswith('complete ') or command_text.startswith('archive '):
         parsed = parse_status_command(command_text)
 
@@ -301,7 +449,54 @@ def execute_command(command_text):
         status_action = 'completed' if parsed['status'] == 'completed' else 'archived'
         return f"✓ Marked {parsed['item_type']} as {status_action}: {file_path}\n✓ Updated today summary: {today_path}"
 
-    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/today', or '/weekly'")
+    # Handle update command (new primary method)
+    if command_text.startswith('update:'):
+        parsed = parse_update_command(command_text)
+
+        title = parsed['title']
+        status = parsed['status']
+        note = parsed['note']
+
+        # Find matching items using fuzzy matching
+        matches = find_item_by_title(title)
+
+        if not matches:
+            return f"✗ No items found matching: '{title}'"
+
+        # Handle disambiguation if multiple matches
+        if len(matches) > 1:
+            # Check if there's a clear best match (significantly higher score)
+            best_score = matches[0][3]
+            second_score = matches[1][3]
+
+            # If the best match is significantly better, use it
+            if best_score - second_score >= 0.2:
+                item_type, file_path, file_title, score = matches[0]
+            else:
+                # Present options to user
+                options_text = "\nMultiple items found. Please be more specific or use the exact title:\n"
+                for i, (itype, fpath, ftitle, score) in enumerate(matches[:5], 1):
+                    options_text += f"  {i}. [{itype}] {ftitle} (match: {score:.0%})\n"
+                return f"✗ Ambiguous match.{options_text}"
+        else:
+            item_type, file_path, file_title, score = matches[0]
+
+        # Update the item status
+        file_path = update_item_status(
+            item_type=item_type,
+            title=file_title,
+            new_status=status,
+            status_note=note
+        )
+
+        # Auto-update today document
+        today_path = update_today_document()
+
+        # Build result message
+        note_text = f" (note: {note})" if note else ""
+        return f"✓ Marked {item_type} '{file_title}' as {status}{note_text}\n✓ Updated: {file_path}\n✓ Updated today summary: {today_path}"
+
+    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'update:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/today', or '/weekly'")
 
 
 def main():

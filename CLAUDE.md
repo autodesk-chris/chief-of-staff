@@ -47,6 +47,57 @@ Chief_of_staff/
 - Date parsing should handle YYYY-MM-DD format
 - Tags should be converted from comma-separated strings to YAML list format
 
+### Status Updates (Primary Method)
+
+When the user asks to mark something as complete, blocked, in progress, etc., **immediately use the update command**. Do not search for files first - fuzzy matching handles it automatically.
+
+**Command syntax:**
+```bash
+./pos "update: [item title] status: [status]"
+./pos "update: [item title] status: [status] note: [optional note]"
+```
+
+**Available status values:**
+- `active` - Currently actionable
+- `in-progress` - Actively working on it
+- `blocked` - Cannot proceed (add note explaining why)
+- `waiting` - Waiting on someone/something
+- `on-hold` - Paused temporarily
+- `completed` - Finished
+- `archived` - No longer relevant
+
+**Examples:**
+```bash
+./pos "update: Follow up with Gail status: completed"
+./pos "update: Review monetisation status: blocked note: Waiting for budget approval"
+./pos "update: Draft offsite presentation status: in-progress note: Starting research"
+```
+
+**User workflow translation:**
+- User says: "mark follow-up gail task as complete"
+- You run: `./pos "update: Follow up with Gail status: completed"`
+- User says: "update the offsite budget"
+- You ask: "What status would you like to set? (active, in-progress, blocked, waiting, on-hold, completed, archived)"
+- User responds: "blocked, waiting for finance"
+- You run: `./pos "update: offsite budget status: blocked note: Waiting for finance"`
+
+**How it works:**
+- Fuzzy matching finds items automatically - no need to search first
+- Works across all item types (tasks, ideas, features, actions)
+- Auto-updates today document after status change
+- Handles files with or without existing status fields
+
+**When user doesn't specify status:**
+- The command will error with: "Status is required. Please specify: status: [...]"
+- Ask the user: "What status would you like to set?" and provide the options
+- Then run the command with their chosen status
+
+**Don't do this:**
+- ❌ Search for files with Glob/Grep before updating
+- ❌ Read files to confirm existence
+- ❌ Look for exact filenames
+- ✅ Just run the update command - it handles everything
+
 ### Task Creation Best Practices
 
 When creating tasks from user input, extract short, meaningful titles:
