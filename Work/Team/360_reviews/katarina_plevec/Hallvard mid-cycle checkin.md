@@ -1,0 +1,7 @@
+
+Hallvard Nydal  [Sep 3rd, 2025 at 9:50 PM](https://adskformadesign.slack.com/archives/C08SY6A2E21/p1756932635496449?thread_ts=1756895941.704819&cid=C08SY6A2E21) Hallvard is a peer of Katarina's manager
+
+**What she does well:**  
+Katarinais highly talented, with strong analytical skills and a deep PM toolkit. She has a sharp ability to spot issues and patterns quickly, and she raises the quality of conversations by challenging assumptions and pushing for clarity. She also brings a high level of professionalism and thoughtfulness in how she approaches product thinking, which makes her contributions stand out.**Learning areas:**  
+The main thing I’d like to see more of is problem-solving, not just problem-spotting. We already face plenty of challenges, and what will really build trust and impact is showing that she can help drive solutions forward. It’s possible this comes through more clearly in Growth, but it hasn’t been very visible to me so far.**What could 10X her impact:**  
+For me, the biggest trust-builder would be seeing her take on a very difficult problem, go deep into solving it, and show progress beyond identifying it. This might already be happening in areas I don’t see, but building that trust through visible execution would significantly increase her impact.
