@@ -17,6 +17,7 @@ This system integrates with Obsidian and Claude Code to provide:
 - `new idea` - Capture ideas quickly with tags
 - `new feature` - Document feature requests with details
 - `observation` - Record observations about team members
+- `360 review` - Create or open 360 review file for a team member
 
 ### Summary Commands
 - `/today` - Generate a daily summary of tasks, ideas, and features
@@ -94,6 +95,12 @@ Use the `./pos` command to interact with your Personal OS:
 ./pos "I have feedback: [Name] - [Feedback] tags: [tag1, tag2]"
 ```
 
+**Create a 360 Review:**
+```bash
+./pos "360 review: [Name]"
+./pos "360: [Name]"  # Short form
+```
+
 **Generate Summaries:**
 ```bash
 ./pos "/today"    # Daily summary
@@ -119,7 +126,9 @@ Chief_of_staff/
     │   └── Actions/      # Team actions
     ├── Team/             # Team feedback
     │   ├── Observations/ # Team member observations
-    │   └── 360_[name]_FY26.md  # 360 reviews
+    │   └── 360_reviews/  # 360 reviews and assessment guide
+    │       ├── 360_[name]_FY26.md
+    │       └── performance_assessment_guide.md
     ├── LLM_Context/      # Reference files for Claude
     ├── Notes/
     └── Research/
@@ -170,6 +179,47 @@ tags: [leadership]
 ## Details
 
 Excellent communication skills during presentation.
+```
+
+**360 Review Example:**
+```markdown
+---
+type: 360-review
+team-member: Sarah Johnson
+fiscal-year: FY26
+created: 2026-01-03
+status: in-progress
+---
+
+# 360 Review: Sarah Johnson - FY26
+
+## Overview
+
+Performance review and 360 feedback for Sarah Johnson.
+
+## Reference
+
+See [[performance_assessment_guide]] for evaluation criteria.
+
+## Key Observations
+
+<!-- Link to observation files here -->
+
+## Strengths
+
+<!-- Document key strengths -->
+
+## Areas for Growth
+
+<!-- Document development opportunities -->
+
+## Goals & Commitments
+
+<!-- Document goals and commitments -->
+
+## Summary
+
+<!-- Final assessment summary -->
 ```
 
 ## Status

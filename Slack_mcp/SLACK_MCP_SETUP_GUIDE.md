@@ -55,15 +55,19 @@ You don't have admin permissions to install Slack apps, so we attempted to use *
 
 ```
 /Users/smallc/AI/Chief_of_staff/
-├── .env                          # Your tokens (DO NOT COMMIT)
-├── .gitignore                    # Contains .env
 ├── Slack_mcp/
+│   ├── SLACK_MCP_SETUP_GUIDE.md     # This file
 │   └── slack-mcp-server/
-│       ├── slack-mcp-server      # Executable
-│       ├── .users_cache.json     # Auto-generated
-│       └── .channels_cache.json  # Auto-generated
-└── SLACK_MCP_SETUP_GUIDE.md     # This file
+│       ├── .env                      # Your tokens (DO NOT COMMIT) ⭐ LOCATION
+│       ├── .env.dist                 # Template file
+│       ├── slack-mcp-server          # Executable
+│       ├── .users_cache.json         # Auto-generated
+│       └── .channels_cache.json      # Auto-generated
+└── .gitignore                        # Contains .env
 ```
+
+**⭐ IMPORTANT:** The `.env` file is located at:
+`/Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server/.env`
 
 ---
 
@@ -78,8 +82,7 @@ You don't have admin permissions to install Slack apps, so we attempted to use *
 2. Open developer console: `Cmd+Option+I`
 3. Type `allow pasting` and press Enter (if prompted)
 4. Paste and run:
-```javascript
-JSON.parse(localStorage.localConfig_v2).teams[document.location.pathname.match(/^\/client\/([A-Z0-9]+)/)[1]].token
+  JSON.parse(localStorage.getItem('localConfig_v2')).teams[document.location.pathname.match(/^\/client\/([A-Z0-9]+)/)[1]].token
 ```
 5. Copy the output (starts with `xoxc-`)
 
@@ -93,19 +96,21 @@ JSON.parse(localStorage.localConfig_v2).teams[document.location.pathname.match(/
 
 ### 2. Configure Environment Variables
 
-Create/update `.env` file:
+Edit the `.env` file in the slack-mcp-server directory:
 
 ```bash
-cd /Users/smallc/AI/Chief_of_staff
+cd /Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server
 nano .env
 ```
 
-Add your tokens (no quotes, no spaces around `=`):
+Update these two tokens (replace the placeholder text):
 
 ```bash
-SLACK_MCP_XOXC_TOKEN=xoxc-your-token-here
-SLACK_MCP_XOXD_TOKEN=xoxd-your-token-here
+SLACK_MCP_XOXC_TOKEN="your-xoxc-token-here"
+SLACK_MCP_XOXD_TOKEN="your-xoxd-token-here"
 ```
+
+**Note:** Keep the quotes and the enterprise configuration settings already in the file.
 
 Save: `Ctrl+O`, Enter, `Ctrl+X`
 
@@ -116,8 +121,8 @@ Save: `Ctrl+O`, Enter, `Ctrl+X`
 ```bash
 cd /Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server
 
-# Load and export tokens
-source /Users/smallc/AI/Chief_of_staff/.env
+# Load and export tokens from the .env file
+source .env
 export SLACK_MCP_XOXC_TOKEN
 export SLACK_MCP_XOXD_TOKEN
 
@@ -208,7 +213,7 @@ You'll see: `invalid_auth` or Claude can't access Slack
 
 **Solution:**
 1. Extract fresh tokens (Step 1)
-2. Update `.env` file (Step 2)
+2. Update `.env` file at `/Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server/.env` (Step 2)
 3. Restart Claude Code
 
 ### Staying Logged In
@@ -258,8 +263,8 @@ claude mcp get SlackMCPServer
 
 ### Update Tokens
 ```bash
-nano /Users/smallc/AI/Chief_of_staff/.env
-source /Users/smallc/AI/Chief_of_staff/.env
+nano /Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server/.env
+cd /Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server && source .env
 ```
 
 ### Remove MCP Server
@@ -275,7 +280,7 @@ claude plugin uninstall slack
 ### Test Server Manually
 ```bash
 cd /Users/smallc/AI/Chief_of_staff/Slack_mcp/slack-mcp-server
-source /Users/smallc/AI/Chief_of_staff/.env
+source .env
 export SLACK_MCP_XOXC_TOKEN SLACK_MCP_XOXD_TOKEN
 ./slack-mcp-server -transport stdio
 ```
