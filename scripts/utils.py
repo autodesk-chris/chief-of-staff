@@ -143,6 +143,16 @@ def get_observations_path():
     return get_team_path() / "Observations"
 
 
+def get_360_reviews_path():
+    """
+    Get the path to the Team/360_reviews folder.
+
+    Returns:
+        Path object pointing to Work/Team/360_reviews
+    """
+    return get_team_path() / "360_reviews"
+
+
 def extract_team_member_name(title):
     """
     Extract team member name from observation title.
