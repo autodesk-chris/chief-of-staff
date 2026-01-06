@@ -389,6 +389,32 @@ def execute_command(command_text):
         file_path.write_text(content)
         return f"✓ Generated weekly summary: {file_path}"
 
+    # Handle session logging commands
+    if command_text.lower().startswith('session:') or command_text.lower().startswith('/session'):
+        from session_log import log_session
+
+        # Extract session summary
+        if command_text.lower().startswith('session:'):
+            summary = command_text[8:].strip()
+        else:  # starts with '/session'
+            summary = command_text[8:].strip()
+
+        if not summary:
+            return "✗ Please provide a session summary: session: [what you worked on]"
+
+        log_file = log_session(summary)
+        return f"✓ Session logged to: {log_file}"
+
+    # Handle daily summary interview commands
+    if command_text.lower() in ['/summary', 'daily summary', '/daily', 'daily']:
+        from daily_summary_interview import conduct_interview
+
+        result = conduct_interview()
+        if result:
+            return f"✓ Daily summary saved: {result}"
+        else:
+            return "✗ Daily summary cancelled"
+
     # Handle 360 review commands
     if command_text.lower().startswith('360 review:') or command_text.lower().startswith('360:'):
         # Extract team member name after the trigger

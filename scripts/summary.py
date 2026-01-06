@@ -19,6 +19,105 @@ sys.path.insert(0, str(Path(__file__).parent))
 from utils import get_vault_path
 
 
+def get_previous_working_day(today):
+    """
+    Get the previous working day date.
+
+    Args:
+        today: datetime.date object for today
+
+    Returns:
+        datetime.date object for previous working day
+    """
+    # If today is Monday (weekday 0), return Friday
+    if today.weekday() == 0:
+        return today - timedelta(days=3)
+    # Otherwise return yesterday
+    else:
+        return today - timedelta(days=1)
+
+
+def read_previous_day_summary(previous_date):
+    """
+    Read and format the previous day's summary.
+
+    Args:
+        previous_date: datetime.date object for the previous day
+
+    Returns:
+        Formatted string with previous day overview, or None if not found
+    """
+    vault_path = get_vault_path()
+    summary_path = vault_path / "Inbox" / "Today" / f"summary_{previous_date.strftime('%Y-%m-%d')}.md"
+
+    if not summary_path.exists():
+        return None
+
+    content = summary_path.read_text(encoding='utf-8')
+
+    # Extract key sections: meetings, progress, decisions
+    overview_parts = []
+
+    # Parse sections
+    lines = content.split('\n')
+    current_section = None
+    section_content = []
+
+    sections_to_extract = {
+        '## Meetings and Discussions': 'meetings',
+        '## Progress on Weekly Plans': 'progress',
+        '## Key Decisions': 'decisions',
+        '## Communication Highlights': 'communication',
+        '## Claude Work Sessions': 'claude_sessions'
+    }
+
+    for line in lines:
+        # Check if this is a section header we care about
+        is_section_header = False
+        for header, section_name in sections_to_extract.items():
+            if line.startswith(header):
+                # Save previous section if any
+                if current_section and section_content:
+                    overview_parts.append((current_section, section_content))
+                current_section = section_name
+                section_content = []
+                is_section_header = True
+                break
+
+        if is_section_header:
+            continue
+
+        # Check if we hit a new section we don't care about
+        if line.startswith('## ') and current_section:
+            # Save current section and reset
+            if section_content:
+                overview_parts.append((current_section, section_content))
+            current_section = None
+            section_content = []
+            continue
+
+        # Collect content for current section
+        if current_section and line.strip():
+            section_content.append(line.strip())
+
+    # Don't forget the last section
+    if current_section and section_content:
+        overview_parts.append((current_section, section_content))
+
+    # Format the overview
+    if not overview_parts:
+        return None
+
+    overview = []
+    for section_name, content_lines in overview_parts:
+        # Only include first 3 items per section for brevity
+        relevant_lines = [line for line in content_lines[:3] if line and not line.startswith('---')]
+        if relevant_lines:
+            overview.extend(relevant_lines)
+
+    return '\n'.join(overview) if overview else None
+
+
 def parse_frontmatter(content):
     """
     Parse YAML frontmatter from a markdown file.
@@ -139,6 +238,10 @@ def generate_today_summary():
     inbox_path = vault_path / "Inbox"
     today = datetime.now().date()
 
+    # Get previous working day overview
+    previous_date = get_previous_working_day(today)
+    previous_overview = read_previous_day_summary(previous_date)
+
     # Get all items
     tasks = get_items_from_folder(inbox_path / "Tasks")
     ideas = get_items_from_folder(inbox_path / "Ideas")
@@ -189,10 +292,21 @@ def generate_today_summary():
     features_active = [feature for feature in features if feature['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
     features_completed = [feature for feature in features if feature['frontmatter'].get('status', 'active') in ['completed', 'archived']]
 
-    # Generate summary content
+    # Generate summary content with previous day overview at the top
     content = f"""# Daily Summary - {today.strftime('%B %d, %Y')}
 
-## Tasks Due Today
+"""
+
+    # Add previous day overview if available
+    if previous_overview:
+        day_name = "Friday" if today.weekday() == 0 else "Yesterday"
+        content += f"""## {day_name}'s overview ({previous_date.strftime('%B %d')})
+
+{previous_overview}
+
+"""
+
+    content += """## Tasks Due Today
 
 """
 
