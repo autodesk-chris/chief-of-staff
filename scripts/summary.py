@@ -39,7 +39,7 @@ def get_previous_working_day(today):
 
 def read_previous_day_summary(previous_date):
     """
-    Read and format the previous day's summary.
+    Read and format the previous day's summary with comprehensive information.
 
     Args:
         previous_date: datetime.date object for the previous day
@@ -55,31 +55,35 @@ def read_previous_day_summary(previous_date):
 
     content = summary_path.read_text(encoding='utf-8')
 
-    # Extract key sections: meetings, progress, decisions
+    # Extract key sections with better organization
     overview_parts = []
 
     # Parse sections
     lines = content.split('\n')
     current_section = None
+    current_header = None
     section_content = []
 
+    # Sections to extract with their display names
     sections_to_extract = {
-        '## Meetings and Discussions': 'meetings',
-        '## Progress on Weekly Plans': 'progress',
-        '## Key Decisions': 'decisions',
-        '## Communication Highlights': 'communication',
-        '## Claude Work Sessions': 'claude_sessions'
+        '## Meetings': ('Meetings', 15),  # (display name, max items)
+        '## Key Decisions': ('Key decisions', 10),
+        '## Actions for Growth/Chris': ('Actions', 10),
+        '## Other Work': ('Other work', 10),
+        '## Tasks Completed Today': ('Completed', 10),
+        '## Claude Sessions': ('Claude sessions', 5)
     }
 
     for line in lines:
         # Check if this is a section header we care about
         is_section_header = False
-        for header, section_name in sections_to_extract.items():
+        for header, (display_name, max_items) in sections_to_extract.items():
             if line.startswith(header):
                 # Save previous section if any
                 if current_section and section_content:
-                    overview_parts.append((current_section, section_content))
-                current_section = section_name
+                    overview_parts.append((current_header, current_section, section_content))
+                current_header = header
+                current_section = display_name
                 section_content = []
                 is_section_header = True
                 break
@@ -91,7 +95,8 @@ def read_previous_day_summary(previous_date):
         if line.startswith('## ') and current_section:
             # Save current section and reset
             if section_content:
-                overview_parts.append((current_section, section_content))
+                overview_parts.append((current_header, current_section, section_content))
+            current_header = None
             current_section = None
             section_content = []
             continue
@@ -102,20 +107,26 @@ def read_previous_day_summary(previous_date):
 
     # Don't forget the last section
     if current_section and section_content:
-        overview_parts.append((current_section, section_content))
+        overview_parts.append((current_header, current_section, section_content))
 
-    # Format the overview
+    # Format the overview with section headings
     if not overview_parts:
         return None
 
     overview = []
-    for section_name, content_lines in overview_parts:
-        # Only include first 3 items per section for brevity
-        relevant_lines = [line for line in content_lines[:3] if line and not line.startswith('---')]
-        if relevant_lines:
-            overview.extend(relevant_lines)
+    for header, section_name, content_lines in overview_parts:
+        # Get max items for this section
+        max_items = sections_to_extract.get(header, (None, 999))[1]
 
-    return '\n'.join(overview) if overview else None
+        # Filter and limit items
+        relevant_lines = [line for line in content_lines[:max_items] if line and not line.startswith('---')]
+        if relevant_lines:
+            # Add section heading
+            overview.append(f"**{section_name}:**")
+            overview.extend(relevant_lines)
+            overview.append("")  # Add blank line between sections
+
+    return '\n'.join(overview).strip() if overview else None
 
 
 def parse_frontmatter(content):
@@ -187,6 +198,94 @@ def get_file_title(content):
     return ""
 
 
+def parse_manual_completions(today_path):
+    """
+    Parse existing today document to find manually crossed-off items.
+
+    Args:
+        today_path: Path to the today document
+
+    Returns:
+        List of item titles that have been manually marked as complete (strikethrough)
+    """
+    if not today_path.exists():
+        return []
+
+    content = today_path.read_text(encoding='utf-8')
+    manually_completed = []
+
+    # Pattern to match strikethrough items: - ~~Title~~
+    import re
+    pattern = r'^-\s+~~(.+?)~~\s*$'
+
+    for line in content.split('\n'):
+        match = re.match(pattern, line.strip())
+        if match:
+            title = match.group(1).strip()
+
+            # Clean up the title to match source file format:
+            # 1. Remove date prefix if present (e.g., "**2026-01-05**: ")
+            title = re.sub(r'^\*\*\d{4}-\d{2}-\d{2}\*\*:\s*', '', title)
+
+            # 2. Remove type prefix if present (e.g., "Task: ", "Idea: ", "Feature: ")
+            title = re.sub(r'^(Task|Idea|Feature|Action):\s*', '', title)
+
+            manually_completed.append(title)
+
+    return manually_completed
+
+
+def sync_manual_completions_to_source(manually_completed_titles):
+    """
+    Update source files for items that were manually crossed off in today document.
+
+    Args:
+        manually_completed_titles: List of item titles that were marked complete
+
+    Returns:
+        Number of items successfully updated
+    """
+    from utils import find_item_by_title
+    from create_item import update_item_status
+
+    updated_count = 0
+
+    for title in manually_completed_titles:
+        # Find the item using fuzzy matching
+        matches = find_item_by_title(title)
+
+        if not matches:
+            print(f"⚠ Could not find item for manual completion: '{title}'")
+            continue
+
+        # Use the best match
+        item_type, file_path, file_title, score = matches[0]
+
+        # Check if already completed (to avoid redundant updates)
+        content = file_path.read_text(encoding='utf-8')
+        frontmatter = parse_frontmatter(content)
+        current_status = frontmatter.get('status', 'active')
+
+        if current_status in ['completed', 'archived']:
+            # Already marked as complete, skip
+            continue
+
+        # Update to completed
+        try:
+            update_item_status(
+                item_type=item_type,
+                title=file_title,
+                new_status='completed',
+                status_note='Marked complete in today document'
+            )
+            updated_count += 1
+            print(f"✓ Synced manual completion: {item_type} '{file_title}'")
+        except Exception as e:
+            print(f"⚠ Error updating {item_type} '{file_title}': {e}")
+
+    return updated_count
+
+
 def get_items_from_folder(folder_path):
     """
     Get all items from a folder with their metadata.
@@ -238,6 +337,18 @@ def generate_today_summary():
     inbox_path = vault_path / "Inbox"
     today = datetime.now().date()
 
+    # Sync manual completions from existing today document (if it exists)
+    today_folder = inbox_path / "Today"
+    today_path = today_folder / f"today_{today.strftime('%Y-%m-%d')}.md"
+
+    if today_path.exists():
+        manually_completed = parse_manual_completions(today_path)
+        if manually_completed:
+            print(f"\n📝 Syncing {len(manually_completed)} manual completion(s) from today document...")
+            updated = sync_manual_completions_to_source(manually_completed)
+            if updated > 0:
+                print(f"✓ Synced {updated} item(s) to source files\n")
+
     # Get previous working day overview
     previous_date = get_previous_working_day(today)
     previous_overview = read_previous_day_summary(previous_date)
@@ -246,6 +357,25 @@ def generate_today_summary():
     tasks = get_items_from_folder(inbox_path / "Tasks")
     ideas = get_items_from_folder(inbox_path / "Ideas")
     features = get_items_from_folder(inbox_path / "Features")
+
+    # Filter overdue tasks (due before today and not completed)
+    overdue_tasks = []
+    for task in tasks:
+        status = task['frontmatter'].get('status', 'active')
+        if status in ['completed', 'archived']:
+            continue
+
+        due_date_str = task['frontmatter'].get('due-date')
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                if due_date < today:
+                    overdue_tasks.append(task)
+            except ValueError:
+                pass
+
+    # Sort overdue tasks by due date (oldest first)
+    overdue_tasks.sort(key=lambda x: x['frontmatter'].get('due-date', ''))
 
     # Filter tasks due today (include completed/archived with status tracking)
     tasks_due_today_active = []
@@ -305,6 +435,16 @@ def generate_today_summary():
 {previous_overview}
 
 """
+
+    # Add overdue tasks section if any exist
+    if overdue_tasks:
+        content += """## Overdue Tasks
+
+"""
+        for task in overdue_tasks:
+            due_date = task['frontmatter'].get('due-date', 'No date')
+            content += f"- **{due_date}**: {task['title']}\n"
+        content += "\n"
 
     content += """## Tasks Due Today
 
