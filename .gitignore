@@ -27,3 +27,16 @@ Thumbs.db
 
 # Obsidian
 .obsidian/
+
+# Julie (Chief of Staff agent system)
+# claude-mem semantic memory (not tracked)
+.claude-mem/
+
+# Strategy memory synced from Confluence (not tracked)
+Work/LLM_Context/strategy-memory/
+
+# Julie log file (runtime logs, not tracked)
+julie.log
+
+# Keep Memory folder (human-readable, tracked)
+!Work/Memory/

@@ -13,6 +13,7 @@ import argparse
 import sys
 import re
 from pathlib import Path
+import logging
 
 # Add parent directory to path to import other scripts
 sys.path.insert(0, str(Path(__file__).parent))
@@ -21,6 +22,18 @@ from create_item import create_item, update_item_status
 from create_observation import create_observation, create_360_review
 from utils import parse_tags, find_item_by_title
 from summary import generate_today_summary, generate_weekly_summary, update_today_document
+from detect_agent import detect_agent, load_agent_context
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('julie.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger('julie')
 
 
 def is_observation_command(command_text):
@@ -366,6 +379,24 @@ def parse_creation_command(command_text):
     }
 
 
+def route_to_agent(command_text):
+    """
+    Route command to appropriate agent.
+
+    Phase 1.1: Just logging, not routing yet.
+    Returns None to signal "continue with normal processing"
+    """
+    agent, confidence = detect_agent(command_text)
+
+    # Log the detection
+    logger.info(f"Agent detection: '{command_text[:50]}...' -> {agent} (confidence: {confidence})")
+
+    # Phase 1.1: Don't route yet, just log
+    # TODO: Phase 1.2 will activate routing for tasks agent
+
+    return None  # Signal to continue with normal processing
+
+
 def execute_command(command_text):
     """
     Execute a command based on the input text.
@@ -377,6 +408,12 @@ def execute_command(command_text):
         Success message string
     """
     command_text = command_text.strip()
+
+    # Check if we should route to an agent
+    agent_result = route_to_agent(command_text)
+    if agent_result is not None:
+        # Agent handled it, we're done
+        return agent_result
 
     # Handle summary commands
     if command_text == '/today':

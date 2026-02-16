@@ -2,6 +2,26 @@
 
 This file contains project-specific instructions for the Chief of Staff Personal OS project.
 
+## Julie: Hierarchical Agent System
+
+This project uses a hierarchical agent architecture called "Julie" where specialized agents handle different domains:
+
+- **Tasks Agent**: Task, idea, feature, reminder, action, decision management
+- **People Agent**: Observations, 360 reviews, team feedback
+- **Strategy Agent**: OKR analysis, strategy insights, progressive disclosure of strategy-memory
+- **Reflection Agent**: Daily summaries, weekly reflections
+- **Meetings Agent**: Meeting prep, post-meeting processing, Granola integration
+- **MFM Agent**: Monthly Focus Meeting reviews and summaries
+- **Orchestrator** (this file): Routes commands and coordinates multi-domain queries
+
+**Agent personas located in:** `.claude/personas/`
+
+**Command routing:** Commands are automatically routed to specialized agents based on pattern matching. See `scripts/detect_agent.py` for routing logic.
+
+**Memory system:** Uses claude-mem with partitioned semantic memory (tasks, people, strategy, reflection, meetings) plus human-readable notes in `Work/Memory/`.
+
+---
+
 ## Project Overview
 
 This project builds a personal operating system that integrates Claude Code with Obsidian to manage tasks, ideas, and features through command-line automation.
@@ -166,6 +186,148 @@ When creating tasks from user input, extract short, meaningful titles:
   3. Show document checklist to user
   4. After user confirmation, proceed with synthesis
 - This is a multi-step synthesis task - be proactive and automated in file discovery
+
+## Daily Summary Commands
+
+### Session Logging
+
+**Purpose:** Log Claude work sessions throughout the day for automatic inclusion in daily summary
+
+**Automated workflow (recommended):**
+
+When the user types **"session"** in the Claude conversation (not in terminal), you should:
+
+1. **Automatically review the entire conversation**
+2. **Generate a structured summary** with:
+   - 1-2 sentence overview at the top
+   - Bullet points covering key topics, decisions, and outputs (as many as needed for clarity)
+   - Enough detail for someone else to understand what was worked on
+3. **Immediately run** `./pos "session: [generated summary]"` via Bash tool
+4. **Confirm** the session was logged
+
+**Summary format guidelines:**
+- Start with brief overview sentence
+- Use bullet points for details
+- Include: topics discussed, decisions made, outputs created, problems solved
+- Write for an external reader, not just the user
+- Be concise but complete
+
+**Example automated summary:**
+```
+Discussed session logging workflow in the Chief of Staff system and clarified how the daily summary commands work. Decided to implement an automated conversation review feature.
+
+- Clarified difference between 'project summary' and daily summary interview commands
+- Explained session logging creates one daily file with all sessions timestamped
+- Explored batch logging options - user wanted automated conversation review
+- Agreed on approach: user types 'session', Claude auto-generates summary and logs via Bash
+```
+
+**Manual command (if needed):**
+```bash
+./pos "session: [what you worked on]"
+./pos "/session [summary]"
+```
+
+**Storage:** `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
+
+**Format:** Timestamped entries appended to daily log file (one file per day, multiple sessions per file)
+
+### Daily Summary Interview
+
+**Purpose:** End-of-day interview conducted by Claude to capture summary of daily work for weekly 4Ps writing
+
+**Trigger:** When user says "daily summary", "create daily summary", or similar
+
+**When to use:** At end of work day (takes 3-5 minutes)
+
+**Automated workflow:**
+
+1. **Automatically gather context** (no permission needed):
+   - Read this week's 4Ps from `Work/Weekly_4Ps/` (priorities and plans)
+   - Read today summary from `Work/Inbox/Today/today_YYYY-MM-DD.md` (completed/in-progress tasks)
+   - Read Claude session logs from `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
+   - Read any observations created today from `Work/Team/Observations/`
+
+2. **Conduct interview IN the conversation**:
+   - Use gathered context to inform questions
+   - Ask 5-6 questions to supplement file contents:
+     - What meetings did you have today, and what were the key takeaways?
+     - What progress did you make on this week's plans?
+     - What key decisions were made?
+     - Any important Slack discussions or messages?
+     - Any surprises or unexpected changes?
+     - Anything else important to capture?
+   - Let user answer each question in the conversation
+
+3. **Collate and summarize**:
+   - Combine file contents + user answers
+   - Generate structured bullet-point summary
+   - Include meetings, decisions, progress, Claude sessions, completed tasks
+
+4. **Save summary**:
+   - Write to `Work/Inbox/Today/summary_YYYY-MM-DD.md`
+   - Confirm to user that summary was saved
+
+**Key principle:** Files provide baseline context, interview fills in gaps (meetings, Slack discussions, decisions not captured elsewhere).
+
+**Output format:**
+- Bullet-point format
+- Enough detail for team member to understand
+- Key decisions highlighted
+- Meetings summarized with takeaways
+- Claude work sessions automatically included
+- Links to related observations
+- Progress on weekly plans noted
+
+**Best practice workflow:**
+1. Throughout day: Type "session" in Claude conversations to auto-log work
+2. End of day: Type "daily summary" to conduct interview and generate summary
+3. End of week: Use daily summaries to write 4Ps
+
+**File naming:**
+- Session logs: `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
+- Daily summaries: `Work/Inbox/Today/summary_YYYY-MM-DD.md`
+- Distinct from auto-generated: `Work/Inbox/Today/today_YYYY-MM-DD.md` (task lists)
+
+### Today Summary (Smart Summary)
+
+**Purpose:** Generate today's task summary with an intelligently condensed yesterday overview
+
+**Trigger:** When user says "today", "show today", "today summary", or similar
+
+**Automated workflow:**
+
+1. **Generate base summary**: Run `./pos "/today"` via Bash tool
+2. **Read the generated file**: `Work/Inbox/Today/today_YYYY-MM-DD.md`
+3. **Extract yesterday overview section**: Get content between "## Yesterday's overview" and "## Overdue Tasks" (or next section)
+4. **Summarize using LLM**: Process the yesterday overview to:
+   - Keep meeting names (bold headers) but condense to 1-2 sentences focusing on outputs/decisions/actions
+   - Condense other sections (decisions, actions, completed) to key highlights only
+   - Aim for ~5-10 lines total for yesterday overview
+   - Preserve the most actionable information
+5. **Update the file**: Replace the yesterday overview section with the condensed version
+6. **Display to user**: Show the updated today summary
+
+**Summarization prompt guidelines:**
+- Focus on outputs, decisions, and action items
+- Remove verbose details that don't affect today's work
+- Keep what the user needs to remember or act on
+- Each meeting should be 1-2 sentences maximum
+- Preserve formatting (bold headers, bullet points)
+
+**Why this approach:**
+- Detailed summaries remain in `summary_YYYY-MM-DD.md` files for 4Ps writing
+- Today view stays concise and scannable
+- No API costs (uses current Claude conversation)
+- User gets context without information overload
+
+**Example condensation:**
+Before: 3 bullet points about budget meeting details
+After: "Decided to allocate 70k across Community, Inbound, and Conferences, with focus on Community given resource constraints."
+
+## MFM Reviews
+
+When user asks to review an MFM or monthly focus meeting: Read `/Users/smallc/AI/Chief_of_staff/Work/LLM_Context/MFM_review_framework.md`
 
 ## Complex Workflow Pattern
 
