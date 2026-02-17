@@ -99,28 +99,33 @@ def get_vault_path():
 
 def get_inbox_path(item_type):
     """
-    Get the path to the appropriate Inbox subfolder.
+    Get the path to the appropriate folder for the item type.
 
     Args:
-        item_type: Type of item ('task', 'idea', 'feature', or 'action')
+        item_type: Type of item ('task', 'idea', 'feature', 'action', 'reminder', 'decision')
 
     Returns:
         Path object to the appropriate subfolder
     """
     vault_path = get_vault_path()
 
-    folder_map = {
-        'task': 'Tasks',
-        'idea': 'Ideas',
-        'feature': 'Features',
-        'action': 'Actions'
-    }
-
-    folder_name = folder_map.get(item_type)
-    if not folder_name:
+    # Map item types to their folder paths (relative to vault)
+    if item_type in ['task', 'idea', 'feature', 'action', 'reminder']:
+        folder_map = {
+            'task': 'Tasks',
+            'idea': 'Ideas',
+            'feature': 'Features',
+            'action': 'Actions',
+            'reminder': 'Reminders'
+        }
+        folder_name = folder_map.get(item_type)
+        if not folder_name:
+            raise ValueError(f"Invalid item type: {item_type}")
+        return vault_path / "Inbox" / folder_name
+    elif item_type == 'decision':
+        return vault_path / "Decisions"
+    else:
         raise ValueError(f"Invalid item type: {item_type}")
-
-    return vault_path / "Inbox" / folder_name
 
 
 def get_team_path():

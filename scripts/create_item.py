@@ -24,17 +24,89 @@ from utils import (
     get_inbox_path
 )
 
+# Item type definitions
+ITEM_TYPES = {
+    'task': {
+        'folder': 'Work/Inbox/Tasks',
+        'prefix': 'task',
+        'required_fields': ['title'],
+        'optional_fields': ['details', 'due-date', 'tags', 'status']
+    },
+    'reminder': {
+        'folder': 'Work/Inbox/Reminders',
+        'prefix': 'reminder',
+        'required_fields': ['title'],
+        'optional_fields': ['details', 'reminder-date', 'tags', 'status']
+    },
+    'action': {
+        'folder': 'Work/Inbox/Actions',
+        'prefix': 'action',
+        'required_fields': ['title', 'assignee'],
+        'optional_fields': ['details', 'due-date', 'tags', 'status']
+    },
+    'idea': {
+        'folder': 'Work/Inbox/Ideas',
+        'prefix': 'idea',
+        'required_fields': ['title'],
+        'optional_fields': ['details', 'tags', 'status']
+    },
+    'feature': {
+        'folder': 'Work/Inbox/Features',
+        'prefix': 'feature',
+        'required_fields': ['title', 'tags'],  # Tags required for features
+        'optional_fields': ['details', 'status']
+    },
+    'decision': {
+        'folder': 'Work/Decisions',
+        'prefix': 'decision',
+        'required_fields': ['title'],
+        'optional_fields': ['details', 'date-decided', 'participants', 'rationale', 'related-items']
+    }
+}
 
-def create_frontmatter(item_type, due_date=None, tags=None, status='active', status_note=None):
+# Valid feature tags
+VALID_FEATURE_TAGS = ['chief-of-staff', 'product']
+
+def validate_item(item_type, data):
+    """Validate item data before creation"""
+    if item_type not in ITEM_TYPES:
+        raise ValueError(f"Unknown item type: {item_type}")
+
+    config = ITEM_TYPES[item_type]
+
+    # Check required fields
+    for field in config['required_fields']:
+        if field not in data or not data[field]:
+            raise ValueError(f"Missing required field: {field}")
+
+    # Special validation for features - must have valid tag
+    if item_type == 'feature':
+        tags = data.get('tags', [])
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(',')]
+
+        valid_tag_found = any(tag in VALID_FEATURE_TAGS for tag in tags)
+        if not valid_tag_found:
+            raise ValueError(f"Features must include tag: {' or '.join(VALID_FEATURE_TAGS)}")
+
+    # Special validation for actions - must have assignee
+    if item_type == 'action' and 'assignee' not in data:
+        raise ValueError("Actions must include an assignee")
+
+    return True
+
+
+def create_frontmatter(item_type, due_date=None, tags=None, status='active', status_note=None, **kwargs):
     """
     Generate YAML frontmatter for the file.
 
     Args:
-        item_type: Type of item ('task', 'idea', or 'feature')
+        item_type: Type of item
         due_date: Due date string (YYYY-MM-DD) or None
         tags: List of tag strings or None
         status: Status of item ('active', 'in-progress', 'blocked', 'waiting', 'on-hold', 'completed', or 'archived')
         status_note: Optional note about the status
+        **kwargs: Type-specific fields (reminder_date, assignee, date_decided, etc.)
 
     Returns:
         Formatted frontmatter string
@@ -42,34 +114,61 @@ def create_frontmatter(item_type, due_date=None, tags=None, status='active', sta
     tags_formatted = format_tags_yaml(tags) if tags else "[]"
     status_note_line = f"\nstatus-note: {status_note}" if status_note else ""
 
-    # For tasks and actions with due dates
+    # Build base frontmatter
+    frontmatter_parts = [
+        "---",
+        f"type: {item_type}",
+        f"status: {status}{status_note_line}"
+    ]
+
+    # Add type-specific fields
     if item_type in ['task', 'action'] and due_date:
-        frontmatter = f"""---
-type: {item_type}
-status: {status}{status_note_line}
-due-date: {due_date}
-tags: {tags_formatted}
----"""
-    # For tasks/actions without due dates, ideas, and features
-    else:
-        frontmatter = f"""---
-type: {item_type}
-status: {status}{status_note_line}
-tags: {tags_formatted}
-due-date: null
----"""
+        frontmatter_parts.append(f"due-date: {due_date}")
+    elif item_type in ['task', 'action']:
+        frontmatter_parts.append("due-date: null")
 
-    return frontmatter
+    if item_type == 'reminder':
+        reminder_date = kwargs.get('reminder_date')
+        if reminder_date:
+            frontmatter_parts.append(f"reminder-date: {reminder_date}")
+        else:
+            frontmatter_parts.append("reminder-date: null")
+
+    if item_type == 'action':
+        assignee = kwargs.get('assignee')
+        if assignee:
+            frontmatter_parts.append(f"assignee: {assignee}")
+
+    if item_type == 'decision':
+        date_decided = kwargs.get('date_decided')
+        if date_decided:
+            frontmatter_parts.append(f"date-decided: {date_decided}")
+        participants = kwargs.get('participants')
+        if participants:
+            frontmatter_parts.append(f"participants: {participants}")
+        rationale = kwargs.get('rationale')
+        if rationale:
+            frontmatter_parts.append(f"rationale: {rationale}")
+        related_items = kwargs.get('related_items')
+        if related_items:
+            frontmatter_parts.append(f"related-items: {related_items}")
+
+    # Add tags
+    frontmatter_parts.append(f"tags: {tags_formatted}")
+    frontmatter_parts.append("---")
+
+    return "\n".join(frontmatter_parts)
 
 
-def create_content(item_type, title, details):
+def create_content(item_type, title, details, **kwargs):
     """
     Generate the main content for the file.
 
     Args:
-        item_type: Type of item ('task', 'idea', or 'feature')
+        item_type: Type of item
         title: Title of the item
         details: Detailed description
+        **kwargs: Type-specific fields
 
     Returns:
         Formatted content string
@@ -87,26 +186,39 @@ def create_content(item_type, title, details):
     return content
 
 
-def create_item(item_type, title, due_date=None, details="", tags=None):
+def create_item(item_type, title, due_date=None, details="", tags=None, **kwargs):
     """
-    Create a new task, idea, feature, or action file.
+    Create a new task, idea, feature, action, reminder, or decision file.
 
     Args:
-        item_type: Type of item ('task', 'idea', 'feature', or 'action')
+        item_type: Type of item ('task', 'idea', 'feature', 'action', 'reminder', 'decision')
         title: Title of the item
         due_date: Due date (YYYY-MM-DD) for tasks and actions, optional
         details: Detailed description
         tags: List of tag strings
+        **kwargs: Additional type-specific fields:
+            - reminder_date: For reminders
+            - assignee: For actions
+            - date_decided, participants, rationale, related_items: For decisions
 
     Returns:
         Path to the created file
     """
     # Validate inputs
-    if item_type not in ['task', 'idea', 'feature', 'action']:
-        raise ValueError(f"Invalid item type: {item_type}. Must be 'task', 'idea', 'feature', or 'action'.")
+    if item_type not in ITEM_TYPES:
+        raise ValueError(f"Invalid item type: {item_type}. Must be one of: {', '.join(ITEM_TYPES.keys())}")
 
+    # Validate item-specific requirements
+    data = {'title': title, 'details': details, 'tags': tags, **kwargs}
+    if due_date:
+        data['due-date'] = due_date
+    validate_item(item_type, data)
+
+    # Date validation
     if item_type in ['task', 'action'] and due_date and not validate_date(due_date):
         raise ValueError(f"Invalid date format: {due_date}. Must be YYYY-MM-DD.")
+    if item_type == 'reminder' and kwargs.get('reminder_date') and not validate_date(kwargs['reminder_date']):
+        raise ValueError(f"Invalid date format: {kwargs['reminder_date']}. Must be YYYY-MM-DD.")
 
     # Get the appropriate folder
     inbox_path = get_inbox_path(item_type)
@@ -121,8 +233,8 @@ def create_item(item_type, title, due_date=None, details="", tags=None):
         raise FileExistsError(f"File already exists: {file_path}")
 
     # Generate frontmatter and content
-    frontmatter = create_frontmatter(item_type, due_date, tags)
-    content = create_content(item_type, title, details)
+    frontmatter = create_frontmatter(item_type, due_date, tags, **kwargs)
+    content = create_content(item_type, title, details, **kwargs)
 
     # Combine and write to file
     full_content = frontmatter + content

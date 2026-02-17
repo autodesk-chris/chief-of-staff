@@ -329,15 +329,19 @@ def parse_creation_command(command_text):
         item_type = 'feature'
     elif command_text.startswith('new action:'):
         item_type = 'action'
+    elif command_text.startswith('new reminder:'):
+        item_type = 'reminder'
+    elif command_text.startswith('new decision:'):
+        item_type = 'decision'
     else:
-        raise ValueError("Command must start with 'new task:', 'new idea:', 'new feature:', or 'new action:'")
+        raise ValueError("Command must start with 'new task:', 'new idea:', 'new feature:', 'new action:', 'new reminder:', or 'new decision:'")
 
     # Extract title (everything between 'new X:' and the first keyword)
     type_prefix = f'new {item_type}:'
     remaining = command_text[len(type_prefix):].strip()
 
-    # Find the first keyword (due:, details:, or tags:)
-    keywords = ['due:', 'details:', 'tags:']
+    # Find the first keyword
+    keywords = ['due:', 'reminder-date:', 'assignee:', 'date-decided:', 'participants:', 'rationale:', 'related-items:', 'details:', 'tags:']
     first_keyword_pos = len(remaining)
     first_keyword = None
 
@@ -350,33 +354,61 @@ def parse_creation_command(command_text):
     if first_keyword_pos == len(remaining):
         # No keywords found, entire remaining text is the title
         title = remaining.strip()
-        return {
+        result = {
             'type': item_type,
             'title': title,
-            'due_date': None,
             'details': '',
             'tags': []
         }
+        # Add type-specific defaults
+        if item_type in ['task', 'action']:
+            result['due_date'] = None
+        if item_type == 'reminder':
+            result['reminder_date'] = None
+        if item_type == 'action':
+            result['assignee'] = None
+        if item_type == 'decision':
+            result['date_decided'] = None
+            result['participants'] = None
+            result['rationale'] = None
+            result['related_items'] = None
+        return result
 
     title = remaining[:first_keyword_pos].strip()
 
     # Extract other fields using regex
-    due_match = re.search(r'due:\s*([^\s]+(?:\s+[^\s]+)*?)(?:\s+(?:details:|tags:)|$)', remaining)
+    due_match = re.search(r'due:\s*([^\s]+(?:\s+[^\s]+)*?)(?:\s+(?:reminder-date:|assignee:|date-decided:|participants:|rationale:|related-items:|details:|tags:)|$)', remaining)
+    reminder_date_match = re.search(r'reminder-date:\s*([^\s]+(?:\s+[^\s]+)*?)(?:\s+(?:details:|tags:)|$)', remaining)
+    assignee_match = re.search(r'assignee:\s*([^\s]+(?:\s+[^\s]+)*?)(?:\s+(?:due:|details:|tags:)|$)', remaining)
+    date_decided_match = re.search(r'date-decided:\s*([^\s]+(?:\s+[^\s]+)*?)(?:\s+(?:participants:|rationale:|related-items:|details:|tags:)|$)', remaining)
+    participants_match = re.search(r'participants:\s*(.*?)(?:\s+(?:rationale:|related-items:|details:|tags:)|$)', remaining)
+    rationale_match = re.search(r'rationale:\s*(.*?)(?:\s+(?:related-items:|details:|tags:)|$)', remaining)
+    related_items_match = re.search(r'related-items:\s*(.*?)(?:\s+(?:details:|tags:)|$)', remaining)
     details_match = re.search(r'details:\s*(.*?)(?:\s+tags:|$)', remaining)
     tags_match = re.search(r'tags:\s*(.+?)$', remaining)
 
-    due_date = due_match.group(1).strip() if due_match else None
-    details = details_match.group(1).strip() if details_match else ''
-    tags_str = tags_match.group(1).strip() if tags_match else ''
-    tags = parse_tags(tags_str)
-
-    return {
+    # Build result based on item type
+    result = {
         'type': item_type,
         'title': title,
-        'due_date': due_date,
-        'details': details,
-        'tags': tags
+        'details': details_match.group(1).strip() if details_match else '',
+        'tags': parse_tags(tags_match.group(1).strip()) if tags_match else []
     }
+
+    # Add type-specific fields
+    if item_type in ['task', 'action']:
+        result['due_date'] = due_match.group(1).strip() if due_match else None
+    if item_type == 'reminder':
+        result['reminder_date'] = reminder_date_match.group(1).strip() if reminder_date_match else None
+    if item_type == 'action':
+        result['assignee'] = assignee_match.group(1).strip() if assignee_match else None
+    if item_type == 'decision':
+        result['date_decided'] = date_decided_match.group(1).strip() if date_decided_match else None
+        result['participants'] = participants_match.group(1).strip() if participants_match else None
+        result['rationale'] = rationale_match.group(1).strip() if rationale_match else None
+        result['related_items'] = related_items_match.group(1).strip() if related_items_match else None
+
+    return result
 
 
 def route_to_agent(command_text):
@@ -483,12 +515,28 @@ def execute_command(command_text):
     if command_text.startswith('new '):
         parsed = parse_creation_command(command_text)
 
+        # Extract type-specific fields
+        kwargs = {}
+        if 'reminder_date' in parsed:
+            kwargs['reminder_date'] = parsed['reminder_date']
+        if 'assignee' in parsed:
+            kwargs['assignee'] = parsed['assignee']
+        if 'date_decided' in parsed:
+            kwargs['date_decided'] = parsed['date_decided']
+        if 'participants' in parsed:
+            kwargs['participants'] = parsed['participants']
+        if 'rationale' in parsed:
+            kwargs['rationale'] = parsed['rationale']
+        if 'related_items' in parsed:
+            kwargs['related_items'] = parsed['related_items']
+
         file_path = create_item(
             item_type=parsed['type'],
             title=parsed['title'],
-            due_date=parsed['due_date'],
+            due_date=parsed.get('due_date'),
             details=parsed['details'],
-            tags=parsed['tags']
+            tags=parsed['tags'],
+            **kwargs
         )
 
         # Auto-update today document
