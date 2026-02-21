@@ -144,12 +144,32 @@ This document tracks the implementation status of the Julie hierarchical agent s
 
 **Note:** Phase 2.1 was completed during earlier setup but not recognized until investigation on 2026-02-18 evening. Infrastructure is 100% operational.
 
-#### 2.2 Memory Utilities ❌ **NOT STARTED**
-- [ ] Create `scripts/memory.py` with helper functions
-  - [ ] `store_memory(domain, content, metadata)`
-  - [ ] `query_memory(domain, query, limit=5)`
-  - [ ] `sync_to_obsidian(domain, memory_data)`
-- [ ] Test memory storage and retrieval
+#### 2.2 Memory Utilities ✅ **COMPLETE**
+
+**Completed:** 2026-02-21 (Phase 2.2)
+**Duration:** ~1 hour
+
+**Created `scripts/memory.py` (327 lines):**
+- [x] Core helper functions for claude-mem integration
+  - [x] `format_memory_request()` - Prepare data for MCP save_memory calls
+  - [x] `format_search_query()` - Prepare search parameters for MCP search calls
+  - [x] `should_query_memory()` - Determine when memory queries are helpful
+  - [x] `sync_memory_to_obsidian()` - Sync search results to human-readable files
+  - [x] `extract_related_titles()` - Parse search results for display
+  - [x] `get_memory_path()` - Manage memory folder structure
+  - [x] `log_memory_action()` - Debug logging
+
+**Architecture:**
+- [x] Python helpers format data and manage Obsidian sync
+- [x] Actual MCP tool calls happen in Claude Code layer (not in Python)
+- [x] Supports 5 memory domains: tasks, people, strategy, reflection, meetings
+
+**Testing:**
+- [x] All functions tested and passing
+- [x] Example memory file created: `Work/Memory/tasks/memory_2026-02-21.md`
+- [x] Test coverage: format functions, query logic, Obsidian sync
+
+**Git commit:** `f53c88f` - "Complete Phase 2.2: Memory utilities implementation"
 
 #### 2.3 Integrate Memory with Tasks Agent ❌ **NOT STARTED**
 - [ ] Update Tasks Agent workflow to query memory
@@ -391,35 +411,37 @@ This document tracks the implementation status of the Julie hierarchical agent s
 
 ## Current Focus
 
-**Active Phase:** Phase 2 In Progress (2.1 Complete, 2.2-2.5 Pending)
-**Next Step:** Begin Phase 2.2 (Memory utilities script)
+**Active Phase:** Phase 2 In Progress (2.1-2.2 Complete, 2.3-2.5 Pending)
+**Next Step:** Begin Phase 2.3 (Tasks Agent integration) - **UPDATED 2026-02-21**
+
+**Recent Progress (2026-02-21):** Phase 2.2 completed with scripts/memory.py helper library. Provides Python utilities for formatting MCP requests, syncing to Obsidian, and managing memory domains. Ready for Tasks Agent integration.
 
 **Key Finding (2026-02-18):** Investigation revealed claude-mem infrastructure 100% complete and operational. Worker service running since Feb 18 7:58am, database initialized, MCP tools verified. Phase 2.1 unknowingly completed during earlier setup.
 
-**Remaining Work:** Integration layer only (Python wrappers + Tasks Agent connection)
+**Remaining Work:** Tasks Agent integration (1-2 hours) to complete Milestone 1
 
 ---
 
 ## Summary Statistics
 
 **Total Phases:** 9
-**Completed Phases:** 1.5 (Phase 1 + Phase 2.1)
-**In Progress:** 1 (Phase 2: sections 2.2-2.5 pending)
-**Not Started:** 7.5 (Phases 3-9)
+**Completed Phases:** 2 (Phase 1 + Phase 2.1 + Phase 2.2) - **UPDATED**
+**In Progress:** 1 (Phase 2: section 2.3 next, 2.4-2.5 optional)
+**Not Started:** 7 (Phases 3-9)
 
 **Total Hours Estimated:** 22-33 hours
-**Hours Completed:** ~7 hours (Phase 1: 5 hours + Phase 2.1: 2 hours)
-**Hours Remaining:** ~15-26 hours
+**Hours Completed:** ~8 hours (Phase 1: 5 + Phase 2.1: 2 + Phase 2.2: 1) - **UPDATED**
+**Hours Remaining:** ~14-25 hours - **UPDATED**
 
 **Revised Phase 2 Estimate:** 3-5 hours (down from 4-8 hours due to Phase 2.1 completion)
 - Phase 2.1: ~2 hours ✅ **COMPLETE**
-- Phase 2.2: ~1-2 hours (memory utilities)
-- Phase 2.3: ~1-2 hours (Tasks Agent integration)
+- Phase 2.2: ~1 hour ✅ **COMPLETE** - **UPDATED**
+- Phase 2.3: ~1-2 hours (Tasks Agent integration) - **NEXT**
 - Phase 2.4: ~1 hour (notepad processing - optional)
 - Phase 2.5: ~1-2 hours (Slack digest - optional)
 
 **Milestones:**
-- 🟡 Milestone 1: 60% complete (Phase 1 done, Phase 2.1 done, Phase 2.2-2.5 pending)
+- 🟡 Milestone 1: 70% complete (Phase 1 done, Phase 2.1-2.2 done, Phase 2.3 next) - **UPDATED**
 - ⏸️ Milestone 2: Not started
 - ⏸️ Milestone 3: Not started
 - ⏸️ Milestone 4: Not started
@@ -429,8 +451,8 @@ This document tracks the implementation status of the Julie hierarchical agent s
 ## Next Actions
 
 1. ✅ ~~Complete Phase 2.1~~ - claude-mem infrastructure **COMPLETE**
-2. **Complete Phase 2.2** - Create memory utilities (scripts/memory.py)
-3. **Complete Phase 2.3** - Integrate memory with Tasks Agent
+2. ✅ ~~Complete Phase 2.2~~ - Memory utilities (scripts/memory.py) **COMPLETE** - **UPDATED**
+3. **Complete Phase 2.3** - Integrate memory with Tasks Agent (1-2 hours) - **NEXT**
 4. **Test Milestone 1** - Validate Tasks + Memory working together
 5. **Resume daily usage** - Use Julie for 1-2 weeks to validate approach
 6. *Optional:* Complete Phase 2.4 (notepad processing) if needed
