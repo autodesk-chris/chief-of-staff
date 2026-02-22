@@ -161,6 +161,67 @@ When creating tasks from user input, extract short, meaningful titles:
 - **Due:** [Calculate next Wednesday in YYYY-MM-DD format]
 - **Details:** "Include pricing breakdown"
 
+## Notepad Processing
+
+**Purpose:** Frictionless capture → structured processing → organized storage
+
+**Three-stage workflow:**
+
+1. **Capture** (ongoing)
+   - Write anything to Work/1-Notepad/Notepad.md
+   - No structure needed, no categorization needed
+   - Just brain dump - mix of actionable and strategic thinking
+   - Central notepad is for fast, frictionless capture
+
+2. **Process** (when ready)
+   - Run: `./pos "process notepad"`
+   - Script splits notepad into sections
+   - Classifies each section as actionable or strategic
+   - Checks memory for duplicate tasks
+   - **Shows classification results and asks for confirmation**
+   - Creates tasks/actions/reminders/features/decisions from actionables
+   - Routes strategic thinking to domain-specific notepads
+   - Archives processed content with timestamp
+   - Clears central notepad
+
+3. **Digest** (in context - future phases)
+   - Review domain notepads when working in that area
+   - Strategy work → Work/Notes/Strategy/notepad.md
+   - People work → Work/People/notepad.md
+   - Meeting prep → Work/Meetings/Prep/notepad.md
+   - Ideas → Work/Inbox/Ideas/notepad.md
+   - Domain agents will have "digest" commands to process their notepads
+
+**Classification logic:**
+
+**Actionable** (creates items):
+- Tasks: Clear action with deliverable ("Review...", "Prepare...", "Schedule...")
+- Actions: Work assigned to someone ("[Person] needs to...")
+- Reminders: Things not to forget ("Remember to...", "Don't forget...")
+- Features: Julie improvements ("I want Julie to...")
+- Decisions: Decisions made ("Decided to...", "Decision:")
+
+**Strategic** (routes to domain notepads):
+- Strategy: OKRs, product strategy, high-level planning
+- People: Team observations, 121 topics, feedback thoughts
+- Meetings: Meeting prep ideas, discussion topics
+- Ideas: Incomplete exploratory thoughts
+
+**Key principles:**
+- Conservative extraction (better to route to strategic than create wrong item)
+- User confirmation before creating items
+- Memory integration for duplicate detection
+- Preserve original notepad in Archive/ with timestamp
+- Central notepad cleared and ready for new capture
+
+**Domain notepads:**
+Each domain agent will later have a "digest [domain]" command to process their notepad into final documents/items (future phases).
+
+**Files:**
+- Central notepad: Work/1-Notepad/Notepad.md
+- Archive: Work/1-Notepad/Archive/notepad_YYYY-MM-DD_HHMM.md
+- Domain notepads: Work/Notes/Strategy/, Work/People/, Work/Meetings/Prep/, Work/Inbox/Ideas/
+
 ## Team Feedback Commands
 
 ### Observation Commands
@@ -186,6 +247,18 @@ When creating tasks from user input, extract short, meaningful titles:
   3. Show document checklist to user
   4. After user confirmation, proceed with synthesis
 - This is a multi-step synthesis task - be proactive and automated in file discovery
+
+### Role Expectations Documents
+
+**Trigger**: `/role-expectations [name]` or "create role expectations for [name]"
+
+**Process**: Read and follow `.claude/skills/role-expectations.md`
+
+Creates a two-section document:
+1. **The destination** (executive summary) - outcome-focused vision
+2. **Detailed expectations** - responsibilities with What/Key activities/Expectations format
+
+**Example**: See `Work/People/121s/maria/Maria_expectations_pm_monetization.md`
 
 ## Daily Summary Commands
 

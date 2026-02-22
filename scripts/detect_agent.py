@@ -17,10 +17,11 @@ def detect_agent(command_text):
     """
     command_lower = command_text.lower()
 
-    # Task patterns (includes reminders, actions, decisions, ideas, features)
+    # Task patterns (includes reminders, actions, decisions, ideas, features, notepad processing)
     task_patterns = [
         'new task:', 'new reminder:', 'new action:', 'new idea:',
-        'new feature:', 'new decision:', 'update:', 'change due date:', '/today'
+        'new feature:', 'new decision:', 'update:', 'change due date:', '/today',
+        'process notepad', 'notepad process', '/notepad', 'notepad'
     ]
     if any(p in command_lower for p in task_patterns):
         return ('tasks', 1.0)

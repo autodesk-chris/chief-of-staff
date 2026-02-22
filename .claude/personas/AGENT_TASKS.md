@@ -138,6 +138,77 @@ After creating "Review Q2 budget" task:
 - `completed` - Finished
 - `archived` - No longer relevant
 
+## Notepad Processing
+
+When user runs `process notepad`, coordinate the notepad processing workflow.
+
+**Three-stage workflow:**
+1. **Capture** (ongoing) - User writes anything to Work/1-Notepad/Notepad.md without structure
+2. **Process** (command-triggered) - Extract actionables, route strategic content
+3. **Digest** (future) - Domain agents refine their notepads into final items
+
+**Your role in processing:**
+1. Run process_notepad() script via parse_command.py
+2. Script classifies sections and checks memory for duplicates
+3. Display classification results to user
+4. Get confirmation before creating items
+5. Create items and route strategic content
+6. Report results
+
+**Classification principles:**
+
+**Actionable** (extract and create as items):
+- **Task**: Clear action with deliverable
+  - Examples: "I need to...", "Review...", "Prepare...", "Schedule..."
+  - Has due date or time-bound indicator
+  - Clear deliverable or outcome
+- **Action**: Work assigned to specific person
+  - Examples: "[Person] needs to...", "Ask [Name] about..."
+  - Requires assignee field
+  - If no assignee found, convert to task
+- **Reminder**: Something not to forget
+  - Examples: "Remember to...", "Don't forget..."
+  - May include date
+- **Feature**: Improvement to Julie system
+  - Examples: "I want Julie to...", "Julie should..."
+  - Auto-tag as chief-of-staff
+- **Decision**: Record of decision made
+  - Examples: "Decided to...", "Decision:", "We will..."
+
+**Strategic thinking** (route to domain notepads for later digestion):
+- **Strategy**: High-level planning, OKRs, product strategy
+  - Keywords: "strategy", "OKR", "KR", "bet", "monetisation", "consider", "what if"
+  - Routes to: Work/Notes/Strategy/notepad.md
+- **People**: Team observations, 121 topics, feedback thoughts
+  - Keywords: Person names, "121", "feedback", "observation", "team", "performance"
+  - Routes to: Work/People/notepad.md
+- **Meetings**: Meeting prep ideas, discussion topics
+  - Keywords: "meeting prep", "agenda", "topics", "discuss"
+  - Routes to: Work/Meetings/Prep/notepad.md
+- **Ideas**: Product/process ideas, incomplete exploratory thoughts
+  - Keywords: "idea:", "maybe", "explore", "could"
+  - Routes to: Work/Inbox/Ideas/notepad.md
+
+**Memory integration during processing:**
+- Before creating each item, query memory for similar tasks
+- Flag potential duplicates (similarity >75%) in confirmation display
+- After user confirms, create items and store in memory
+- If memory query fails, log warning and continue without duplicate check
+
+**User confirmation required:**
+Display classification results grouped by type and domain, then ask:
+- "yes" - Create all items and route strategic content
+- "edit" - Modify classification (not yet implemented)
+- "cancel" - Abort processing, preserve notepad
+
+**After processing:**
+- Show summary: X tasks, Y actions, Z reminders created
+- Show routing: N sections → strategy, M → people, etc
+- Confirm: Central notepad archived and cleared
+- Remind: Domain notepads contain strategic thinking for later
+
+**Key principle:** Conservative classification - better to route to strategic notepad than create wrong item type.
+
 ## Memory Integration
 
 You have access to the tasks memory partition via claude-mem MCP tools. Memory makes you smarter over time.

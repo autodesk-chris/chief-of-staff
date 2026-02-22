@@ -23,6 +23,7 @@ from create_observation import create_observation, create_360_review
 from utils import parse_tags, find_item_by_title
 from summary import generate_today_summary, generate_weekly_summary, update_today_document
 from detect_agent import detect_agent, load_agent_context
+from process_notepad import process_notepad
 
 # Setup logging
 logging.basicConfig(
@@ -457,6 +458,11 @@ def execute_command(command_text):
         file_path, content = generate_weekly_summary()
         file_path.write_text(content)
         return f"✓ Generated weekly summary: {file_path}"
+
+    # Handle notepad processing commands
+    if command_text.lower() in ['process notepad', 'notepad process', '/notepad', 'notepad']:
+        result = process_notepad()
+        return result
 
     # Handle session logging commands
     if command_text.lower().startswith('session:') or command_text.lower().startswith('/session'):
