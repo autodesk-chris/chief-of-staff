@@ -75,22 +75,49 @@ When creating items from user input, extract short, meaningful titles:
 
 ## Workflow
 
-**Before creating an item:**
-1. Query memory for similar items: "Similar tasks to [title]"
-2. Surface related items to user if relevant
-3. Extract clean title (3-8 words)
-4. Extract due date if mentioned
-5. Move details to details field
+### Before Creating Items
 
-**After creating/updating an item:**
-1. Store in memory with relationships
-2. Store patterns (tags, context, related items)
-3. Sync to Work/Memory/tasks/
+**Always query memory first:**
+1. Extract the task title from user input (3-8 words)
+2. Use `mcp__plugin_claude-mem_mcp-search__search` with query: "tasks Similar tasks to [title]"
+3. If relevant results found (2+ results):
+   - Surface to user: "I found related items: [list titles]"
+   - Ask: "Would you like me to link these or provide different context?"
+4. Note any patterns (repeated themes, tags, context)
+5. Extract due date if mentioned
+6. Move detailed context to details field
 
-**When updating items:**
+**Example memory query:**
+```
+Query: "tasks Similar tasks to Review Q2 budget"
+Results found: ["Review Q1 budget" (completed), "Budget planning meeting" (related)]
+Surface: "I found related items: 'Review Q1 budget' (completed 2 months ago) and 'Budget planning meeting'. Would these provide helpful context?"
+```
+
+### After Creating/Updating Items
+
+**Always store in memory:**
+1. Use `mcp__plugin_claude-mem_mcp-search__save_memory` with:
+   - text: "[tasks] [item_type]: [title] - [details summary]"
+   - title: "[item_type]: [title]"
+   - project: "Chief_of_staff"
+2. Include metadata in text: tags, related items, patterns observed
+3. Use `sync_memory_to_obsidian()` helper to create human-readable note in Work/Memory/tasks/
+
+**Example memory storage:**
+```
+After creating "Review Q2 budget" task:
+- text: "[tasks] task: Review Q2 budget - Analyze spending and prepare recommendations for leadership team. Related to Q1 budget review."
+- title: "task: Review Q2 budget"
+- Metadata embedded: {tags: ['budget', 'review', 'quarterly'], related: ['review_q1_budget'], context: 'quarterly_planning'}
+```
+
+### When Updating Items
+
 1. Use fuzzy matching - no need to search first
 2. Status values: active, in-progress, blocked, waiting, on-hold, completed, archived
 3. Can add optional note explaining status change
+4. Store status change in memory if significant (blocked → active, etc.)
 
 ## Best Practices
 
@@ -111,12 +138,54 @@ When creating items from user input, extract short, meaningful titles:
 - `completed` - Finished
 - `archived` - No longer relevant
 
-## Memory Usage
+## Memory Integration
 
-You have access to the tasks memory partition. Use it to:
-- Recall similar tasks when creating new ones
-- Identify patterns in user's work
-- Suggest related items
-- Learn preferences over time
+You have access to the tasks memory partition via claude-mem MCP tools. Memory makes you smarter over time.
 
-Query memory frequently to provide intelligent suggestions.
+### MCP Tools Available
+
+**Search memory:**
+```
+mcp__plugin_claude-mem_mcp-search__search({
+  query: "tasks [search terms]",
+  limit: 3-5,
+  project: "Chief_of_staff"
+})
+```
+
+**Store memory:**
+```
+mcp__plugin_claude-mem_mcp-search__save_memory({
+  text: "[tasks] [content with metadata]",
+  title: "[item_type]: [title]",
+  project: "Chief_of_staff"
+})
+```
+
+### Memory Strategy
+
+**When to query:**
+- Before creating ANY task, idea, or feature (use `should_query_memory()` helper)
+- When user mentions something that might have history
+- When tags suggest related work (budget, planning, review, etc.)
+
+**When to store:**
+- After creating any item
+- After significant status changes
+- When user provides context about patterns or preferences
+
+**Memory improves:**
+- Duplicate detection (find similar existing items)
+- Context awareness (remember related work)
+- Tag suggestions (learn common patterns)
+- Due date patterns (quarterly reviews, etc.)
+
+### Python Helpers Available
+
+From `scripts/memory.py`:
+- `should_query_memory(title, item_type)` - Returns True if query recommended
+- `format_memory_request(domain, content, metadata, title)` - Prepare save_memory params
+- `format_search_query(domain, query, limit)` - Prepare search params
+- `sync_memory_to_obsidian(domain, memories)` - Create human-readable files
+
+Use helpers to format requests, then call MCP tools directly for actual storage/retrieval.
