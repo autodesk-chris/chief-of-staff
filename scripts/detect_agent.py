@@ -26,8 +26,8 @@ def detect_agent(command_text):
     if any(p in command_lower for p in task_patterns):
         return ('tasks', 1.0)
 
-    # People patterns
-    people_patterns = ['observation:', '360 review:', '360:', 'feedback:', '121:']
+    # People patterns (note: 121: is handled by meetings agent)
+    people_patterns = ['observation:', '360 review:', '360:', 'feedback:']
     if any(p in command_lower for p in people_patterns):
         return ('people', 1.0)
 

@@ -486,15 +486,81 @@ def execute_command(command_text):
         log_file = log_session(summary)
         return f"✓ Session logged to: {log_file}"
 
-    # Handle daily summary interview commands
+    # Handle daily summary commands (new simplified workflow)
     if command_text.lower() in ['/summary', 'daily summary', '/daily', 'daily']:
-        from daily_summary_interview import conduct_interview
+        from daily_summary import run_daily_summary, finalize_summary
 
-        result = conduct_interview()
-        if result:
-            return f"✓ Daily summary saved: {result}"
+        # Phase 1: Gather context and generate draft
+        result = run_daily_summary()
+
+        # Display draft summary
+        print("\n" + "="*60)
+        print("DRAFT SUMMARY:")
+        print("="*60)
+        print(result['draft'])
+        print("="*60)
+
+        # Phase 2: Ask single question
+        print("\n❓ Have I missed anything you'd like to capture?")
+        user_input = input("Your response (or press Enter if complete): ").strip()
+
+        # Phase 3: Finalize and save
+        if user_input and user_input.lower() not in ['no', 'nothing', 'n']:
+            filepath = finalize_summary(result['draft'], user_input)
         else:
-            return "✗ Daily summary cancelled"
+            filepath = finalize_summary(result['draft'])
+
+        return f"✓ Daily summary saved: {filepath}"
+
+    # Handle sync meetings command (Granola integration)
+    if command_text.lower() in ['sync meetings', '/sync-meetings', 'sync-meetings']:
+        from sync_meetings import sync_todays_meetings
+        result = sync_todays_meetings()
+        if result['synced'] == 0:
+            return "No meetings found for today in Granola"
+        elif result['errors']:
+            return f"✓ Synced {result['synced']} meeting(s) with {len(result['errors'])} error(s)"
+        else:
+            files_list = '\n  '.join(result['files'])
+            return f"✓ Synced {result['synced']} meeting(s) to Obsidian:\n  {files_list}"
+
+    # Handle meeting prep commands
+    if command_text.lower().startswith('prep meeting:') or command_text.lower().startswith('121:'):
+        from prep_meeting import prep_meeting
+
+        # Extract title/name after the colon
+        if command_text.lower().startswith('prep meeting:'):
+            title = command_text[13:].strip()
+            attendees = None
+        else:  # 121: command
+            title = command_text[4:].strip()
+            attendees = [title]  # For 121s, the title IS the person
+
+        filepath = prep_meeting(title, attendees)
+        return f"✓ Created meeting prep: {filepath}"
+
+    # Handle post-meeting processing commands
+    if command_text.lower().startswith('post meeting:') or command_text.lower().startswith('process meeting:'):
+        from process_meeting import process_meeting
+
+        # Extract title after the colon
+        if command_text.lower().startswith('post meeting:'):
+            title = command_text[13:].strip()
+        else:  # process meeting:
+            title = command_text[16:].strip()
+
+        result = process_meeting(title)
+
+        # Build response
+        response = f"✓ Processed meeting: {result['summary_file']}"
+        if result['action_files']:
+            response += f"\n  Created {len(result['action_files'])} action(s)"
+        if result['decision_files']:
+            response += f"\n  Created {len(result['decision_files'])} decision(s)"
+        if result['observation_files']:
+            response += f"\n  Created {len(result['observation_files'])} observation(s)"
+
+        return response
 
     # Handle 360 review commands
     if command_text.lower().startswith('360 review:') or command_text.lower().startswith('360:'):

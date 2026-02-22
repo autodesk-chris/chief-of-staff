@@ -2,12 +2,49 @@
 """
 Memory Utilities for Julie Agent System
 
-Provides helper functions for working with claude-mem integration.
+Provides helper functions for working with the hybrid memory system.
 
-NOTE: These helpers format data and manage Obsidian sync. Actual MCP tool calls
-(search, save_memory, get_observations) happen at the Claude Code level, not in Python.
+## Memory Architecture
 
-Usage:
+The Julie system uses a THREE-LAYER hybrid memory approach:
+
+1. **Claude-mem MCP tools** (semantic memory)
+   - Vector embeddings for semantic search
+   - Called directly by Claude Code via MCP tools:
+     - mcp__plugin_claude-mem_mcp-search__search
+     - mcp__plugin_claude-mem_mcp-search__save_memory
+     - mcp__plugin_claude-mem_mcp-search__timeline
+     - mcp__plugin_claude-mem_mcp-search__get_observations
+   - Scoped by 'project' parameter (e.g., project='Chief_of_staff')
+
+2. **Python helpers** (this module)
+   - Format data for MCP calls
+   - Sync MCP results to Obsidian for human readability
+   - Determine when memory queries would be helpful
+
+3. **Obsidian vault** (human-readable)
+   - Markdown files in Work/Memory/{domain}/
+   - User-editable and visible
+   - Synced from MCP results via sync_memory_to_obsidian()
+
+## Important: No .claude-mem/config.json Required
+
+The architecture plan references .claude-mem/config.json for partition configuration,
+but this is NOT required. Memory partitioning happens through:
+- The 'project' parameter in MCP calls
+- Domain prefixes in memory content (e.g., "[tasks] Created budget task")
+- Obsidian folder structure (Work/Memory/tasks/, Work/Memory/reflection/, etc.)
+
+## Domains (Partitions)
+
+- tasks: Task, idea, feature, action, reminder management
+- people: Observations, 360 reviews, team feedback
+- strategy: OKRs, strategic planning, problem spaces
+- reflection: Daily summaries, weekly reflections, patterns
+- meetings: Meeting prep, post-meeting summaries, action extraction
+
+## Usage
+
     from memory import format_memory_request, sync_memory_to_obsidian, should_query_memory
 
     # Format a memory storage request

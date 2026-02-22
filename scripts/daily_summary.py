@@ -1,0 +1,488 @@
+#!/usr/bin/env python3
+"""
+Daily Summary Generation for Julie Agent System
+
+Auto-generates daily summary from multiple sources, asks single question.
+
+## Workflow
+1. Gather context automatically (no user input):
+   - Query claude-mem for today's work
+   - Read today's task file
+   - Read today's meetings
+   - Read Slack export (if exists)
+   - Read today's observations
+   - Read weekly 4Ps for context
+
+2. Generate draft summary from all sources
+
+3. Ask single question: "Have I missed anything you'd like to capture?"
+
+4. Incorporate user response and save to Work/Inbox/Today/summary_YYYY-MM-DD.md
+
+## Memory Integration
+Uses claude-mem MCP tools via Claude Code (not Python direct calls):
+- mcp__plugin_claude-mem_mcp-search__search - Query today's work
+- mcp__plugin_claude-mem_mcp-search__save_memory - Store summary
+
+Python helpers in memory.py handle formatting and Obsidian sync.
+"""
+
+import os
+import glob
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+
+# Import memory helpers
+try:
+    from memory import sync_memory_to_obsidian, format_memory_request
+except ImportError:
+    # Fallback if running standalone
+    def sync_memory_to_obsidian(*args, **kwargs):
+        pass
+    def format_memory_request(*args, **kwargs):
+        return {}
+
+
+def get_vault_path() -> Path:
+    """Get the Obsidian vault path."""
+    return Path(__file__).parent.parent / "Work"
+
+
+def read_file_if_exists(filepath: str) -> Optional[str]:
+    """
+    Read file content if it exists.
+
+    Args:
+        filepath: Path to the file
+
+    Returns:
+        File content or None if file doesn't exist
+    """
+    path = Path(filepath)
+    if path.exists():
+        try:
+            return path.read_text()
+        except Exception as e:
+            print(f"  ⚠️  Error reading {filepath}: {e}")
+            return None
+    return None
+
+
+def get_todays_meetings() -> List[Dict[str, str]]:
+    """
+    Get today's meeting summaries from Work/Meetings/.
+
+    Returns:
+        List of dicts with 'title' and 'content' keys
+    """
+    vault = get_vault_path()
+    today = datetime.now().strftime("%Y-%m-%d")
+    pattern = str(vault / "Meetings" / f"{today}_*.md")
+    meetings = []
+
+    for filepath in glob.glob(pattern):
+        content = read_file_if_exists(filepath)
+        if content:
+            # Extract title from filename
+            filename = os.path.basename(filepath)
+            title = filename.replace(f"{today}_", "").replace(".md", "").replace("_", " ")
+            meetings.append({'title': title, 'content': content})
+
+    return meetings
+
+
+def get_todays_observations() -> List[Dict[str, str]]:
+    """
+    Get observations created today.
+
+    Returns:
+        List of dicts with 'person' and 'content' keys
+    """
+    vault = get_vault_path()
+    today = datetime.now().strftime("%Y-%m-%d")
+    pattern = str(vault / "People" / "Observations" / f"observation_*_{today}.md")
+    observations = []
+
+    for filepath in glob.glob(pattern):
+        content = read_file_if_exists(filepath)
+        if content:
+            filename = os.path.basename(filepath)
+            # Extract person name from filename: observation_Name_YYYY-MM-DD.md
+            parts = filename.replace("observation_", "").replace(f"_{today}.md", "").split("_")
+            person = " ".join(parts)
+            observations.append({'person': person, 'content': content})
+
+    return observations
+
+
+def get_slack_summary() -> Optional[str]:
+    """
+    Get today's Slack export if exists.
+
+    Returns:
+        Slack export content or None
+    """
+    vault = get_vault_path()
+    today = datetime.now().strftime("%Y-%m-%d")
+    filepath = vault / "Slack" / f"slack_{today}.md"
+    return read_file_if_exists(str(filepath))
+
+
+def get_weekly_4ps() -> Optional[str]:
+    """
+    Get current 4Ps file for weekly context.
+
+    Returns:
+        4Ps content or None
+    """
+    vault = get_vault_path()
+    # Try current year's 4Ps file
+    year = datetime.now().year
+    filepath = vault / "4Ps" / f"4Ps_{year}.md"
+    return read_file_if_exists(str(filepath))
+
+
+def get_today_file() -> Optional[str]:
+    """
+    Get today's task summary file.
+
+    Returns:
+        Today file content or None
+    """
+    vault = get_vault_path()
+    today = datetime.now().strftime("%Y-%m-%d")
+    filepath = vault / "Inbox" / "Today" / f"today_{today}.md"
+    return read_file_if_exists(str(filepath))
+
+
+def extract_completed_tasks(today_content: Optional[str]) -> List[str]:
+    """
+    Extract completed tasks from today file.
+
+    Args:
+        today_content: Content of today file
+
+    Returns:
+        List of completed task strings
+    """
+    if not today_content:
+        return []
+
+    completed = []
+    in_completed_section = False
+
+    for line in today_content.split('\n'):
+        # Look for completed section
+        if '## Completed today' in line or '## Completed' in line:
+            in_completed_section = True
+            continue
+        elif line.startswith('##'):
+            in_completed_section = False
+
+        # Extract strikethrough items (completed tasks)
+        if in_completed_section and line.strip().startswith('- ~~'):
+            # Extract task from strikethrough: - ~~Task text~~
+            task = line.strip().replace('- ~~', '').replace('~~', '').strip()
+            if task:
+                completed.append(task)
+
+    return completed
+
+
+def extract_in_progress_tasks(today_content: Optional[str]) -> List[str]:
+    """
+    Extract in-progress tasks from today file.
+
+    Args:
+        today_content: Content of today file
+
+    Returns:
+        List of in-progress task strings
+    """
+    if not today_content:
+        return []
+
+    in_progress = []
+    in_progress_section = False
+
+    for line in today_content.split('\n'):
+        if '## In progress' in line or '## Active' in line:
+            in_progress_section = True
+            continue
+        elif line.startswith('##'):
+            in_progress_section = False
+
+        if in_progress_section and line.strip().startswith('- '):
+            task = line.strip()[2:].strip()
+            if task and not task.startswith('~~'):
+                in_progress.append(task)
+
+    return in_progress
+
+
+def extract_meeting_summary(meeting_content: str, max_length: int = 200) -> str:
+    """
+    Extract a brief summary from meeting content.
+
+    Args:
+        meeting_content: Full meeting file content
+        max_length: Maximum summary length
+
+    Returns:
+        Brief summary string
+    """
+    # Look for key takeaways or summary section
+    lines = meeting_content.split('\n')
+    summary_lines = []
+    in_summary = False
+
+    for line in lines:
+        lower = line.lower()
+        if 'key takeaway' in lower or 'summary' in lower or '## key' in lower:
+            in_summary = True
+            continue
+        elif line.startswith('##') and in_summary:
+            break
+        elif in_summary and line.strip().startswith('- '):
+            summary_lines.append(line.strip()[2:])
+
+    if summary_lines:
+        return '; '.join(summary_lines[:3])
+
+    # Fallback: return first non-header lines
+    content_lines = [l.strip() for l in lines if l.strip() and not l.startswith('#') and not l.startswith('**')]
+    return ' '.join(content_lines[:2])[:max_length] + '...' if content_lines else 'No summary available'
+
+
+def gather_context() -> Dict[str, Any]:
+    """
+    Gather all context for daily summary.
+
+    Returns:
+        Dict with all gathered context
+    """
+    print("\n🤖 Gathering context from all sources...\n")
+
+    context = {
+        'today_content': None,
+        'completed_tasks': [],
+        'in_progress_tasks': [],
+        'meetings': [],
+        'observations': [],
+        'slack_content': None,
+        'weekly_4ps': None,
+        'memory_results': []  # Will be populated by Claude Code MCP call
+    }
+
+    # 1. Read today's task file
+    print("  ✓ Reading today's task list...")
+    context['today_content'] = get_today_file()
+    context['completed_tasks'] = extract_completed_tasks(context['today_content'])
+    context['in_progress_tasks'] = extract_in_progress_tasks(context['today_content'])
+
+    # 2. Get meetings
+    print("  ✓ Gathering meeting summaries...")
+    context['meetings'] = get_todays_meetings()
+
+    # 3. Get observations
+    print("  ✓ Looking for observations...")
+    context['observations'] = get_todays_observations()
+
+    # 4. Get Slack summary
+    print("  ✓ Checking for Slack export...")
+    context['slack_content'] = get_slack_summary()
+
+    # 5. Get weekly 4Ps context
+    print("  ✓ Loading weekly priorities...")
+    context['weekly_4ps'] = get_weekly_4ps()
+
+    # 6. Memory query placeholder
+    # NOTE: Claude Code will call mcp__plugin_claude-mem_mcp-search__search
+    # and populate context['memory_results'] before calling generate_draft_summary
+    print("  ✓ Memory query ready (Claude Code will execute MCP call)")
+
+    return context
+
+
+def generate_draft_summary(context: Dict[str, Any], memory_highlights: List[str] = None) -> str:
+    """
+    Generate draft summary from gathered context.
+
+    Args:
+        context: Dict from gather_context()
+        memory_highlights: Optional list of highlights from claude-mem query
+
+    Returns:
+        Draft summary markdown string
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    summary = f"# Daily Summary - {today}\n\n"
+
+    # Work completed today
+    summary += "## Work completed today\n\n"
+    if context['completed_tasks']:
+        for task in context['completed_tasks']:
+            summary += f"- {task}\n"
+    else:
+        summary += "- No completed tasks recorded in today file\n"
+
+    # Add memory highlights if provided
+    if memory_highlights:
+        summary += "\n**From Claude work sessions:**\n"
+        for highlight in memory_highlights[:5]:  # Top 5 highlights
+            summary += f"- {highlight}\n"
+
+    summary += "\n"
+
+    # Meetings
+    if context['meetings']:
+        summary += "## Meetings\n\n"
+        for meeting in context['meetings']:
+            brief = extract_meeting_summary(meeting['content'])
+            summary += f"- **{meeting['title']}** - {brief}\n"
+        summary += "\n"
+
+    # Key decisions placeholder
+    summary += "## Key decisions\n\n"
+    summary += "- [Add any key decisions made today]\n\n"
+
+    # Progress on weekly priorities
+    if context['weekly_4ps']:
+        summary += "## Progress on weekly priorities\n\n"
+        summary += "- [Progress against this week's 4Ps plans]\n\n"
+
+    # In-progress tasks
+    if context['in_progress_tasks']:
+        summary += "## Still in progress\n\n"
+        for task in context['in_progress_tasks'][:5]:  # Top 5
+            summary += f"- {task}\n"
+        summary += "\n"
+
+    # Observations shared
+    if context['observations']:
+        summary += "## Observations shared\n\n"
+        for obs in context['observations']:
+            summary += f"- **{obs['person']}** - [Feedback given]\n"
+        summary += "\n"
+
+    # Slack highlights
+    if context['slack_content']:
+        summary += "## Slack highlights\n\n"
+        summary += "- [Key threads and actions from Slack]\n\n"
+
+    return summary
+
+
+def save_summary(summary_content: str) -> Path:
+    """
+    Save summary to file.
+
+    Args:
+        summary_content: Summary markdown content
+
+    Returns:
+        Path to saved file
+    """
+    vault = get_vault_path()
+    today = datetime.now().strftime("%Y-%m-%d")
+    filepath = vault / "Inbox" / "Today" / f"summary_{today}.md"
+
+    # Ensure directory exists
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
+    filepath.write_text(summary_content)
+    return filepath
+
+
+def run_daily_summary(memory_highlights: List[str] = None) -> Dict[str, Any]:
+    """
+    Main function to run daily summary workflow.
+
+    This function is designed to be called by Claude Code after:
+    1. Claude Code queries claude-mem for today's work
+    2. Claude Code extracts highlights from memory results
+    3. Claude Code calls this function with those highlights
+
+    Args:
+        memory_highlights: Optional list of work highlights from claude-mem query
+
+    Returns:
+        Dict with draft summary and context for Claude Code to continue workflow
+    """
+    print("\n" + "="*60)
+    print("Daily Summary - Julie")
+    print("="*60)
+
+    # Gather all context
+    context = gather_context()
+
+    # Generate draft summary
+    print("\n📝 Generating draft summary...\n")
+    draft = generate_draft_summary(context, memory_highlights)
+
+    # Return context for Claude Code to:
+    # 1. Show draft to user
+    # 2. Ask single question
+    # 3. Incorporate response
+    # 4. Save final summary
+    return {
+        'draft': draft,
+        'context': context,
+        'today': datetime.now().strftime("%Y-%m-%d")
+    }
+
+
+def finalize_summary(draft: str, user_additions: Optional[str] = None) -> Path:
+    """
+    Finalize and save the daily summary.
+
+    Args:
+        draft: Draft summary from run_daily_summary()
+        user_additions: Optional additional notes from user
+
+    Returns:
+        Path to saved summary file
+    """
+    final_summary = draft
+
+    if user_additions and user_additions.strip():
+        final_summary += f"\n## Additional notes\n\n{user_additions.strip()}\n"
+
+    # Save summary
+    filepath = save_summary(final_summary)
+    print(f"\n✅ Daily summary saved to {filepath}")
+
+    # Sync to memory (Obsidian)
+    today = datetime.now().strftime("%Y-%m-%d")
+    memories = [{'title': f'Daily Summary {today}', 'text': final_summary}]
+    sync_memory_to_obsidian('reflection', memories)
+
+    return filepath
+
+
+# Test/standalone execution
+if __name__ == '__main__':
+    print("Testing daily summary generation...")
+    print("Note: Memory query happens at Claude Code level via MCP tools.\n")
+
+    # Test context gathering
+    result = run_daily_summary()
+
+    print("\n" + "-"*60)
+    print("DRAFT SUMMARY:")
+    print("-"*60)
+    print(result['draft'])
+    print("-"*60)
+
+    # Simulate user response
+    print("\n❓ Have I missed anything you'd like to capture?")
+    user_input = input("Your response (or 'no' if complete): ").strip()
+
+    if user_input and user_input.lower() not in ['no', 'nothing', 'n', '']:
+        filepath = finalize_summary(result['draft'], user_input)
+    else:
+        filepath = finalize_summary(result['draft'])
+
+    print(f"\n✅ Test complete! Summary saved to: {filepath}")
