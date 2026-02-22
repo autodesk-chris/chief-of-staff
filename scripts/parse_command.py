@@ -13,6 +13,7 @@ import argparse
 import sys
 import re
 from pathlib import Path
+from datetime import datetime
 import logging
 
 # Add parent directory to path to import other scripts
@@ -538,6 +539,75 @@ def execute_command(command_text):
 
         filepath = prep_meeting(title, attendees)
         return f"✓ Created meeting prep: {filepath}"
+
+    # Handle MFM review commands
+    if command_text.lower().startswith('mfm review:') or command_text.lower().startswith('review mfm:'):
+        from mfm_agent import review_mfm
+
+        # Extract squad and month
+        if command_text.lower().startswith('mfm review:'):
+            args = command_text[11:].strip()
+        else:  # review mfm:
+            args = command_text[11:].strip()
+
+        # Parse squad and month from args (e.g., "strategic accounts Feb")
+        # Simple parsing: last word is month, everything else is squad
+        parts = args.rsplit(' ', 1)
+        if len(parts) == 2:
+            squad_name, month = parts
+        else:
+            squad_name = args
+            month = datetime.now().strftime('%b')
+
+        result = review_mfm(squad_name, month)
+
+        if not result['success']:
+            error_msg = f"✗ {result['error']}"
+            if result.get('suggestions'):
+                error_msg += f"\nAvailable: {', '.join(result['suggestions'][:5])}"
+            return error_msg
+
+        # Return info for Claude to perform analysis
+        return f"""✓ Found MFM pre-read: {result['filename']}
+
+**Next steps:**
+1. Read framework: Work/LLM_Context/MFM_review_framework.md
+2. Analyze pre-read against five dimensions
+3. Create review notes at: {result['output_path']}
+
+Pre-read content ready for analysis ({len(result['pre_read_content'])} chars)"""
+
+    # Handle MFM summary commands
+    if command_text.lower().startswith('mfm summary:') or command_text.lower().startswith('post mfm:'):
+        from mfm_agent import post_mfm_summary
+
+        # Extract squad and month
+        if command_text.lower().startswith('mfm summary:'):
+            args = command_text[12:].strip()
+        else:  # post mfm:
+            args = command_text[9:].strip()
+
+        # Parse squad and month
+        parts = args.rsplit(' ', 1)
+        if len(parts) == 2:
+            squad_name, month = parts
+        else:
+            squad_name = args
+            month = datetime.now().strftime('%b')
+
+        result = post_mfm_summary(squad_name, month)
+
+        if result.get('needs_granola_data'):
+            return f"""✓ Ready for MFM summary: {squad_name} {month}
+
+**Next steps:**
+1. Search Granola for MFM meeting
+2. Extract decisions, actions, and changes
+3. Create summary at: {result['output_path']}
+
+Use mcp__granola__query_granola_meetings to find the meeting."""
+
+        return f"✓ Created MFM summary: {result['output_path']}"
 
     # Handle post-meeting processing commands
     if command_text.lower().startswith('post meeting:') or command_text.lower().startswith('process meeting:'):
