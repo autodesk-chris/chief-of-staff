@@ -461,7 +461,13 @@ def execute_command(command_text):
 
     # Handle notepad processing commands
     if command_text.lower() in ['process notepad', 'notepad process', '/notepad', 'notepad']:
-        result = process_notepad()
+        # Preview mode - show classification without processing
+        result = process_notepad(mode='preview')
+        return result
+
+    if command_text.lower() in ['process notepad confirm', 'notepad confirm', '/notepad confirm']:
+        # Confirm mode - execute processing without prompting
+        result = process_notepad(mode='confirm')
         return result
 
     # Handle session logging commands

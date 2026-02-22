@@ -95,17 +95,35 @@ def classify_section(section_text: str) -> Dict[str, any]:
     if stripped.startswith('##') or (stripped.startswith('**') and stripped.endswith('**')):
         return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.3}
 
-    # Skip sections that start with bold header followed by colon (like "**Actions for Maria:**")
-    # These are typically subsection labels, not actionable items
-    if stripped.startswith('**') and ':' in stripped[:50]:
-        # Check if there's substantial content after the header
-        lines = stripped.split('\n')
-        if len(lines) == 1 or len('\n'.join(lines[1:])) < 20:
-            return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.3}
-
     # Skip sections that are just separators or formatting
     if stripped in ['---', '***', '___']:
         return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.2}
+
+    # Get first line to check for header patterns
+    first_line = stripped.split('\n')[0]
+
+    # Skip bold headers with colons (like "**Actions for Maria:**" or "**Strategy development:**")
+    # Pattern 1: "**Something:**" (bold text ending with colon)
+    if re.match(r'^\*\*[^*]+:\*\*\s*$', first_line):
+        return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.3}
+
+    # Pattern 2: "**Something:**" followed by minimal content (less than one line)
+    if first_line.startswith('**') and first_line.endswith(':**'):
+        lines = stripped.split('\n')
+        # If only the header line, or header + one short line
+        if len(lines) <= 2 and len(stripped) < 100:
+            return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.3}
+
+    # Pattern 3: Numbered bold headers like "1. **Something:**" or "2. **User learning:**"
+    if re.match(r'^\d+\.\s+\*\*[^*]+:\*\*', first_line):
+        return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.3}
+
+    # Pattern 4: Sections that are ONLY a bold header with colon, nothing else substantive
+    if ':**' in first_line and first_line.count('**') >= 2:
+        # Check if rest of content is minimal
+        rest = '\n'.join(stripped.split('\n')[1:]).strip()
+        if len(rest) < 30:
+            return {'type': 'strategic', 'subtype': 'ideas', 'confidence': 0.3}
 
     # Actionable patterns (tasks, actions, reminders, features, decisions)
 
@@ -378,7 +396,7 @@ def append_to_domain_notepad(domain: str, section_text: str, source_archive: str
 
 
 def display_classification_results(actionables: List[Tuple], strategic_content: List[Tuple],
-                                   memory_checks: Dict) -> str:
+                                   memory_checks: Dict, detailed: bool = False) -> str:
     """
     Pretty-print classification results for user review.
 
@@ -386,6 +404,7 @@ def display_classification_results(actionables: List[Tuple], strategic_content: 
         actionables: List of (section_text, classification, extracted_details) tuples
         strategic_content: List of (section_text, domain) tuples
         memory_checks: Dict mapping titles to list of similar items from memory
+        detailed: If True, show full extracted details for each item
 
     Returns:
         Formatted string for display
@@ -410,11 +429,34 @@ def display_classification_results(actionables: List[Tuple], strategic_content: 
         for subtype, items in by_type.items():
             output.append(f"\n  {subtype.upper()}S ({len(items)}):")
             for i, (section, details) in enumerate(items, 1):
-                output.append(f"    {i}. {details['title']}")
-                if details.get('assignee'):
-                    output.append(f"       Assignee: {details['assignee']}")
-                if details.get('due_date'):
-                    output.append(f"       Due: {details['due_date']}")
+                if detailed:
+                    output.append(f"\n    {i}. Title: \"{details['title']}\"")
+                    if details.get('details'):
+                        output.append(f"       Details: {details['details'][:100]}{'...' if len(details.get('details', '')) > 100 else ''}")
+                    if details.get('assignee'):
+                        output.append(f"       Assignee: {details['assignee']}")
+                    if details.get('due_date'):
+                        output.append(f"       Due Date: {details['due_date']}")
+                    if details.get('tags'):
+                        output.append(f"       Tags: {', '.join(details['tags'])}")
+                    # Show actual file path based on item type
+                    folder_map = {
+                        'task': 'Inbox/Tasks',
+                        'action': 'Inbox/Actions',
+                        'reminder': 'Inbox/Reminders',
+                        'feature': 'Inbox/Features',
+                        'idea': 'Inbox/Ideas',
+                        'decision': 'Decisions'
+                    }
+                    folder = folder_map.get(subtype, f'Inbox/{subtype.title()}s')
+                    safe_title = details['title'].replace(' ', '_')
+                    output.append(f"       → Will create: Work/{folder}/{subtype}_{safe_title}.md")
+                else:
+                    output.append(f"    {i}. {details['title']}")
+                    if details.get('assignee'):
+                        output.append(f"       Assignee: {details['assignee']}")
+                    if details.get('due_date'):
+                        output.append(f"       Due: {details['due_date']}")
 
                 # Check for memory duplicates
                 title = details['title']
@@ -439,27 +481,43 @@ def display_classification_results(actionables: List[Tuple], strategic_content: 
 
         for domain, sections in by_domain.items():
             output.append(f"\n  {domain.upper()} ({len(sections)} sections):")
+            if detailed:
+                domain_path = DOMAIN_NOTEPADS.get(domain, f'{domain}/notepad.md')
+                output.append(f"       → Will append to: Work/{domain_path}")
             for i, section in enumerate(sections, 1):
                 # Show first line as preview
                 first_line = section.split('\n')[0][:60]
-                output.append(f"    {i}. {first_line}...")
+                if detailed and i <= 3:  # Show first 3 in detail
+                    output.append(f"\n    {i}. Preview:")
+                    lines = section.split('\n')[:3]
+                    for line in lines:
+                        output.append(f"       {line[:70]}{'...' if len(line) > 70 else ''}")
+                else:
+                    output.append(f"    {i}. {first_line}...")
+
+            if detailed and len(sections) > 3:
+                output.append(f"    ... and {len(sections) - 3} more sections")
     else:
         output.append("\n\n🎯 STRATEGIC CONTENT: None found")
 
     output.append("\n" + "="*60)
-    output.append("\nReview the above classification.")
-    output.append("Type 'yes' to proceed, 'edit' to modify, or 'cancel' to abort.")
+    if not detailed:
+        output.append("\nReview the above classification.")
+        output.append("Type 'yes' to proceed, 'edit' to modify, or 'cancel' to abort.")
     output.append("="*60 + "\n")
 
     return '\n'.join(output)
 
 
-def process_notepad():
+def process_notepad(mode='interactive'):
     """
     Main workflow to process the central notepad.
 
+    Args:
+        mode: 'interactive' (prompt user), 'preview' (show only), 'confirm' (execute without prompt)
+
     Returns:
-        Summary message of what was processed
+        Summary message of what was processed, or classification results for preview mode
     """
     vault_path = get_vault_path()
     notepad_path = vault_path / "1-Notepad" / "Notepad.md"
@@ -473,6 +531,8 @@ def process_notepad():
 
     if not content.strip():
         # Empty notepad - just archive
+        if mode == 'preview':
+            return "ℹ️  Notepad is empty. Nothing to process."
         timestamp = datetime.now().strftime('%Y-%m-%d_%H%M')
         archive_path = vault_path / "1-Notepad" / "Archive" / f"notepad_{timestamp}.md"
         archive_path.write_text(content)
@@ -506,22 +566,36 @@ def process_notepad():
             strategic_content.append((section, domain))
 
     # Display classification results
-    display_text = display_classification_results(actionables, strategic_content, memory_checks)
+    # Use detailed view for preview mode
+    display_text = display_classification_results(actionables, strategic_content, memory_checks, detailed=(mode=='preview'))
+
+    # Handle different modes
+    if mode == 'preview':
+        # Return results without prompting or processing (don't print, just return)
+        summary = ["\n📊 PREVIEW MODE - No changes made to notepad\n"]
+        summary.append(f"Found {len(actionables)} actionables and {len(strategic_content)} strategic sections.")
+        summary.append("\n✅ Review the details above.")
+        summary.append("If you approve, I'll run: ./pos \"process notepad confirm\"")
+        return display_text + '\n'.join(summary)
+
+    # For interactive and confirm modes, print the display
     print(display_text)
 
-    # Get user confirmation
-    user_response = input("Your choice: ").strip().lower()
+    if mode == 'interactive':
+        # Get user confirmation
+        user_response = input("Your choice: ").strip().lower()
 
-    if user_response == 'cancel':
-        return "❌ Processing cancelled. Notepad unchanged."
+        if user_response == 'cancel':
+            return "❌ Processing cancelled. Notepad unchanged."
 
-    if user_response == 'edit':
-        return "✏️  Edit mode not yet implemented. Please run again or cancel."
+        if user_response == 'edit':
+            return "✏️  Edit mode not yet implemented. Please run again or cancel."
 
-    if user_response != 'yes':
-        return "❌ Invalid response. Processing cancelled."
+        if user_response != 'yes':
+            return "❌ Invalid response. Processing cancelled."
 
-    # User confirmed - proceed with processing
+    # mode == 'confirm' or user said 'yes' in interactive mode
+    # Proceed with processing
     timestamp = datetime.now().strftime('%Y-%m-%d_%H%M')
     archive_filename = f"notepad_{timestamp}.md"
 
