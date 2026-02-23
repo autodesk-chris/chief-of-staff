@@ -1,0 +1,96 @@
+{
+  "description": "Configuration for Slack digest generation - monitors specific channels for daily summary",
+  "user": {
+    "id": "U082ASVFE9Y",
+    "name": "Chris Small"
+  },
+  "workspace": "autodesk",
+  "channels": [
+    {
+      "id": "C08EE6UMG5R",
+      "name": "#autodesk-pavlov",
+      "purpose": "Tracks work being done with the Trig user success tool",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C07PZN3V7V5",
+      "name": "#forma-design-product-area-growth",
+      "purpose": "External/organisation facing slack channel for Growth team communication",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C087RFDDLSE",
+      "name": "#forma-growth-block-internal",
+      "purpose": "Internal channel for Growth and Adoption team information sharing",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C0A7E7PFJ6M",
+      "name": "#priv-forma-design-leadership-people-allocation-fy27",
+      "purpose": "Leadership channel for discussing people allocation in the organisation",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C08U86YBJ21",
+      "name": "#forma-growth-leads",
+      "purpose": "Leadership group for the Growth team",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C0A6PSB30UX",
+      "name": "#priv-forma-design-leadership-budget-fy27",
+      "purpose": "Leadership team channel for discussing budget decisions",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C0A0W3R2K42",
+      "name": "#priv-forma-design-leadership-fy27",
+      "purpose": "Main leadership team channel - most important channel",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C08AD37JL85",
+      "name": "#forma-growth-squad-user-engagement",
+      "purpose": "Dedicated channel for the user engagement squad",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C08A0TA961M",
+      "name": "#forma-design-growth-strategic-accounts",
+      "purpose": "Channel for the strategic accounts squad day to day",
+      "monitor_level": "full"
+    },
+    {
+      "id": "C08B45K9SU8",
+      "name": "#forma-growth-squad-first-strike",
+      "purpose": "Channel for the first strike squad",
+      "monitor_level": "full"
+    },
+    {
+      "id": "CJE49G8ET",
+      "name": "#forma-design-marketing",
+      "purpose": "Marketing squad updates",
+      "monitor_level": "full"
+    }
+  ],
+  "monitor_levels": {
+    "full": "Track explicit mentions + inferred actions (domain keywords)",
+    "mentions_only": "Only track explicit @mentions"
+  },
+  "keywords": [
+    "operating model",
+    "PLG",
+    "product-led growth",
+    "OKR",
+    "monetization",
+    "AI",
+    "budget",
+    "growth"
+  ],
+  "digest": {
+    "lookback_hours": 48,
+    "activity_threshold_hours": 24,
+    "saved_messages_days": 30,
+    "saved_messages_show_recent": 10
+  }
+}

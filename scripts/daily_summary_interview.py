@@ -218,13 +218,14 @@ def gather_context():
     Automatically read context documents.
 
     Returns:
-        Dict with keys: week_4ps, today_summary, session_log, observations, errors
+        Dict with keys: week_4ps, today_summary, session_log, observations, slack_digest, errors
     """
     context = {
         'week_4ps': None,
         'today_summary': None,
         'session_log': None,
         'observations': [],
+        'slack_digest': None,
         'errors': []
     }
 
@@ -255,6 +256,15 @@ def gather_context():
             context['session_log'] = parse_session_log(session_content)
     except Exception as e:
         context['errors'].append(f"Could not read session log: {e}")
+
+    # Read Slack digest if it exists
+    try:
+        today = datetime.now().date()
+        slack_digest_path = Path(get_vault_path()) / "Inbox" / "Today" / f"slack_digest_{today.strftime('%Y-%m-%d')}.md"
+        if slack_digest_path.exists():
+            context['slack_digest'] = parse_slack_digest(slack_digest_path.read_text(encoding='utf-8'))
+    except Exception as e:
+        context['errors'].append(f"Could not read Slack digest: {e}")
 
     # Read observations from today - DISABLED
     # try:
@@ -459,6 +469,72 @@ def parse_today_summary(summary_content):
     return result
 
 
+def parse_slack_digest(digest_content):
+    """
+    Parse Slack digest into structured dict.
+
+    Extracts action items, review threads, and stats.
+
+    Returns:
+        Dict with actions, review items, and stats
+    """
+    result = {
+        'actions': [],
+        'review': [],
+        'stats': {}
+    }
+
+    lines = digest_content.split('\n')
+    current_section = None
+    current_item = None
+
+    for line in lines:
+        line_stripped = line.strip()
+
+        # Detect sections
+        if '## Actions for you' in line:
+            current_section = 'actions'
+        elif '## Review in detail' in line:
+            current_section = 'review'
+        elif '## FYI' in line:
+            current_section = None  # Stop parsing, FYI is less important
+        elif '## Summary' in line:
+            current_section = 'stats'
+        elif current_section == 'actions' and line_stripped.startswith('### '):
+            # New action item - extract title
+            title = line_stripped[4:].strip()
+            if current_item:
+                result['actions'].append(current_item)
+            current_item = {'title': title, 'reason': '', 'explicit': False}
+        elif current_section == 'actions' and current_item:
+            if line_stripped.startswith('**Why flagged:**'):
+                current_item['reason'] = line_stripped.replace('**Why flagged:**', '').strip()
+            elif 'Explicit mention' in line:
+                current_item['explicit'] = True
+        elif current_section == 'review' and line_stripped.startswith('### '):
+            # New review item
+            title = line_stripped[4:].strip()
+            result['review'].append({'title': title})
+        elif current_section == 'stats' and line_stripped.startswith('- **'):
+            # Parse stats
+            if 'Threads analyzed' in line:
+                try:
+                    result['stats']['total_threads'] = int(line_stripped.split(':')[-1].strip().rstrip('**'))
+                except (ValueError, IndexError):
+                    pass
+            elif 'Actions identified' in line:
+                try:
+                    result['stats']['actions_count'] = int(line_stripped.split(':')[-1].strip().rstrip('**'))
+                except (ValueError, IndexError):
+                    pass
+
+    # Add last item if exists
+    if current_item and current_section == 'actions':
+        result['actions'].append(current_item)
+
+    return result
+
+
 class DailySummaryInterview:
     """
     Manages multi-turn conversation for daily summary interview.
@@ -569,6 +645,22 @@ class DailySummaryInterview:
             print(f"\n✓ Claude sessions logged: {session_count}")
         else:
             print("\n  No Claude sessions logged today (run './pos \"session: [what you worked on]\"' to log)")
+
+        # Show Slack digest context
+        if self.context.get('slack_digest'):
+            slack = self.context['slack_digest']
+            actions_count = len(slack.get('actions', []))
+            review_count = len(slack.get('review', []))
+            print(f"\n✓ Slack digest found:")
+            print(f"  - Actions for you: {actions_count}")
+            print(f"  - Threads to review: {review_count}")
+            if actions_count > 0:
+                print("  Actions:")
+                for action in slack.get('actions', [])[:3]:
+                    explicit = "(explicit)" if action.get('explicit') else "(inferred)"
+                    print(f"    - {action.get('title', 'Unknown')[:50]}... {explicit}")
+        else:
+            print("\n  No Slack digest today (run './pos \"slack digest\"' to generate)")
 
         # Show observations - DISABLED
         # if self.context.get('observations'):
@@ -781,11 +873,45 @@ week-reference: Week beginning {week_start.strftime('%d %b %Y')}
             content += "## Key Decisions\n\n"
             content += f"- {decisions}\n\n"
 
-        # Add slack/communication
-        slack = self.responses.get('slack')
-        if slack:
-            content += "## Communication Highlights\n\n"
-            content += f"- Slack: {slack}\n\n"
+        # Add Slack highlights (from automated digest + user input)
+        has_slack_content = False
+        slack_digest = self.context.get('slack_digest')
+        slack_manual = self.responses.get('slack')
+
+        if slack_digest or slack_manual:
+            content += "## Slack Highlights\n\n"
+            has_slack_content = True
+
+        # Add automated digest actions first
+        if slack_digest:
+            actions = slack_digest.get('actions', [])
+            if actions:
+                content += "**Actions from Slack:**\n"
+                for action in actions:
+                    explicit = "(explicit)" if action.get('explicit') else "(inferred)"
+                    title = action.get('title', 'Unknown')[:60]
+                    reason = action.get('reason', '')
+                    content += f"- {title} {explicit}"
+                    if reason:
+                        content += f" - {reason}"
+                    content += "\n"
+                content += "\n"
+
+            review = slack_digest.get('review', [])
+            if review:
+                content += f"**Active discussions:** {len(review)} threads to review\n\n"
+
+            # Link to full digest
+            today = datetime.now().date()
+            content += f"[Full Slack digest](./slack_digest_{today.strftime('%Y-%m-%d')}.md)\n\n"
+
+        # Add manual user input
+        if slack_manual:
+            content += "**Additional notes:**\n"
+            content += f"- {slack_manual}\n\n"
+
+        if not has_slack_content:
+            pass  # No Slack section if no content
 
         # Add surprises
         surprises = self.responses.get('surprises')

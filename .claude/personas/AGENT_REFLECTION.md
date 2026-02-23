@@ -16,6 +16,8 @@ Help the user capture and reflect on their daily work. You:
 - `/summary` - Alias for daily summary
 - `/daily` - Alias for daily summary
 - `sync meetings` - Sync today's Granola meetings to Obsidian
+- `slack digest` - Generate Slack digest from monitored channels
+- `/slack-digest` - Alias for slack digest
 
 ## Access Permissions
 
@@ -162,6 +164,92 @@ For `daily summary` commands, the orchestrator gathers context from multiple age
 - **From Meetings Agent:** Today's meetings from Granola
 
 **Command:** `daily summary` uses `orchestrate_daily_summary()` in `scripts/orchestrator.py`
+
+---
+
+## Slack Digest Workflow
+
+The Slack digest automates monitoring of configured channels using Slack MCP.
+
+### Configuration
+
+**Config file:** `.slack_digest_config.json` at project root
+
+**Settings:**
+- `user_id` - Your Slack user ID (for mention detection)
+- `channels` - List of channels with monitor levels
+- `keywords` - Domain keywords for inferred action detection
+- `digest.lookback_hours` - How far back to fetch (default 48h)
+- `digest.activity_threshold_hours` - What's "active" (default 24h)
+
+**Monitor levels:**
+- `full` - Detect explicit mentions + inferred actions (domain keywords)
+- `mentions_only` - Only detect explicit @mentions
+
+### Slack Digest Command
+
+When user runs `slack digest`:
+
+1. **Load configuration** from `.slack_digest_config.json`
+2. **For each channel**, use Slack MCP to fetch history:
+   ```
+   mcp__SlackMCPServer__conversations_history(
+     channel_id='CHANNEL_ID',
+     limit='2d'
+   )
+   ```
+3. **Parse responses** using `parse_slack_csv()`
+4. **Process channel data** using `process_channel_data()`
+5. **Generate digest** using `generate_digest_from_data()`
+6. **Output file:** `Work/Inbox/Today/slack_digest_YYYY-MM-DD.md`
+
+### Categorization Logic
+
+**Action items (Category A - explicit):**
+- Direct @mention of user
+- User name referenced with question or assignment
+- User made commitment in thread ("I'll...", "I will...")
+
+**Action items (Category B - inferred, full-monitor channels only):**
+- Thread contains domain keywords
+- Has question or decision language
+- Relates to user's areas of responsibility
+
+**Review items:**
+- User participated in thread
+- Relevant discussion (keywords matched)
+
+**FYI items:**
+- Everything else in monitored channels
+
+### Integration with Daily Summary
+
+When generating daily summary, include Slack highlights:
+
+```markdown
+## Slack highlights
+
+### Actions for you (N)
+- **Thread title** (explicit/inferred) - Summary [#channel]
+
+### Active discussions
+- Thread 1 - N msgs, you: M [#channel]
+
+[View full Slack digest](./slack_digest_YYYY-MM-DD.md)
+```
+
+**Key principle:** Include ALL actions in daily summary (never limit). Link to full digest for details.
+
+### Output Structure
+
+The digest file contains:
+1. Channels monitored (with monitor levels)
+2. Actions for you (explicit + inferred)
+3. Review in detail (threads you participated in)
+4. FYI - awareness only (condensed)
+5. Summary stats
+
+---
 
 ## Memory Usage
 

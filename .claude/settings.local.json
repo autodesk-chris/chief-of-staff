@@ -2,13 +2,23 @@
   "permissions": {
     "allow": [
       "mcp__SlackMCPServer__channels_list",
+      "mcp__SlackMCPServer__conversations_history",
+      "mcp__SlackMCPServer__conversations_replies",
       "Bash(./pos \"new task: Share offsite pre-work\")",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:thedotmack.github.io)",
       "Bash(./pos \"/today\")",
       "Bash(git commit:*)",
       "Bash(npm install:*)",
-      "Skill(mem-search)"
+      "Skill(mem-search)",
+      "WebSearch",
+      "mcp__plugin_claude-mem_mcp-search__save_memory",
+      "mcp__plugin_claude-mem_mcp-search__search",
+      "Bash(python3:*)",
+      "mcp__granola__query_granola_meetings",
+      "mcp__atlassian__search",
+      "mcp__atlassian__fetch",
+      "mcp__granola__get_meeting_transcript"
     ]
   }
 }

@@ -514,6 +514,28 @@ def execute_command(command_text):
 
         return f"✓ Daily summary saved: {filepath}"
 
+    # Handle Slack digest command
+    if command_text.lower() in ['slack digest', '/slack-digest', 'slack summary']:
+        from slack_digest import run_digest_workflow, load_config
+
+        print("\n📊 Slack Digest Generator\n")
+
+        config = load_config()
+        if not config:
+            return "✗ Could not load Slack configuration. Check .slack_digest_config.json"
+
+        # Run workflow (prints instructions for Claude Code)
+        run_digest_workflow()
+
+        return """
+To complete the digest:
+1. Call Slack MCP for each channel listed above
+2. Parse responses using parse_slack_csv()
+3. Call generate_digest_from_data() with the channel data
+
+The digest file will be saved to Work/Inbox/Today/slack_digest_YYYY-MM-DD.md
+"""
+
     # Handle sync meetings command (Granola integration)
     if command_text.lower() in ['sync meetings', '/sync-meetings', 'sync-meetings']:
         from sync_meetings import sync_todays_meetings
