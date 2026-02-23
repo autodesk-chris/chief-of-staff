@@ -1,227 +1,286 @@
 # Chief of Staff - Personal OS
 
-A personal operating system that streamlines daily workflows by integrating task management, idea capture, and feature planning into a unified, AI-powered experience.
+A personal operating system powered by Claude Code that streamlines daily workflows through an intelligent multi-agent architecture called Julie.
 
 ## Overview
 
-This system integrates with Obsidian and Claude Code to provide:
-- Quick command-line capture of tasks, ideas, and features
-- Automatic organization in your Obsidian vault
-- Daily and weekly summaries of your work
-- AI-powered workflow automation
+Chief of Staff integrates Claude Code with an Obsidian vault to provide:
+- Intelligent command routing to specialized agents
+- Task, idea, and feature management
+- Team feedback and 360 review workflows
+- Meeting preparation with Granola integration
+- Strategic analysis with progressive context disclosure
+- Daily summaries and reflection workflows
 
-## Features
+## Julie: Agent Architecture
 
-### Creation Commands
-- `new task` - Create a new task with due date and tags
-- `new idea` - Capture ideas quickly with tags
-- `new feature` - Document feature requests with details
-- `observation` - Record observations about team members
-- `360 review` - Create or open 360 review file for a team member
+Julie uses a hierarchical agent system where specialized agents handle different domains:
 
-### Summary Commands
-- `/today` - Generate a daily summary of tasks, ideas, and features
-- `/weekly` - Generate a weekly activity report
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      User Input                              │
+│                    (./pos "command")                         │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Command Parser                             │
+│                (scripts/parse_command.py)                    │
+│                                                              │
+│  Detects agent via pattern matching → routes to specialist   │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │   Tasks   │   │  People   │   │ Strategy  │
+    │   Agent   │   │   Agent   │   │   Agent   │
+    └───────────┘   └───────────┘   └───────────┘
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │Reflection │   │ Meetings  │   │    MFM    │
+    │   Agent   │   │   Agent   │   │   Agent   │
+    └───────────┘   └───────────┘   └───────────┘
+```
 
-## Architecture
+### Specialized agents
 
-Built on three core components:
-1. **Obsidian Vault** - Central knowledge hub for storing all notes and work items
-2. **Claude Code Terminal** - Execution environment for automation commands
-3. **3-Layer Context System** - Global preferences, project instructions, and reference files
+| Agent | Role | Key Commands |
+|-------|------|--------------|
+| **Tasks** | Task, idea, feature, action management | `new task:`, `update:`, `/today` |
+| **People** | Observations, 360 reviews, team feedback | `observation:`, `360:`, `feedback:` |
+| **Strategy** | OKR analysis, strategic insights | Query-based (uses L1→L2→L3 progressive disclosure) |
+| **Reflection** | Daily summaries, session logging | `daily summary`, `session:` |
+| **Meetings** | Meeting prep, post-meeting processing | `prep meeting:`, `121:`, `post meeting:` |
+| **MFM** | Monthly Focus Meeting reviews | `mfm review:`, `mfm summary:` |
 
 ## Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/autodesk-chris/chief-of-staff.git
-   cd chief-of-staff
-   ```
+### Requirements
+- Python 3.8+
+- Claude Code CLI
+- Obsidian (optional, for vault visualization)
 
-2. **Requirements:**
-   - Python 3.6 or higher
-   - Obsidian (optional, for viewing your vault)
+### Setup
 
-3. **Open your Obsidian vault:**
-   - Point Obsidian to the `Work/` folder in this project
-   - Your tasks, ideas, and features will appear automatically
+1. Clone the repository:
+```bash
+git clone https://github.com/autodesk-chris/chief-of-staff.git
+cd chief-of-staff
+```
+
+2. Ensure the `pos` script is executable:
+```bash
+chmod +x pos
+```
+
+3. (Optional) Open Obsidian and point it to the `Work/` folder
 
 ## Usage
 
-### Quick Start
+### Quick start
 
-Use the `./pos` command to interact with your Personal OS:
+Use `./pos` to interact with your Personal OS:
 
 ```bash
-# Create a task
-./pos "new task: Buy groceries due: 2026-01-10 details: Get milk and bread tags: personal, shopping"
+# Create items
+./pos "new task: Review Q1 report due: 2026-03-01 details: Focus on revenue tags: quarterly"
+./pos "new idea: Dark mode for dashboard tags: product, ui"
+./pos "new feature: Export to PDF details: Allow report export tags: enhancement"
 
-# Capture an idea
-./pos "new idea: Improve dashboard UI details: Redesign the analytics view tags: product, ui"
+# Update status
+./pos "update: Review Q1 report status: completed"
+./pos "update: Dark mode status: in-progress note: Starting design phase"
 
-# Document a feature request
-./pos "new feature: Dark mode support details: Add dark theme to the app tags: ui, frontend"
+# Generate summaries
+./pos "/today"
+```
+
+### Task management
+
+```bash
+# Create task with all options
+./pos "new task: [title] due: [YYYY-MM-DD] details: [text] tags: [tag1, tag2]"
+
+# Update task status
+./pos "update: [title] status: [completed|in-progress|blocked|waiting|on-hold|archived]"
+./pos "update: [title] status: [status] note: [optional note]"
 
 # Generate today's summary
 ./pos "/today"
 
-# Generate weekly summary
-./pos "/weekly"
+# Process notepad captures
+./pos "process notepad"
 ```
 
-### Command Syntax
+### Team feedback
 
-**Create a Task:**
 ```bash
-./pos "new task: [Title] due: [YYYY-MM-DD] details: [Description] tags: [tag1, tag2]"
-```
-- `due:` - Optional due date in YYYY-MM-DD format
-- `details:` - Optional description
-- `tags:` - Optional comma-separated tags
+# Record observation
+./pos "observation: Sarah Johnson - Great presentation skills details: Clear communication"
 
-**Create an Idea:**
+# Create 360 review template
+./pos "360: John Smith"
+./pos "360 review: John Smith"
+```
+
+### Meeting workflows
+
 ```bash
-./pos "new idea: [Title] details: [Description] tags: [tag1, tag2]"
+# Prepare for meeting
+./pos "prep meeting: Q1 Planning"
+
+# Prepare for 1:1 (pulls context from observations, past meetings, etc.)
+./pos "121: Sarah"
+
+# Process meeting notes
+./pos "post meeting: Q1 Planning"
 ```
 
-**Create a Feature:**
+### MFM reviews
+
 ```bash
-./pos "new feature: [Title] details: [Description] tags: [tag1, tag2]"
+# Review MFM pre-read with 5-dimensional framework
+./pos "mfm review: strategic accounts Feb"
+./pos "review mfm: marketing February"
+
+# Create post-MFM summary
+./pos "mfm summary: strategic accounts Feb"
+./pos "post mfm: first strike Jan"
 ```
 
-**Create an Observation:**
+### Daily workflow
+
 ```bash
-./pos "observation: [Name] - [Observation] details: [Description] tags: [tag1, tag2]"
-./pos "I have feedback: [Name] - [Feedback] tags: [tag1, tag2]"
+# Log work session (throughout day)
+./pos "session: Worked on Julie agent system, added orchestration layer"
+
+# Conduct daily summary interview (end of day)
+./pos "daily summary"
 ```
 
-**Create a 360 Review:**
-```bash
-./pos "360 review: [Name]"
-./pos "360: [Name]"  # Short form
-```
-
-**Generate Summaries:**
-```bash
-./pos "/today"    # Daily summary
-./pos "/weekly"   # Weekly summary
-```
-
-## Project Structure
+## Project structure
 
 ```
 Chief_of_staff/
-├── pos                    # Main command interface
-├── CLAUDE.md             # Project context for Claude
+├── pos                       # Main command interface
+├── CLAUDE.md                 # Project instructions for Claude
+├── README.md                 # This file
+├── project_summary.md        # Current implementation status
 ├── scripts/
-│   ├── create_item.py    # Create tasks/ideas/features
-│   ├── summary.py        # Generate summaries
-│   ├── parse_command.py  # Parse natural language commands
-│   └── utils.py          # Helper functions
-└── Work/                 # Obsidian vault
+│   ├── parse_command.py      # Command routing and parsing
+│   ├── detect_agent.py       # Agent detection logic
+│   ├── create_item.py        # Create tasks/ideas/features
+│   ├── summary.py            # Today summary generation
+│   ├── update_item.py        # Status updates
+│   ├── observation.py        # Team observations
+│   ├── meeting_prep.py       # Meeting preparation
+│   ├── daily_summary_interview.py  # Daily reflection
+│   ├── session_log.py        # Session logging
+│   ├── notepad_processor.py  # Notepad processing
+│   ├── strategy_query_helper.py    # Progressive strategy loading
+│   ├── mfm_agent.py          # MFM review workflows
+│   └── utils.py              # Shared utilities
+├── .claude/
+│   └── personas/             # Agent persona definitions
+│       ├── AGENT_TASKS.md
+│       ├── AGENT_PEOPLE.md
+│       ├── AGENT_STRATEGY.md
+│       ├── AGENT_REFLECTION.md
+│       ├── AGENT_MEETINGS.md
+│       └── AGENT_MFM.md
+└── Work/                     # Obsidian vault
     ├── Inbox/
-    │   ├── Tasks/        # All tasks
-    │   ├── Ideas/        # All ideas
-    │   ├── Features/     # All features
-    │   └── Actions/      # Team actions
-    ├── Team/             # Team feedback
-    │   ├── Observations/ # Team member observations
-    │   └── 360_reviews/  # 360 reviews and assessment guide
-    │       ├── 360_[name]_FY26.md
-    │       └── performance_assessment_guide.md
-    ├── LLM_Context/      # Reference files for Claude
-    ├── Notes/
-    └── Research/
+    │   ├── Tasks/            # Task files
+    │   ├── Ideas/            # Idea files
+    │   ├── Features/         # Feature requests
+    │   ├── Actions/          # Action items
+    │   └── Today/            # Daily summaries
+    ├── Team/
+    │   └── Observations/     # Team observations
+    ├── People/               # Person-specific context
+    ├── Process/
+    │   └── MFM/              # MFM pre-reads and summaries
+    ├── LLM_Context/
+    │   ├── strategy-memory/  # L1/L2/L3 strategy hierarchy
+    │   └── MFM_review_framework.md
+    ├── 1-Notepad/            # Frictionless capture
+    ├── 4Ps/                  # Weekly 4Ps documents
+    └── Daily_Logs/           # Session logs
 ```
 
-## File Format
+## File format
 
-All items are stored as Markdown files with YAML frontmatter:
+Items use Markdown with YAML frontmatter:
 
-**Task Example:**
 ```markdown
 ---
 type: task
-due-date: 2026-01-15
-tags: [work, urgent]
+due-date: 2026-03-01
+status: active
+tags: [quarterly, report]
 ---
-# Task: Complete Q1 Report
+# Task: Review Q1 report
 
 ## Details
 
-Compile sales data and create presentation slides.
+Focus on revenue metrics and team performance.
 ```
 
-**Idea Example:**
-```markdown
----
-type: idea
-tags: [product, ux]
-due-date: null
----
-# Idea: Improve onboarding flow
+## Status values
 
-## Details
+| Status | Description |
+|--------|-------------|
+| `active` | Currently actionable |
+| `in-progress` | Actively working on it |
+| `blocked` | Cannot proceed |
+| `waiting` | Waiting on someone/something |
+| `on-hold` | Paused temporarily |
+| `completed` | Finished |
+| `archived` | No longer relevant |
 
-Add interactive tutorial for new users.
+## Memory system
+
+Julie uses claude-mem for semantic memory with project-based partitioning:
+- Stores observations, decisions, and context
+- Enables duplicate detection during notepad processing
+- Supports cross-session knowledge retrieval
+
+## Development
+
+### Running tests
+
+```bash
+# Test agent detection
+python3 scripts/detect_agent.py
+
+# Test strategy helper
+python3 scripts/strategy_query_helper.py
+
+# Test MFM agent
+python3 scripts/mfm_agent.py
 ```
 
-**Observation Example:**
-```markdown
----
-type: observation
-team-member: Sarah Johnson
-date: 2026-01-03
-tags: [leadership]
----
-# Observation: Sarah Johnson - 2026-01-03
+### Agent personas
 
-## Details
+Each agent has a persona file in `.claude/personas/` that defines:
+- Role and responsibilities
+- Commands handled
+- Access permissions
+- Workflows and output formats
+- Memory usage patterns
 
-Excellent communication skills during presentation.
-```
+## Current status
 
-**360 Review Example:**
-```markdown
----
-type: 360-review
-team-member: Sarah Johnson
-fiscal-year: FY26
-created: 2026-01-03
-status: in-progress
----
+Milestone 4 in progress - Multi-domain Orchestration
 
-# 360 Review: Sarah Johnson - FY26
+**Complete:**
+- Milestone 1: Tasks Agent + Memory + Notepad
+- Milestone 2: Reflection Agent + Meetings Agent
+- Milestone 3: People Agent + Strategy Agent + MFM Agent
 
-## Overview
+**In progress:**
+- Cross-domain orchestration
+- 121 prep context gathering
+- Multi-agent coordination
 
-Performance review and 360 feedback for Sarah Johnson.
-
-## Reference
-
-See [[performance_assessment_guide]] for evaluation criteria.
-
-## Key Observations
-
-<!-- Link to observation files here -->
-
-## Strengths
-
-<!-- Document key strengths -->
-
-## Areas for Growth
-
-<!-- Document development opportunities -->
-
-## Goals & Commitments
-
-<!-- Document goals and commitments -->
-
-## Summary
-
-<!-- Final assessment summary -->
-```
-
-## Status
-
-✅ MVP Complete - Ready to use!
+See `project_summary.md` for detailed implementation status.

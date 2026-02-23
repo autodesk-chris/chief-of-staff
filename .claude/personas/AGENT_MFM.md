@@ -254,6 +254,36 @@ mcp__plugin_claude-mem_mcp-search__save_memory({
 })
 ```
 
+## Cross-Agent Orchestration
+
+### MFM Review Orchestration
+
+For `mfm review: [squad] [month]` commands, the orchestrator gathers context from multiple agents:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Orchestrator                               │
+│                                                              │
+│  ┌───────────┐  ┌───────────┐                               │
+│  │ Strategy  │  │    MFM    │                               │
+│  │   Agent   │  │   Agent   │                               │
+│  └─────┬─────┘  └─────┬─────┘                               │
+│        │              │                                      │
+│  L1 Overview     Pre-read                                   │
+│  OKR Targets    Past MFMs                                   │
+│        │              │                                      │
+│        └──────────────┘                                     │
+│                ▼                                             │
+│       Combined Context                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Context gathered:**
+- **From Strategy Agent:** L1 overview for OKR context, available L2 domains
+- **From MFM Agent:** Pre-read file location, past MFM summaries for the squad
+
+**Command:** `mfm review: strategic accounts Feb` uses `orchestrate_mfm_review()` in `scripts/orchestrator.py`
+
 ## Integration with Strategy Agent
 
 For strategic context during reviews:

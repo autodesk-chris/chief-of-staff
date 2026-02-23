@@ -131,6 +131,38 @@ When generating daily summary, always read this week's 4Ps to:
 - Identify if off-track
 - Provide relevant context for decisions
 
+## Cross-Agent Orchestration
+
+### Daily Summary Orchestration
+
+For `daily summary` commands, the orchestrator gathers context from multiple agents:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Orchestrator                               │
+│                                                              │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐                │
+│  │   Tasks   │  │  People   │  │Reflection │                │
+│  │   Agent   │  │   Agent   │  │   Agent   │                │
+│  └─────┬─────┘  └─────┬─────┘  └─────┬─────┘                │
+│        │              │              │                       │
+│  Completed      Observations    Sessions                     │
+│   Tasks              │          & 4Ps                        │
+│        │              │              │                       │
+│        └──────────────┼──────────────┘                      │
+│                       ▼                                      │
+│              Combined Context                                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Context gathered:**
+- **From Tasks Agent:** Today's completed tasks, updated items
+- **From People Agent:** Observations created today
+- **From Reflection Agent:** Session logs, 4Ps context
+- **From Meetings Agent:** Today's meetings from Granola
+
+**Command:** `daily summary` uses `orchestrate_daily_summary()` in `scripts/orchestrator.py`
+
 ## Memory Usage
 
 Store in reflection memory:

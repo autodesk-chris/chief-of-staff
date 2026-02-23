@@ -4,21 +4,80 @@ This file contains project-specific instructions for the Chief of Staff Personal
 
 ## Julie: Hierarchical Agent System
 
-This project uses a hierarchical agent architecture called "Julie" where specialized agents handle different domains:
+Julie is a hierarchical agent architecture where specialized agents handle different domains. Commands are automatically routed to the appropriate agent based on pattern matching.
 
-- **Tasks Agent**: Task, idea, feature, reminder, action, decision management
-- **People Agent**: Observations, 360 reviews, team feedback
-- **Strategy Agent**: OKR analysis, strategy insights, progressive disclosure of strategy-memory
-- **Reflection Agent**: Daily summaries, weekly reflections
-- **Meetings Agent**: Meeting prep, post-meeting processing, Granola integration
-- **MFM Agent**: Monthly Focus Meeting reviews and summaries
-- **Orchestrator** (this file): Routes commands and coordinates multi-domain queries
+### Architecture overview
 
-**Agent personas located in:** `.claude/personas/`
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      User Input                              │
+│                    (./pos "command")                         │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Command Parser                             │
+│                (scripts/parse_command.py)                    │
+│                                                              │
+│  Detects agent via pattern matching → routes to specialist   │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │   Tasks   │   │  People   │   │ Strategy  │
+    │   Agent   │   │   Agent   │   │   Agent   │
+    └───────────┘   └───────────┘   └───────────┘
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │Reflection │   │ Meetings  │   │    MFM    │
+    │   Agent   │   │   Agent   │   │   Agent   │
+    └───────────┘   └───────────┘   └───────────┘
+```
 
-**Command routing:** Commands are automatically routed to specialized agents based on pattern matching. See `scripts/detect_agent.py` for routing logic.
+### Specialized agents
 
-**Memory system:** Uses claude-mem with partitioned semantic memory (tasks, people, strategy, reflection, meetings) plus human-readable notes in `Work/Memory/`.
+| Agent | Commands | Role |
+|-------|----------|------|
+| **Tasks** | `new task:`, `update:`, `/today`, `process notepad` | Task, idea, feature, reminder, action management |
+| **People** | `observation:`, `360:`, `feedback:` | Observations, 360 reviews, team feedback |
+| **Strategy** | Query-based (OKR, strategy, bet keywords) | Strategic analysis with progressive L1→L2→L3 disclosure |
+| **Reflection** | `daily summary`, `/summary`, `session:` | Daily summaries, session logging |
+| **Meetings** | `prep meeting:`, `121:`, `post meeting:` | Meeting prep, Granola integration |
+| **MFM** | `mfm review:`, `mfm summary:` | Monthly Focus Meeting reviews and summaries |
+
+### Key locations
+
+- **Agent personas:** `.claude/personas/AGENT_*.md`
+- **Command routing:** `scripts/detect_agent.py`
+- **Memory system:** claude-mem MCP with project partitioning
+- **Obsidian vault:** `Work/`
+
+### Quick command reference
+
+```bash
+# Tasks
+./pos "new task: [title] due: [YYYY-MM-DD] details: [text] tags: [tag1, tag2]"
+./pos "update: [title] status: [completed|in-progress|blocked|waiting]"
+./pos "/today"                          # Generate today's task summary
+./pos "process notepad"                 # Process captured notes
+
+# People
+./pos "observation: [Name] - [observation text]"
+./pos "360: [Name]"                     # Create 360 review template
+
+# Meetings
+./pos "prep meeting: [meeting title]"   # Prepare for upcoming meeting
+./pos "121: [person name]"              # Prepare for 1:1
+./pos "post meeting: [meeting title]"   # Process meeting notes
+
+# Reflection
+./pos "session: [summary of work]"      # Log work session
+./pos "daily summary"                   # End-of-day interview
+
+# MFM
+./pos "mfm review: [squad] [month]"     # Review MFM pre-read
+./pos "mfm summary: [squad] [month]"    # Create post-MFM summary
+```
 
 ---
 

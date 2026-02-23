@@ -226,6 +226,45 @@ For team feedback:
 - Keep concise but complete
 - Standalone - no assumed context
 
+## Cross-Agent Orchestration
+
+### 121 Prep Orchestration
+
+For `121 prep: [Name]` commands, the orchestrator gathers context from multiple agents:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Orchestrator                               │
+│                                                              │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐                │
+│  │  People   │  │ Meetings  │  │   Tasks   │                │
+│  │  Agent    │  │   Agent   │  │   Agent   │                │
+│  └─────┬─────┘  └─────┬─────┘  └─────┬─────┘                │
+│        │              │              │                       │
+│  Observations    Past 121s    Actions/Tasks                 │
+│        │              │              │                       │
+│        └──────────────┼──────────────┘                      │
+│                       ▼                                      │
+│              Combined Context                                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Context gathered:**
+- **From People Agent:** Recent observations about the person (last 90 days)
+- **From Meetings Agent:** Past 121 notes and meeting history
+- **From Tasks Agent:** Open actions assigned to/from person, related tasks
+- **From Memory:** Semantic search for additional context
+
+**Command:** `121 prep: Sarah` uses `orchestrate_121_prep()` in `scripts/orchestrator.py`
+
+### MFM Review Orchestration
+
+For `mfm review: [squad] [month]` commands, the orchestrator gathers:
+
+- **From Strategy Agent:** L1 overview, relevant L2 domain, OKR targets
+- **From MFM Agent:** Pre-read file, past MFM summaries
+- **From Memory:** Historical squad context
+
 ## Memory Integration
 
 Store in meetings memory partition:

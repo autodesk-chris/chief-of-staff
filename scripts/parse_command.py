@@ -25,6 +25,7 @@ from utils import parse_tags, find_item_by_title
 from summary import generate_today_summary, generate_weekly_summary, update_today_document
 from detect_agent import detect_agent, load_agent_context
 from process_notepad import process_notepad
+from orchestrator import orchestrate_121_prep, orchestrate_daily_summary, handle_ambiguous_query
 
 # Setup logging
 logging.basicConfig(
@@ -524,6 +525,56 @@ def execute_command(command_text):
         else:
             files_list = '\n  '.join(result['files'])
             return f"✓ Synced {result['synced']} meeting(s) to Obsidian:\n  {files_list}"
+
+    # Handle 121 prep with orchestration (cross-domain context gathering)
+    if command_text.lower().startswith('121 prep:'):
+        person_name = command_text[9:].strip()
+
+        # Use orchestrator to gather cross-domain context
+        context = orchestrate_121_prep(person_name)
+
+        # Build context summary for Claude
+        output = f"""✓ Gathered context for 121 with {person_name}
+
+**Sources checked:** {', '.join(context['sources_checked'])}
+**Total context items:** {context['total_items']}
+
+"""
+        if context['observations']:
+            output += f"**Observations ({len(context['observations'])}):**\n"
+            for obs in context['observations'][:3]:
+                output += f"  - {obs['date']}: {obs['content'][:100]}...\n"
+            output += "\n"
+
+        if context['past_121s']:
+            output += f"**Past 121s ({len(context['past_121s'])}):**\n"
+            for m in context['past_121s'][:3]:
+                output += f"  - {m['date']}: {m['title']}\n"
+            output += "\n"
+
+        if context['actions']:
+            output += f"**Open Actions ({len(context['actions'])}):**\n"
+            for a in context['actions'][:3]:
+                output += f"  - {a['title']}\n"
+            output += "\n"
+
+        if context['tasks']:
+            output += f"**Related Tasks ({len(context['tasks'])}):**\n"
+            for t in context['tasks'][:3]:
+                output += f"  - {t['title']}\n"
+            output += "\n"
+
+        output += f"""**Memory query suggestion:**
+  {context['memory_query']['suggested_query']}
+
+Now creating prep document with gathered context..."""
+
+        # Also create the prep document
+        from prep_meeting import prep_meeting
+        filepath = prep_meeting(person_name, attendees=[person_name])
+
+        output += f"\n\n✓ Created meeting prep: {filepath}"
+        return output
 
     # Handle meeting prep commands
     if command_text.lower().startswith('prep meeting:') or command_text.lower().startswith('121:'):
