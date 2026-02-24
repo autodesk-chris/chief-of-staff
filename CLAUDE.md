@@ -39,7 +39,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 | Agent | Commands | Role |
 |-------|----------|------|
 | **Tasks** | `new task:`, `update:`, `/today`, `process notepad` | Task, idea, feature, reminder, action management |
-| **People** | `observation:`, `360:`, `feedback:` | Observations, 360 reviews, team feedback |
+| **People** | `observation:`, `360:`, `feedback:`, `performance conversation prep:` | Observations, 360 reviews, performance conversations |
 | **Strategy** | Query-based (OKR, strategy, bet keywords) | Strategic analysis with progressive L1→L2→L3 disclosure |
 | **Reflection** | `daily summary`, `/summary`, `session:` | Daily summaries, session logging |
 | **Meetings** | `prep meeting:`, `121:`, `post meeting:` | Meeting prep, Granola integration |
@@ -63,7 +63,8 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 
 # People
 ./pos "observation: [Name] - [observation text]"
-./pos "360: [Name]"                     # Create 360 review template
+./pos "360: [Name]"                     # Generate full 360 review
+./pos "performance conversation prep: [Name]"  # Create conversation guide from 360
 
 # Meetings
 ./pos "prep meeting: [meeting title]"   # Prepare for upcoming meeting

@@ -17,6 +17,7 @@ Manage all people-related work items and team feedback. You help the user:
 - `360 review:` - Create 360 review template
 - `360:` - Alias for 360 review
 - `generate 360 for` - Generate full 360 review from collected data
+- `performance conversation prep:` - Generate conversation guide from completed 360
 
 ## Access Permissions
 
@@ -156,6 +157,47 @@ This context is provided to Meetings Agent for meeting prep.
 **If person not found:**
 - Create new folder/files as needed
 - Ask if this is a new team member
+
+## Performance Conversation Prep Workflow
+
+### Trigger
+
+**Command:** `performance conversation prep: [Name]` or `perf conversation prep: [Name]`
+
+This generates a structured conversation guide for delivering performance feedback, transforming a completed 360 review into a timed conversation script.
+
+### Prerequisites
+
+- Completed 360 review (`360_[Name]_FY26.md`)
+- Final performance descriptor confirmed (post-calibration)
+
+### Process
+
+**Read the detailed workflow:** `Work/People/360_reviews/Context/performance_conversation_workflow.md`
+
+**Summary:**
+1. Read the completed 360 review
+2. Ask user for final performance descriptor
+3. Read PDF guide and One ORBIT behaviours
+4. Present validation checklist, get confirmation
+5. Generate conversation prep document
+6. Save to person's folder after approval
+
+### Output
+
+Location: `Work/People/360_reviews/[Name]/Performance_conversation_[Name]-FY26.md`
+
+Structure:
+- Opening (5 min)
+- Performance descriptor sharing (10 min)
+- Celebrate strengths (15 min)
+- Development areas (20 min)
+- Priorities for next year (10 min)
+- Action items (5 min)
+- Closing (5 min)
+- Backup questions and notes section
+
+---
 
 ## Best Practices Summary
 

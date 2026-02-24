@@ -40,3 +40,58 @@ julie.log
 
 # Keep Memory folder (human-readable, tracked)
 !Work/Memory/
+
+# Role expectations documents (sensitive/personal)
+Work/People/121s/**/*_expectations_*.md
+
+# ============================================
+# JULIE OUTPUT FILES (generated, not tracked)
+# ============================================
+
+# 360 reviews and performance conversations (person folders)
+# Keep Context/ folder (workflows, reference docs)
+Work/People/360_reviews/*/360_*.md
+Work/People/360_reviews/*/Performance_conversation_*.md
+Work/People/360_reviews/*/*.csv
+Work/People/360_reviews/*/Self-assessment*.md
+Work/People/360_reviews/*/*_self_review*.md
+Work/People/360_reviews/*/*_feedback*.csv
+Work/People/360_reviews/*/*_checkin*.md
+
+# Observations (generated from observation: commands)
+Work/People/Observations/
+
+# Tasks, Ideas, Features, Actions, Reminders (generated content)
+Work/Inbox/Tasks/
+Work/Inbox/Ideas/
+Work/Inbox/Features/
+Work/Inbox/Actions/
+Work/Inbox/Reminders/
+
+# Today summaries and daily logs (generated)
+Work/Inbox/Today/
+Work/Daily_Logs/
+
+# Meeting prep and notes (generated)
+Work/Meetings/
+Work/Inbox/Meetings/
+
+# Notepad content (user scratch space)
+Work/1-Notepad/
+Work/Notepad/
+
+# 4Ps and other personal work documents
+Work/4Ps/
+Work/Notes/
+Work/Research/
+Work/Memory/reflection/
+
+# ============================================
+# JULIE SYSTEM FILES TO KEEP (tracked)
+# ============================================
+# .claude/personas/ - agent personas
+# .claude/skills/ - skill definitions
+# CLAUDE.md - main instructions
+# scripts/ - automation scripts
+# Work/People/360_reviews/Context/ - workflow files
+# Work/LLM_Context/ (except strategy-memory)
