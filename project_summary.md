@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
 **Last Updated:** 2026-03-17 (Session 13)
-**Current Phase:** Phase 2.8 - Strategy Agent Routing Fix
-**Overall Status:** Full hierarchical agent system with Strategy Agent queries now working
+**Current Phase:** Phase 2.8 - Strategy Agent + Quick Wins
+**Overall Status:** Full hierarchical agent system with all routing fixes applied
 
 ---
 
@@ -344,6 +344,7 @@ Work/1-Notepad/             # Notepad content
 
 **Session 13 Commits:**
 ```
+b2b2452 - Fix quick wins: agent patterns and optional feature tags (2026-03-17)
 68b7556 - Add Strategy Agent routing for strategy queries (2026-03-17)
 ```
 
@@ -408,7 +409,11 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - Created `scripts/strategy_agent.py` with progressive disclosure pattern
 - Updated `scripts/parse_command.py` to route strategy queries
 - Strategy queries now classify as broad/domain/detail and return appropriate file paths
-- **Total project time:** ~23 hours
+- **Quick wins fixes:**
+  - Added `performance conversation prep:` to people_patterns in detect_agent.py
+  - Added `session:` to reflection_patterns in detect_agent.py
+  - Made tags optional for `new feature:` command (was required)
+- **Total project time:** ~23.5 hours
 
 ---
 
@@ -424,11 +429,9 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure (fixed this session)
 
 ### Partially Working / Known Issues
-- ⚠️ `new feature:` requires tags (should be optional)
 - ⚠️ `new action:` requires assignee field (syntax differs from docs)
 - ⚠️ `daily summary` requires interactive input (EOF in non-interactive)
 - ⚠️ `slack digest` prints instructions instead of executing (needs manual MCP calls)
-- ⚠️ `performance conversation prep:` not in detect_agent.py patterns
 - ⚠️ Meetings Agent shows "Granola STUB" - extraction not wired to actual MCP
 
 ### Not Implemented (from Julie 2.0 Brief)
