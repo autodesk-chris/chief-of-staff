@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-03-17 (Session 12)
-**Current Phase:** Phase 2.7 - Bug Fix + Development Review
-**Overall Status:** Full hierarchical agent system with Hiring Agent added
+**Last Updated:** 2026-03-17 (Session 13)
+**Current Phase:** Phase 2.8 - Strategy Agent Routing Fix
+**Overall Status:** Full hierarchical agent system with Strategy Agent queries now working
 
 ---
 
@@ -18,9 +18,10 @@
 - ✅ **Milestone 4:** Multi-domain Orchestration (Complete)
 - ✅ **Phase 2.5:** Slack MCP Integration (Complete)
 - ✅ **Phase 2.6:** Performance Conversation Prep + Git Hygiene (Complete)
-- ✅ **Phase 2.7:** Bug Fix + Development Review (Complete) ← **This Session**
+- ✅ **Phase 2.7:** Bug Fix + Development Review (Complete)
+- ✅ **Phase 2.8:** Strategy Agent Routing Fix (Complete) ← **This Session**
 
-**Overall Status:** Full Julie agent system operational with 7 specialized agents. Hiring Agent added. Folder path mismatch fixed.
+**Overall Status:** Full Julie agent system operational with 7 specialized agents. All agents tested and verified. Strategy Agent queries now working.
 
 ---
 
@@ -61,13 +62,13 @@
 
 | Agent | Lines | Role | Commands |
 |-------|-------|------|----------|
-| AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today |
-| AGENT_REFLECTION.md | 160 | Daily summaries | daily summary, /summary, slack digest |
+| AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today, process notepad |
+| AGENT_REFLECTION.md | 160 | Daily summaries | daily summary, /summary, session:, slack digest |
 | AGENT_MEETINGS.md | 281 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
 | AGENT_PEOPLE.md | 210 | Team feedback/observations | observation:, 360:, performance conversation prep: |
-| AGENT_STRATEGY.md | 220 | Strategic analysis | OKR queries, strategy questions |
+| AGENT_STRATEGY.md | 220 | Strategic analysis | OKR queries, strategy questions (via strategy_agent.py) |
 | AGENT_MFM.md | 285 | MFM review/summary | mfm review:, mfm summary: |
-| AGENT_HIRING.md | 374 | Candidate evaluation | setup role:, screen CVs:, interview eval: |
+| AGENT_HIRING.md | 374 | Candidate evaluation | setup role:, screen CVs:, shortlist:, interview eval: |
 
 ### New Workflow (Phase 2.6)
 
@@ -100,6 +101,23 @@ Work/1-Notepad/                   # Notepad content
 ---
 
 ## 4. Code Changes Summary
+
+### New Files Created (Session 13)
+
+**scripts/strategy_agent.py**
+- **Purpose:** Handle strategy queries with progressive disclosure pattern
+- **Key functions:**
+  - `classify_query()` - Classifies queries as broad/domain/detail
+  - `handle_strategy_query()` - Returns file paths and guidance
+  - `format_strategy_response()` - Formats output for CLI
+- **Features:** Maps keywords to L2 domains, L3 detail types
+
+### Modified Files (Session 13)
+
+**scripts/parse_command.py**
+- **Change:** Added strategy query handler
+- **Import:** Added `from strategy_agent import format_strategy_response, handle_strategy_query`
+- **Handler:** Routes strategy queries (OKR, strategy, bet keywords) to strategy_agent
 
 ### New Files Created (Session 11)
 
@@ -151,13 +169,17 @@ Work/1-Notepad/                   # Notepad content
 
 ```bash
 # Tasks Agent
-./pos "new task: [title]"
+./pos "new task: [title] due: [date] details: [text] tags: [tags]"
+./pos "new idea: [title] details: [text]"
+./pos "new reminder: [title] due: [date]"
 ./pos "update: [title] status: [status]"
 ./pos "/today"
+./pos "process notepad"
+./pos "archive completed"
 
 # Reflection Agent
 ./pos "daily summary"
-./pos "/summary"
+./pos "session: [summary]"
 ./pos "slack digest"
 
 # Meetings Agent
@@ -168,11 +190,23 @@ Work/1-Notepad/                   # Notepad content
 # People Agent
 ./pos "observation: [Name] - [observation]"
 ./pos "360: [Name]"
-./pos "performance conversation prep: [Name]"  # NEW
+./pos "performance conversation prep: [Name]"
+
+# Strategy Agent (fixed in Session 13)
+./pos "what are the current OKRs?"
+./pos "what's the monetization strategy?"
+./pos "what bets are we making?"
 
 # MFM Agent
 ./pos "mfm review: [squad] [month]"
 ./pos "mfm summary: [squad] [month]"
+
+# Hiring Agent
+./pos "setup role: [role name]"
+./pos "screen CVs: [role name]"
+./pos "shortlist: [name] for [role]"
+./pos "interview prep: [name] for [role]"
+./pos "interview eval: [name] for [role]"
 ```
 
 ### Git Commands Used
@@ -271,8 +305,11 @@ git ls-tree -r HEAD --name-only
 
 ### Key File Locations
 
+**Phase 2.8 Files:**
+- `scripts/strategy_agent.py` - Strategy query handler with progressive disclosure
+
 **Phase 2.6 Files:**
-- `Work/People/360_reviews/Context/performance_conversation_workflow.md` - New workflow
+- `Work/People/360_reviews/Context/performance_conversation_workflow.md` - Performance conversation workflow
 
 **Agent Personas:**
 - `.claude/personas/AGENT_TASKS.md` - Tasks Agent
@@ -304,6 +341,17 @@ Work/1-Notepad/             # Notepad content
 ```
 
 ### Git Commit History
+
+**Session 13 Commits:**
+```
+68b7556 - Add Strategy Agent routing for strategy queries (2026-03-17)
+```
+
+**Session 12 Commits:**
+```
+1b82393 - Add Hiring Agent and skills system (2026-03-17)
+d0f2563 - Fix folder path mismatch: Work/Team → Work/People (2026-03-17)
+```
 
 **Session 11 Commits:**
 ```
@@ -345,35 +393,54 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - Cleaned up git tracking (removed 34 output files)
 - Updated .gitignore with comprehensive output patterns
 
-### Session 12: Phase 2.7 Complete (2026-03-17) ← **Current**
+### Session 12: Phase 2.7 Complete (2026-03-17)
 - Reviewed full Julie 2.0 development status against original brief
 - Identified folder path mismatch: scripts referenced `Work/Team/` but actual folder is `Work/People/`
 - Fixed path references across 5 files (utils.py, CLAUDE.md, agent personas)
 - Renamed `get_team_path()` to `get_people_path()` in utils.py
 - Verified observation command now works correctly
 - Confirmed 7 agents operational (Hiring Agent added since last session)
-- **Total project time:** ~22 hours
+
+### Session 13: Phase 2.8 Complete (2026-03-17) ← **Current**
+- Comprehensive testing of all 7 agents via `./pos` commands
+- Compiled detailed implementation status report
+- Fixed Strategy Agent routing (was detected but had no handler)
+- Created `scripts/strategy_agent.py` with progressive disclosure pattern
+- Updated `scripts/parse_command.py` to route strategy queries
+- Strategy queries now classify as broad/domain/detail and return appropriate file paths
+- **Total project time:** ~23 hours
 
 ---
 
-## Development Status Summary (Session 12)
+## Development Status Summary (Session 13)
 
-### Working Capabilities
-- ✅ Task creation, updates, status changes
-- ✅ /today summary generation
-- ✅ Agent routing (7 agents)
-- ✅ Memory integration (claude-mem MCP)
-- ✅ Notepad processing
-- ✅ Observation recording (fixed this session)
+### Fully Working
+- ✅ **Tasks Agent:** new task, new idea, new reminder, update, /today, archive completed, process notepad
+- ✅ **People Agent:** observation, 360 review (creates template)
+- ✅ **Meetings Agent:** prep meeting, 121, post meeting (Granola stubbed)
+- ✅ **MFM Agent:** mfm review, mfm summary
+- ✅ **Hiring Agent:** setup role, screen CVs (validates folders)
+- ✅ **Reflection Agent:** session logging
+- ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure (fixed this session)
 
-### Outstanding Work (Milestones 2-4)
-- Phase 2.5: Slack MCP integration (daily digest) - Not started
-- Phase 3: Daily summary enhancement - Not started
-- Phase 4: Meetings Agent (Granola integration) - Untested
-- Phase 5: People Agent access control - Not started
-- Phase 6: Strategy Agent query helpers - Not started
-- Phase 7: MFM Agent workflows - Not started
-- Phase 8-9: Cleanup and polish - Not started
+### Partially Working / Known Issues
+- ⚠️ `new feature:` requires tags (should be optional)
+- ⚠️ `new action:` requires assignee field (syntax differs from docs)
+- ⚠️ `daily summary` requires interactive input (EOF in non-interactive)
+- ⚠️ `slack digest` prints instructions instead of executing (needs manual MCP calls)
+- ⚠️ `performance conversation prep:` not in detect_agent.py patterns
+- ⚠️ Meetings Agent shows "Granola STUB" - extraction not wired to actual MCP
+
+### Not Implemented (from Julie 2.0 Brief)
+- ❌ `actions` list command
+- ❌ `change due date:` command
+- ❌ `new_decision:` and `decisions` list
+- ❌ `new_daily` contribution notes
+- ❌ 4Ps generation workflow
+- ❌ Leadership update workflow
+- ❌ Slack task extraction
+- ❌ Meeting transcript auto-extraction
+- ❌ Confluence MCP integration for knowledge features
 
 ---
 
