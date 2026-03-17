@@ -179,8 +179,11 @@ Work/1-Notepad/                   # Notepad content
 
 # Reflection Agent
 ./pos "daily summary"
+./pos "finalize summary: [additions]"
 ./pos "session: [summary]"
 ./pos "slack digest"
+./pos "4ps"                              # Generate weekly 4Ps draft
+./pos "finalize 4ps: [content]"          # Save 4Ps to file
 
 # Meetings Agent
 ./pos "prep meeting: [title]"
@@ -344,6 +347,7 @@ Work/1-Notepad/             # Notepad content
 
 **Session 13 Commits:**
 ```
+243b305 - Add 4Ps generation workflow (2026-03-17)
 29ec17b - Fix action syntax and daily summary for Claude Code workflow (2026-03-17)
 b2b2452 - Fix quick wins: agent patterns and optional feature tags (2026-03-17)
 68b7556 - Add Strategy Agent routing for strategy queries (2026-03-17)
@@ -418,7 +422,13 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - Action command now parses "Person to Action" syntax (e.g., "Sarah to review budget" extracts assignee automatically)
   - Daily summary now non-interactive - returns draft for Claude to continue conversation
   - Added `finalize summary:` command to complete daily summary workflow
-- **Total project time:** ~24 hours
+- **4Ps generation workflow:**
+  - Created `scripts/fourps_generator.py` for weekly 4Ps drafts
+  - Gathers context: previous 4Ps, daily summaries, tasks, meetings
+  - Provides Granola MCP instructions for meeting data
+  - Generates draft with Priorities, Progress, Plans, Problems
+  - Commands: `4ps`, `/4ps`, `finalize 4ps`
+- **Total project time:** ~25 hours
 
 ---
 
@@ -444,7 +454,6 @@ Note: MCP-related "stubs" are intentional - Python scripts cannot call MCP direc
 - ❌ `change due date:` command
 - ❌ `new_decision:` and `decisions` list
 - ❌ `new_daily` contribution notes
-- ❌ 4Ps generation workflow
 - ❌ Leadership update workflow
 - ❌ Slack task extraction
 - ❌ Meeting transcript auto-extraction
