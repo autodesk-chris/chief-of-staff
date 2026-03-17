@@ -26,6 +26,7 @@ from summary import generate_today_summary, generate_weekly_summary, update_toda
 from detect_agent import detect_agent, load_agent_context
 from process_notepad import process_notepad
 from orchestrator import orchestrate_121_prep, orchestrate_daily_summary, handle_ambiguous_query
+from strategy_agent import format_strategy_response, handle_strategy_query
 
 # Setup logging
 logging.basicConfig(
@@ -843,6 +844,11 @@ Use mcp__granola__query_granola_meetings to find the meeting."""
         # Build result message
         note_text = f" (note: {note})" if note else ""
         return f"✓ Marked {item_type} '{file_title}' as {status}{note_text}\n✓ Updated: {file_path}\n✓ Updated today summary: {today_path}"
+
+    # Handle strategy queries (detected by keywords like OKR, strategy, bet)
+    agent, confidence = detect_agent(command_text)
+    if agent == 'strategy':
+        return format_strategy_response(command_text)
 
     raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'update:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/today', or '/weekly'")
 
