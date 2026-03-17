@@ -128,35 +128,35 @@ def get_inbox_path(item_type):
         raise ValueError(f"Invalid item type: {item_type}")
 
 
-def get_team_path():
+def get_people_path():
     """
-    Get the path to the Team folder.
+    Get the path to the People folder.
 
     Returns:
-        Path object pointing to Work/Team
+        Path object pointing to Work/People
     """
     vault_path = get_vault_path()
-    return vault_path / "Team"
+    return vault_path / "People"
 
 
 def get_observations_path():
     """
-    Get the path to the Team/Observations folder.
+    Get the path to the People/Observations folder.
 
     Returns:
-        Path object pointing to Work/Team/Observations
+        Path object pointing to Work/People/Observations
     """
-    return get_team_path() / "Observations"
+    return get_people_path() / "Observations"
 
 
 def get_360_reviews_path():
     """
-    Get the path to the Team/360_reviews folder.
+    Get the path to the People/360_reviews folder.
 
     Returns:
-        Path object pointing to Work/Team/360_reviews
+        Path object pointing to Work/People/360_reviews
     """
-    return get_team_path() / "360_reviews"
+    return get_people_path() / "360_reviews"
 
 
 def extract_team_member_name(title):

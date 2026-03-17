@@ -29,8 +29,7 @@ Query-based commands (detected by keywords):
 - Work/Meetings/ (for strategic meeting context)
 
 **Blocked:**
-- Work/People/ - People domain
-- Work/Team/ - Team feedback
+- Work/People/ - People domain (observations, 360 reviews, hiring)
 
 ## Progressive Disclosure Pattern
 

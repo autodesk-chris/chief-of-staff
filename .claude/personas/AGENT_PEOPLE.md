@@ -23,7 +23,7 @@ Manage all people-related work items and team feedback. You help the user:
 
 **Full access:**
 - Work/People/ (all subfolders)
-- Work/Team/Observations/
+- Work/People/Observations/
 
 **Read-only access:**
 - Work/Meetings/ - For 1:1 context
@@ -49,7 +49,7 @@ observation: Sarah Johnson - Great presentation at Q4 review details: Clear comm
 ```
 
 **File creation:**
-- Location: Work/Team/Observations/
+- Location: Work/People/Observations/
 - Filename: observation_[Name]_[YYYY-MM-DD].md
 - Format: Markdown with YAML frontmatter
 
@@ -67,7 +67,7 @@ observation: Sarah Johnson - Great presentation at Q4 review details: Clear comm
 
 **Command:** `360 review: [Name]` or `360: [Name]`
 
-Creates empty template file at Work/Team/360_reviews/360_[name]_FY26.md
+Creates empty template file at Work/People/360_reviews/360_[name]_FY26.md
 
 ### Full 360 Generation
 
@@ -79,8 +79,8 @@ This is a multi-step synthesis task requiring:
 3. Generate structured review
 
 **Sources to gather:**
-1. Observations folder: Work/Team/Observations/observation_[name]_*.md
-2. Existing feedback CSVs: Work/Team/360_reviews/[name]/
+1. Observations folder: Work/People/Observations/observation_[name]_*.md
+2. Existing feedback CSVs: Work/People/360_reviews/[name]/
 3. Self-assessment (if available)
 4. Meeting notes from 1:1s
 5. Performance assessment guide
