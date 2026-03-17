@@ -344,6 +344,29 @@ def parse_creation_command(command_text):
     type_prefix = f'new {item_type}:'
     remaining = command_text[len(type_prefix):].strip()
 
+    # Special handling for actions: parse "Person to Action" syntax
+    # e.g., "new action: Sarah to review budget" -> assignee: Sarah, title: review budget
+    extracted_assignee = None
+    if item_type == 'action' and ' to ' in remaining.lower():
+        # Check if there's an explicit assignee: field - if so, don't auto-extract
+        if 'assignee:' not in remaining.lower():
+            # Find " to " (case-insensitive) before any keywords
+            keywords_pattern = r'\s+(?:due:|details:|tags:|assignee:)'
+            # Get the part before keywords
+            keyword_match = re.search(keywords_pattern, remaining, re.IGNORECASE)
+            if keyword_match:
+                action_part = remaining[:keyword_match.start()]
+            else:
+                action_part = remaining
+
+            # Look for "Name to Action" pattern
+            to_match = re.match(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+to\s+(.+)$', action_part, re.IGNORECASE)
+            if to_match:
+                extracted_assignee = to_match.group(1).strip()
+                action_title = to_match.group(2).strip()
+                # Replace the action_part in remaining with just the action title
+                remaining = action_title + remaining[len(action_part):]
+
     # Find the first keyword
     keywords = ['due:', 'reminder-date:', 'assignee:', 'date-decided:', 'participants:', 'rationale:', 'related-items:', 'details:', 'tags:']
     first_keyword_pos = len(remaining)
@@ -370,7 +393,7 @@ def parse_creation_command(command_text):
         if item_type == 'reminder':
             result['reminder_date'] = None
         if item_type == 'action':
-            result['assignee'] = None
+            result['assignee'] = extracted_assignee  # Use extracted from "Person to Action" if available
         if item_type == 'decision':
             result['date_decided'] = None
             result['participants'] = None
@@ -405,7 +428,13 @@ def parse_creation_command(command_text):
     if item_type == 'reminder':
         result['reminder_date'] = reminder_date_match.group(1).strip() if reminder_date_match else None
     if item_type == 'action':
-        result['assignee'] = assignee_match.group(1).strip() if assignee_match else None
+        # Use explicit assignee: field if provided, otherwise use extracted from "Person to Action" syntax
+        if assignee_match:
+            result['assignee'] = assignee_match.group(1).strip()
+        elif extracted_assignee:
+            result['assignee'] = extracted_assignee
+        else:
+            result['assignee'] = None
     if item_type == 'decision':
         result['date_decided'] = date_decided_match.group(1).strip() if date_decided_match else None
         result['participants'] = participants_match.group(1).strip() if participants_match else None
@@ -495,29 +524,45 @@ def execute_command(command_text):
         log_file = log_session(summary)
         return f"✓ Session logged to: {log_file}"
 
-    # Handle daily summary commands (new simplified workflow)
+    # Handle daily summary commands (non-interactive for Claude Code workflow)
     if command_text.lower() in ['/summary', 'daily summary', '/daily', 'daily']:
         from daily_summary import run_daily_summary, finalize_summary
 
         # Phase 1: Gather context and generate draft
         result = run_daily_summary()
 
-        # Display draft summary
-        print("\n" + "="*60)
-        print("DRAFT SUMMARY:")
-        print("="*60)
-        print(result['draft'])
-        print("="*60)
+        # Return draft for Claude to display and conduct conversation
+        output = []
+        output.append("=" * 60)
+        output.append("DAILY SUMMARY DRAFT")
+        output.append("=" * 60)
+        output.append(result['draft'])
+        output.append("=" * 60)
+        output.append("")
+        output.append("**Next steps for Claude:**")
+        output.append("1. Display this draft to the user")
+        output.append("2. Ask: 'Have I missed anything you'd like to capture?'")
+        output.append("3. If user has additions, run: ./pos \"finalize summary: [user additions]\"")
+        output.append("4. If no additions, run: ./pos \"finalize summary\"")
 
-        # Phase 2: Ask single question
-        print("\n❓ Have I missed anything you'd like to capture?")
-        user_input = input("Your response (or press Enter if complete): ").strip()
+        return '\n'.join(output)
 
-        # Phase 3: Finalize and save
-        if user_input and user_input.lower() not in ['no', 'nothing', 'n']:
-            filepath = finalize_summary(result['draft'], user_input)
+    # Handle finalize summary command (completes daily summary workflow)
+    if command_text.lower().startswith('finalize summary'):
+        from daily_summary import run_daily_summary, finalize_summary
+
+        # Extract user additions if provided
+        if command_text.lower() == 'finalize summary':
+            user_additions = None
         else:
-            filepath = finalize_summary(result['draft'])
+            # Format: "finalize summary: [additions]"
+            user_additions = command_text[17:].strip()  # After "finalize summary:"
+            if user_additions.startswith(':'):
+                user_additions = user_additions[1:].strip()
+
+        # Re-run to get fresh draft, then finalize
+        result = run_daily_summary()
+        filepath = finalize_summary(result['draft'], user_additions)
 
         return f"✓ Daily summary saved: {filepath}"
 
