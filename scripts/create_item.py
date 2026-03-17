@@ -53,8 +53,8 @@ ITEM_TYPES = {
     'feature': {
         'folder': 'Work/Inbox/Features',
         'prefix': 'feature',
-        'required_fields': ['title', 'tags'],  # Tags required for features
-        'optional_fields': ['details', 'status']
+        'required_fields': ['title'],
+        'optional_fields': ['details', 'tags', 'status']
     },
     'decision': {
         'folder': 'Work/Decisions',
@@ -63,9 +63,6 @@ ITEM_TYPES = {
         'optional_fields': ['details', 'date-decided', 'participants', 'rationale', 'related-items']
     }
 }
-
-# Valid feature tags
-VALID_FEATURE_TAGS = ['chief-of-staff', 'product']
 
 def validate_item(item_type, data):
     """Validate item data before creation"""
@@ -78,16 +75,6 @@ def validate_item(item_type, data):
     for field in config['required_fields']:
         if field not in data or not data[field]:
             raise ValueError(f"Missing required field: {field}")
-
-    # Special validation for features - must have valid tag
-    if item_type == 'feature':
-        tags = data.get('tags', [])
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(',')]
-
-        valid_tag_found = any(tag in VALID_FEATURE_TAGS for tag in tags)
-        if not valid_tag_found:
-            raise ValueError(f"Features must include tag: {' or '.join(VALID_FEATURE_TAGS)}")
 
     # Special validation for actions - must have assignee
     if item_type == 'action' and 'assignee' not in data:

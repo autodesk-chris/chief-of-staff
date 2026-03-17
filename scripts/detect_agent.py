@@ -36,7 +36,10 @@ def detect_agent(command_text):
         return ('hiring', 1.0)
 
     # People patterns (note: 121: is handled by meetings agent)
-    people_patterns = ['observation:', '360 review:', '360:', 'feedback:']
+    people_patterns = [
+        'observation:', '360 review:', '360:', 'feedback:',
+        'performance conversation prep:', 'perf conversation prep:'
+    ]
     if any(p in command_lower for p in people_patterns):
         return ('people', 1.0)
 
@@ -50,10 +53,11 @@ def detect_agent(command_text):
     if any(k in command_lower for k in strategy_keywords):
         return ('strategy', 0.8)
 
-    # Reflection patterns (includes Slack digest)
+    # Reflection patterns (includes Slack digest and session logging)
     reflection_patterns = [
         'daily summary', '/summary', '/daily', 'sync meetings',
-        'slack digest', '/slack-digest', 'slack summary'
+        'slack digest', '/slack-digest', 'slack summary',
+        'session:', '/session'
     ]
     if any(p in command_lower for p in reflection_patterns):
         return ('reflection', 1.0)
@@ -98,7 +102,9 @@ if __name__ == '__main__':
     test_commands = [
         'new task: Review budget',
         'observation: Sarah - great presentation',
+        'performance conversation prep: Sarah',
         'daily summary',
+        'session: worked on feature X',
         'slack digest',
         'mfm review: strategic accounts Feb',
         'what are the current OKRs?',
