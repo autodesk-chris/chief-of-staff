@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-02-23 (Session 9)
-**Current Phase:** Milestone 4 Complete - Multi-domain Orchestration
-**Overall Status:** Full hierarchical agent system with cross-domain orchestration
+**Last Updated:** 2026-03-17 (Session 12)
+**Current Phase:** Phase 2.7 - Bug Fix + Development Review
+**Overall Status:** Full hierarchical agent system with Hiring Agent added
 
 ---
 
@@ -15,373 +15,140 @@
 - ✅ **Milestone 1:** Foundation + Tasks Agent + Memory + Notepad (Complete)
 - ✅ **Milestone 2:** Reflection Agent + Meetings Agent (Complete)
 - ✅ **Milestone 3:** Specialized Domain Agents (Complete)
-- ✅ **Milestone 4:** Multi-domain Orchestration (Complete) ← **This Session**
+- ✅ **Milestone 4:** Multi-domain Orchestration (Complete)
+- ✅ **Phase 2.5:** Slack MCP Integration (Complete)
+- ✅ **Phase 2.6:** Performance Conversation Prep + Git Hygiene (Complete)
+- ✅ **Phase 2.7:** Bug Fix + Development Review (Complete) ← **This Session**
 
-**Overall Status:** Full Julie agent system operational with cross-domain orchestration. The orchestrator coordinates context gathering for complex workflows like 121 prep, MFM reviews, and daily summaries.
+**Overall Status:** Full Julie agent system operational with 7 specialized agents. Hiring Agent added. Folder path mismatch fixed.
 
 ---
 
 ## 2. Key Decisions Made
 
-### Milestone 4 Implementation Decisions (Session 9)
+### Phase 2.6 Implementation Decisions (Session 11)
 
-**1. Orchestrator Pattern**
-- **Decision:** Create central orchestrator for cross-domain queries
-- **Reasoning:** Complex workflows like 121 prep need context from multiple agents
-- **Implementation:** `scripts/orchestrator.py` with functions for 121 prep, MFM review, daily summary
-- **Benefit:** Single command gathers context from People, Meetings, Tasks, and Strategy agents
+**1. Performance Conversation Prep as Separate Command**
+- **Decision:** Create standalone trigger, not embedded in 360 workflow
+- **Reasoning:** Calibration happens between 360 completion and conversation prep
+- **Benefit:** Flexibility to generate conversation prep after descriptor is finalized
 
-**2. Session Logging Retention**
-- **Finding:** Session logging is still actively used by daily_summary_interview.py
-- **Decision:** Keep session_log.py and Daily_Logs/ - they're not deprecated
-- **Reasoning:** The daily summary workflow reads session logs as context source
+**2. Trigger Command: `performance conversation prep: [Name]`**
+- **Decision:** Descriptive trigger over shorter alias
+- **Reasoning:** Clarity and consistency with other People Agent commands
+- **Alternative rejected:** Making it automatic after 360 generation
 
-**3. Documentation Enhancement**
-- **Decision:** Add architecture diagrams to CLAUDE.md and README.md
-- **Reasoning:** Visual representation helps understand agent routing flow
-- **Implementation:** ASCII architecture diagram + agent command tables
+**3. Add to People Agent (not Standalone Skill)**
+- **Decision:** Extend People Agent rather than create new skill
+- **Reasoning:** Tight coupling with 360 review data; same context needed
+- **Benefit:** Single agent handles all people/feedback workflows
 
-### Milestone 3 Implementation Decisions (Session 8)
+**4. Slack MCP Security**
+- **Decision:** Remove browser tokens, keep only bot token
+- **Reasoning:** Browser tokens (xoxc/xoxd) grant full user access if exposed
+- **Trade-off:** Cannot access user-to-user DM history with bot token only
 
-**1. Empty Agent Personas Discovery**
-- **Finding:** AGENT_PEOPLE.md, AGENT_STRATEGY.md, AGENT_MFM.md existed but were empty (0 lines)
-- **Action:** Wrote full content for all three personas
-- **Outcome:** All six agent personas now have substantial content (160-285 lines each)
-
-**2. Progressive Disclosure Pattern for Strategy**
-- **Decision:** Load strategy-memory in L1 → L2 → L3 hierarchy
-- **Reasoning:** Minimizes context loading while providing relevant strategic context
-- **Implementation:** strategy_query_helper.py with `get_l1_overview()`, `get_l2_domain()`, `list_l3_files()`
-- **Benefit:** Can answer broad or specific strategy questions efficiently
-
-**3. MFM File Discovery Automation**
-- **Decision:** Automatic file discovery with squad/month normalization
-- **Reasoning:** Users shouldn't need to remember exact file paths or naming conventions
-- **Implementation:** `find_mfm_file()` with fuzzy squad matching and month normalization
-- **Example:** "strategic accounts Feb" finds `strategic_accounts_feb_mfm.md`
-
-**4. Stub Function Pattern Reuse**
-- **Decision:** Continue stub function pattern from Milestone 2 for MFM Granola integration
-- **Reasoning:** Consistent architecture - Python handles structure, Claude Code provides MCP data
-- **Implementation:** `search_granola_for_mfm()` returns stub, Claude Code calls actual MCP tools
+**5. Git Separation: System vs Output Files**
+- **Decision:** Track only Julie system files; ignore all generated output
+- **Reasoning:** Output files contain personal/work data; system files are reusable
+- **Implementation:** Updated .gitignore + removed 34 legacy tracked files
 
 ---
 
 ## 3. Technical Implementation
 
-### Architecture: All Six Agents
+### Architecture: All Seven Agents
 
 | Agent | Lines | Role | Commands |
 |-------|-------|------|----------|
-| AGENT_TASKS.md | 262 | Task/idea/feature management | new task:, update:, /today |
-| AGENT_REFLECTION.md | 160 | Daily summaries | daily summary, /summary |
-| AGENT_MEETINGS.md | 241 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
-| AGENT_PEOPLE.md | 167 | Team feedback/observations | observation:, 360:, generate 360 for |
-| AGENT_STRATEGY.md | 219 | Strategic analysis | OKR queries, strategy questions |
+| AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today |
+| AGENT_REFLECTION.md | 160 | Daily summaries | daily summary, /summary, slack digest |
+| AGENT_MEETINGS.md | 281 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
+| AGENT_PEOPLE.md | 210 | Team feedback/observations | observation:, 360:, performance conversation prep: |
+| AGENT_STRATEGY.md | 220 | Strategic analysis | OKR queries, strategy questions |
 | AGENT_MFM.md | 285 | MFM review/summary | mfm review:, mfm summary: |
+| AGENT_HIRING.md | 374 | Candidate evaluation | setup role:, screen CVs:, interview eval: |
 
-### Core Components (Milestone 3)
+### New Workflow (Phase 2.6)
 
-**strategy_query_helper.py (270 lines):**
-- `get_l1_overview()` - Load top-level strategy overview (17KB)
-- `get_l2_domain(domain)` - Load specific domain (13 available)
-- `list_l3_files(category)` - List files in bets/decisions/experiments/etc.
-- `get_l3_file(category, name)` - Load specific L3 file
-- `progressive_query(type, identifier)` - Progressive loading helper
-- `get_structure_summary()` - Overview of available content
+**Performance Conversation Prep (~300 lines):**
+- 7-step process transforming 360 reviews into conversation guides
+- Timed meeting flow format (~60 minutes)
+- Sections: Opening, Descriptor, Strengths, Development Areas, Path Forward, Actions, Closing
+- Backup responses for difficult questions
+- Works with all descriptors: High Impact, Fully Successful, Developing
 
-**mfm_agent.py (350 lines):**
-- `normalize_month(input)` - Converts "feb", "February" → "Feb"
-- `normalize_squad_name(input)` - Converts "strategic accounts" → search pattern
-- `find_mfm_file(squad, month)` - Auto-discover MFM pre-read file
-- `review_mfm(squad, month)` - Prepare for MFM review with framework
-- `post_mfm_summary(squad, month)` - Create post-meeting summary
-- `create_review_document()` - Generate five-dimensional analysis output
-- `create_summary_document()` - Generate Slack-ready summary
+### Git Tracking Architecture
 
-### Agent Personas (Milestone 3)
+**Tracked (Julie system files):**
+```
+.claude/personas/AGENT_*.md      # Agent personas
+scripts/*.py                      # Python automation
+Work/People/360_reviews/Context/  # Workflow files only
+CLAUDE.md, README.md, pos         # Project docs
+```
 
-**AGENT_PEOPLE.md (167 lines):**
-- Role: Team feedback and development specialist
-- Commands: observation:, feedback:, 360 review:, 360:, generate 360 for
-- Access: Work/People/, Work/Team/Observations/
-- Workflows: Observation recording, 360 template creation, full 360 generation
-- Memory integration: people partition
-
-**AGENT_STRATEGY.md (219 lines):**
-- Role: Strategy and operations specialist
-- Commands: Query-based (OKRs, strategy, bets)
-- Access: strategy-memory/ (L1/L2/L3), 4Ps/, OKRs/
-- Workflows: Progressive disclosure (L1 → L2 → L3)
-- Memory integration: strategy partition
-
-**AGENT_MFM.md (285 lines):**
-- Role: MFM preparation and follow-up specialist
-- Commands: mfm review:, review mfm:, mfm summary:, post mfm:
-- Access: Process/MFM/, MFM_review_framework.md, Granola MCP
-- Workflows: Five-dimensional analysis, post-meeting Slack summaries
-- File discovery: Automatic squad/month matching
+**Ignored (Generated output):**
+```
+Work/Inbox/                       # Tasks, ideas, features, actions
+Work/People/360_reviews/*/        # Person folders (360s, conversations)
+Work/Notes/, Work/4Ps/            # Personal documents
+Work/Meetings/, Work/Daily_Logs/  # Meeting prep, session logs
+Work/1-Notepad/                   # Notepad content
+```
 
 ---
 
 ## 4. Code Changes Summary
 
-### New Files Created (Milestone 4)
+### New Files Created (Session 11)
 
-**scripts/orchestrator.py (350 lines):**
-- `orchestrate_121_prep(person_name)` - Gather context from People, Meetings, Tasks agents
-- `orchestrate_mfm_review(squad, month)` - Gather context from Strategy, MFM agents
-- `orchestrate_daily_summary()` - Gather context from Tasks, People, Reflection agents
-- `handle_ambiguous_query(query)` - Route unclear queries to multiple agents
-
-### New Files Created (Milestone 3)
-
-**scripts/strategy_query_helper.py**
-- **Purpose:** Progressive loading of strategy-memory content
-- **Key Functions:** get_l1_overview(), get_l2_domain(), list_l3_files(), progressive_query()
-
-**scripts/mfm_agent.py**
-- **Purpose:** MFM review and summary workflows
-- **Key Functions:** find_mfm_file(), review_mfm(), post_mfm_summary(), normalize_month()
+**Work/People/360_reviews/Context/performance_conversation_workflow.md**
+- **Purpose:** Defines process for generating performance conversation prep documents
+- **Key contents:** 7-step workflow, output format, quality criteria, conversation starters
 
 ### Modified Files
 
 **.claude/personas/AGENT_PEOPLE.md**
-- **Change:** Empty → 167 lines of persona content
-- **Contents:** Observation workflow, 360 review workflow, memory usage, privacy notes
+- **Change:** Added performance conversation prep command and workflow reference
+- **New section:** Performance Conversation Prep Workflow with trigger, prerequisites, process
 
-**.claude/personas/AGENT_STRATEGY.md**
-- **Change:** Empty → 219 lines of persona content
-- **Contents:** Progressive disclosure pattern, query workflow, integration notes
+**CLAUDE.md**
+- **Change:** Updated command reference table
+- **Addition:** `performance conversation prep:` added to People Agent commands
 
-**.claude/personas/AGENT_MFM.md**
-- **Change:** Empty → 285 lines of persona content
-- **Contents:** Five-dimensional framework, file discovery, summary generation
+**.gitignore**
+- **Change:** Comprehensive patterns for output file exclusion
+- **Categories:** 360 reviews, observations, inbox items, notes, meetings, notepads
 
-**scripts/parse_command.py**
-- **Change:** Added MFM command handlers (~55 lines)
-- **Commands:** mfm review:, review mfm:, mfm summary:, post mfm:
-- **Import:** Added datetime for default month
+**Slack_mcp/slack-mcp-server/.env**
+- **Change:** Removed xoxc/xoxd browser tokens for security
+- **Kept:** xoxb bot token only
+
+### Generated Output (Not Tracked)
+
+- `Performance_conversation_Simen_Hellem-FY26.md` (High Impact)
+- `Performance_conversation_Even_Olsted-FY26.md` (Fully Successful)
+- `Performance_conversation_Katarina_Plevec-FY26.md` (Developing)
 
 ---
 
 ## 5. Commands & Setup
 
-### New Commands (Milestone 3)
+### New Command (Phase 2.6)
 
-**MFM Review:**
+**Performance Conversation Prep:**
 ```bash
-./pos "mfm review: strategic accounts Feb"
-./pos "review mfm: marketing February"
+./pos "performance conversation prep: [Name]"
+./pos "perf conversation prep: [Name]"
 ```
 
-**MFM Summary:**
-```bash
-./pos "mfm summary: first strike Jan"
-./pos "post mfm: user engagement Feb"
-```
+**Prerequisites:**
+1. Completed 360 review file (`360_[Name]_FY26.md`)
+2. Final performance descriptor confirmed (post-calibration)
 
-### Testing Performed
+### All Agent Commands
 
-**Test 1: Agent Detection**
-```bash
-python3 scripts/detect_agent.py
-```
-- All agents routing correctly with confidence 0.8-1.0
-
-**Test 2: Strategy Query Helper**
-```bash
-python3 scripts/strategy_query_helper.py
-```
-- L1 overview loads (17077 chars)
-- L2 domains listed (13 domains)
-- L3 categories available (6 categories)
-- Progressive query working
-
-**Test 3: MFM Agent**
-```bash
-python3 scripts/mfm_agent.py
-```
-- Month normalization working
-- Squad name normalization working
-- File finding working (found strategic_accounts_feb_mfm.md)
-
-**Test 4: MFM Commands**
-```bash
-./pos "mfm review: strategic accounts Feb"
-./pos "post mfm: marketing Feb"
-```
-- MFM review: Found pre-read, ready for analysis
-- Post MFM: Ready for Granola data
-
----
-
-## 6. Problems Solved
-
-### Problem 1: Empty Agent Personas
-**Issue:** AGENT_PEOPLE.md, AGENT_STRATEGY.md, AGENT_MFM.md existed but had no content.
-
-**Solution:**
-- Wrote comprehensive persona content for all three
-- Followed established patterns from AGENT_TASKS.md and AGENT_REFLECTION.md
-- Included workflows, commands, access permissions, memory integration
-
-### Problem 2: Strategy Context Overloading
-**Issue:** Loading full strategy-memory could overwhelm context.
-
-**Solution:**
-- Implemented progressive disclosure pattern (L1 → L2 → L3)
-- L1 provides overview, only load L2/L3 when needed
-- strategy_query_helper.py provides efficient loading functions
-
-### Problem 3: MFM File Discovery
-**Issue:** Users shouldn't need to know exact file paths.
-
-**Solution:**
-- Automatic month normalization ("feb" → "Feb")
-- Squad name pattern matching ("strategic accounts" → "*strategic*accounts*")
-- Graceful error handling with suggestions
-
----
-
-## 7. Pending Items
-
-### Known Limitations
-
-**1. People Agent - 360 Generation**
-- 360 review template creation works
-- Full 360 generation requires Claude Code to synthesize from multiple sources
-- No automated feedback gathering yet
-
-**2. Strategy Agent - Query Routing**
-- Routes on keywords (OKR, strategy, bet)
-- No natural language query understanding yet
-- Manual L2/L3 specification may be needed
-
-**3. MFM Agent - Granola Integration**
-- Uses stub functions for Granola MCP
-- Claude Code must call mcp__granola__ tools and provide data
-- Post-MFM summary requires manual meeting data
-
-### Follow-Up Tasks
-
-**Immediate:**
-- ✅ Phase 5: People Agent complete
-- ✅ Phase 6: Strategy Agent complete
-- ✅ Phase 7: MFM Agent complete
-- ✅ All commands tested and working
-- ✅ Committed and pushed (e89e46f)
-
-**Short-term:**
-- Use MFM review for upcoming Monthly Focus Meetings
-- Use strategy queries for OKR discussions
-- Use observation commands for team feedback
-
-**Medium-term (Milestone 4):**
-- Multi-domain orchestration
-- Cross-agent context sharing
-- Automated workflow triggers
-
----
-
-## 8. User Preferences & Context
-
-### Workflow Preferences
-
-- Progressive disclosure over full context loading
-- Auto-discovery of files over manual path specification
-- Stub functions for MCP integration (Claude Code provides data)
-- Five-dimensional framework for MFM reviews
-
-### Strategy Memory Structure
-
-```
-strategy-memory/
-├── L1-overview.md (17KB - always load first)
-├── L2-domains/ (13 domain files)
-│   ├── monetization-growth.md
-│   ├── building-design.md
-│   └── ... (11 more)
-├── L3-detail/
-│   ├── bets/
-│   ├── decisions/
-│   ├── experiments/
-│   ├── objectives/
-│   ├── press-releases/
-│   └── strategies/
-└── cross-cutting/
-    ├── competitive-landscape.md
-    ├── okr-tracker.md
-    └── ... (4 more)
-```
-
-### MFM Process Structure
-
-```
-Process/MFM/
-├── Jan/
-│   └── [squad]_[month]_mfm.md
-├── Feb/
-│   ├── strategic_accounts_feb_mfm.md
-│   └── marketing_feb_mfm.md
-└── ...
-```
-
----
-
-## 9. Next Steps
-
-### Immediate Actions
-1. ✅ Phase 8: Documentation complete (CLAUDE.md, README.md)
-2. ✅ Phase 9: Cross-domain orchestration complete
-3. ✅ orchestrator.py created and tested
-4. ✅ 121 prep command with orchestration working
-5. ✅ Agent personas updated with cross-agent notes
-6. ✅ All tests passing
-
-### Short-term (This Week)
-1. Use 121 prep command with orchestration for upcoming 1:1s
-2. Use MFM review for Monthly Focus Meetings
-3. Test daily summary with orchestrator context gathering
-4. Validate cross-agent workflows in daily usage
-
-### Medium-term (Future Enhancements)
-1. Automated workflow triggers
-2. Enhanced natural language understanding
-3. Memory-driven duplicate detection
-4. Smart command triage for ambiguous queries
-
-### Long-term
-1. Testing and optimization
-2. Production deployment
-3. User feedback integration
-
----
-
-## 10. Quick Reference
-
-### Key File Locations
-
-**Milestone 3 Scripts:**
-- `/Users/smallc/AI/Chief_of_staff/scripts/strategy_query_helper.py` - Progressive strategy loading
-- `/Users/smallc/AI/Chief_of_staff/scripts/mfm_agent.py` - MFM review and summary
-
-**All Agent Personas:**
-- `/Users/smallc/AI/Chief_of_staff/.claude/personas/AGENT_TASKS.md` - Tasks Agent (262 lines)
-- `/Users/smallc/AI/Chief_of_staff/.claude/personas/AGENT_REFLECTION.md` - Reflection Agent (160 lines)
-- `/Users/smallc/AI/Chief_of_staff/.claude/personas/AGENT_MEETINGS.md` - Meetings Agent (241 lines)
-- `/Users/smallc/AI/Chief_of_staff/.claude/personas/AGENT_PEOPLE.md` - People Agent (167 lines)
-- `/Users/smallc/AI/Chief_of_staff/.claude/personas/AGENT_STRATEGY.md` - Strategy Agent (219 lines)
-- `/Users/smallc/AI/Chief_of_staff/.claude/personas/AGENT_MFM.md` - MFM Agent (285 lines)
-
-**Reference Files:**
-- `/Users/smallc/AI/Chief_of_staff/Work/LLM_Context/strategy-memory/` - Strategy memory hierarchy
-- `/Users/smallc/AI/Chief_of_staff/Work/LLM_Context/MFM_review_framework.md` - Five-dimensional framework
-- `/Users/smallc/AI/Chief_of_staff/Work/Process/MFM/` - MFM pre-reads by month
-
-### Important Commands
-
-**All Agent Commands:**
 ```bash
 # Tasks Agent
 ./pos "new task: [title]"
@@ -391,6 +158,7 @@ Process/MFM/
 # Reflection Agent
 ./pos "daily summary"
 ./pos "/summary"
+./pos "slack digest"
 
 # Meetings Agent
 ./pos "prep meeting: [title]"
@@ -400,29 +168,154 @@ Process/MFM/
 # People Agent
 ./pos "observation: [Name] - [observation]"
 ./pos "360: [Name]"
+./pos "performance conversation prep: [Name]"  # NEW
 
 # MFM Agent
 ./pos "mfm review: [squad] [month]"
 ./pos "mfm summary: [squad] [month]"
+```
 
-# Strategy Agent (query-based, no command prefix)
-# Just ask OKR/strategy questions in conversation
+### Git Commands Used
+
+```bash
+# Remove legacy files from tracking (keep locally)
+git rm --cached -r Work/1-Notepad/ Work/4Ps/ Work/Inbox/ ...
+
+# Verify tracked files
+git ls-tree -r HEAD --name-only
+```
+
+---
+
+## 6. Problems Solved
+
+### Problem 1: Slack DMs Not Accessible
+**Issue:** Attempted to access DMs with team members for feedback examples
+**Investigation:** Discovered channels cache only had 2 DMs
+**Root cause:** Bot tokens (xoxb) cannot access user-to-user DM history
+**Resolution:** Documented limitation; would need user token (xoxp) for DM access
+
+### Problem 2: Browser Tokens Exposed
+**Issue:** .env file contained live browser tokens (xoxc/xoxd)
+**Risk:** Full Slack access as user if file exposed
+**Solution:** Removed browser tokens, verified .env in .gitignore
+
+### Problem 3: Output Files Tracked in Git
+**Issue:** 34 generated output files committed to git
+**Cause:** .gitignore only prevents new files; doesn't remove already-tracked
+**Solution:** `git rm --cached` to remove from tracking while keeping locally
+
+---
+
+## 7. Pending Items
+
+### Known Limitations
+
+**1. Slack MCP - DM Access**
+- Bot tokens cannot access user-to-user DMs
+- Would need user token (xoxp) or browser tokens for DM history
+
+**2. Performance Conversation Prep**
+- Requires completed 360 review first
+- User must provide final performance descriptor
+
+### Potential Improvements
+
+**Short-term:**
+- Add 360 Context reference files to git (assessment guide, One Orbit behaviours)
+- Consider `.claude/skills/` folder if skills are created
+
+**Medium-term:**
+- Explore user token (xoxp) for Slack DM access
+- Add digest commands to domain agents for processing notepads
+
+---
+
+## 8. User Preferences & Context
+
+### Workflow Preferences
+
+- **Git separation:** Only Julie system files tracked; all generated output local
+- **Security conscious:** Removed browser tokens despite convenience trade-off
+- **Performance descriptors:** High Impact, Fully Successful, Developing
+- **Conversation prep style:** Timed meeting flow with talking points and backup questions
+
+### Slack Configuration
+
+**Config file:** `.slack_digest_config.json`
+**Token type:** Bot token only (xoxb)
+**Limitation:** Cannot access user-to-user DMs
+
+---
+
+## 9. Next Steps
+
+### Immediate Actions
+1. ✅ Performance conversation prep workflow created
+2. ✅ Conversation preps generated for Simen, Even, Katarina
+3. ✅ Slack MCP secured (browser tokens removed)
+4. ✅ Git tracking cleaned up (34 files removed)
+5. ✅ Pushed to GitHub
+
+### Short-term
+- Use generated conversation prep documents for performance reviews
+- Consider adding 360 Context reference files to git
+
+### Medium-term
+- Add domain notepad digest commands
+- Explore user token for Slack DM access if needed
+
+---
+
+## 10. Quick Reference
+
+### Key File Locations
+
+**Phase 2.6 Files:**
+- `Work/People/360_reviews/Context/performance_conversation_workflow.md` - New workflow
+
+**Agent Personas:**
+- `.claude/personas/AGENT_TASKS.md` - Tasks Agent
+- `.claude/personas/AGENT_REFLECTION.md` - Reflection Agent
+- `.claude/personas/AGENT_MEETINGS.md` - Meetings Agent
+- `.claude/personas/AGENT_PEOPLE.md` - People Agent (updated)
+- `.claude/personas/AGENT_STRATEGY.md` - Strategy Agent
+- `.claude/personas/AGENT_MFM.md` - MFM Agent
+
+### What's Tracked in Git
+
+```
+.claude/personas/           # Agent personas
+scripts/                    # Python automation
+Work/People/360_reviews/Context/  # Workflow files only
+CLAUDE.md, README.md, pos   # Project docs
+Slack_mcp/                  # Slack MCP docs
+```
+
+### What's NOT Tracked
+
+```
+Work/Inbox/                 # All inbox items
+Work/People/360_reviews/*/  # Person folders
+Work/Notes/, Work/4Ps/      # Personal documents
+Work/Meetings/              # Meeting prep
+Work/Daily_Logs/            # Session logs
+Work/1-Notepad/             # Notepad content
 ```
 
 ### Git Commit History
 
-**Milestone 3 Commit:**
+**Session 11 Commits:**
 ```
-e89e46f - Add Milestone 3: Specialized Domain Agents (2026-02-22) ← Latest
+f5a3714 - Remove output files from git tracking (2026-02-25)
+a840ba5 - Add performance conversation prep workflow and update gitignore (2026-02-25)
 ```
 
 **Previous Commits:**
 ```
+e89e46f - Add Milestone 3: Specialized Domain Agents
 32bda0f - Add Milestone 2: Reflection Agent and Meetings Agent
 0ff5c1a - Add Phase 2.4 notepad processing with preview/confirm workflow
-2bd552d - Complete Phase 2.4: Notepad processing implementation
-c18c6a2 - Update documentation for Milestone 1 completion
-1ee183b - Complete Phase 2.3: Tasks Agent memory integration
 ```
 
 ---
@@ -431,29 +324,56 @@ c18c6a2 - Update documentation for Milestone 1 completion
 
 ### Session 1-6: Milestone 1 Complete
 - Foundation, Tasks Agent, Memory, Notepad Processing
-- Total: ~13 hours
 
-### Session 7: Milestone 2 Complete (2026-02-22)
-- Phase 3: Reflection Agent (daily summary)
-- Phase 4: Meetings Agent (Granola integration)
-- Duration: ~2 hours
+### Session 7: Milestone 2 Complete
+- Reflection Agent, Meetings Agent
 
-### Session 8: Milestone 3 Complete (2026-02-22)
-- Phase 5: People Agent (observations, 360s)
-- Phase 6: Strategy Agent (progressive disclosure)
-- Phase 7: MFM Agent (review, summary)
-- 2 new scripts, 3 agent personas populated
-- All commands tested and working
-- Duration: ~1 hour
+### Session 8: Milestone 3 Complete
+- People, Strategy, MFM Agents
 
-### Session 9: Milestone 4 Complete (2026-02-23) ← **Current**
-- Phase 8: Documentation (CLAUDE.md, README.md updates)
-- Phase 9: Cross-domain Orchestration (orchestrator.py)
-- Session logging verified as active (not deprecated)
-- 121 prep now gathers context from multiple agents
-- Agent personas updated with cross-agent notes
-- Duration: ~1.5 hours
-- **Total project time:** ~17.5 hours
+### Session 9: Milestone 4 Complete
+- Cross-domain Orchestration
+
+### Session 10: Phase 2.5 Complete
+- Slack MCP Integration
+
+### Session 11: Phase 2.6 Complete (2026-02-25)
+- Created performance conversation prep workflow (~300 lines)
+- Generated conversation preps for 3 team members
+- Investigated Slack MCP security and DM access limitations
+- Removed browser tokens from Slack configuration
+- Cleaned up git tracking (removed 34 output files)
+- Updated .gitignore with comprehensive output patterns
+
+### Session 12: Phase 2.7 Complete (2026-03-17) ← **Current**
+- Reviewed full Julie 2.0 development status against original brief
+- Identified folder path mismatch: scripts referenced `Work/Team/` but actual folder is `Work/People/`
+- Fixed path references across 5 files (utils.py, CLAUDE.md, agent personas)
+- Renamed `get_team_path()` to `get_people_path()` in utils.py
+- Verified observation command now works correctly
+- Confirmed 7 agents operational (Hiring Agent added since last session)
+- **Total project time:** ~22 hours
+
+---
+
+## Development Status Summary (Session 12)
+
+### Working Capabilities
+- ✅ Task creation, updates, status changes
+- ✅ /today summary generation
+- ✅ Agent routing (7 agents)
+- ✅ Memory integration (claude-mem MCP)
+- ✅ Notepad processing
+- ✅ Observation recording (fixed this session)
+
+### Outstanding Work (Milestones 2-4)
+- Phase 2.5: Slack MCP integration (daily digest) - Not started
+- Phase 3: Daily summary enhancement - Not started
+- Phase 4: Meetings Agent (Granola integration) - Untested
+- Phase 5: People Agent access control - Not started
+- Phase 6: Strategy Agent query helpers - Not started
+- Phase 7: MFM Agent workflows - Not started
+- Phase 8-9: Cleanup and polish - Not started
 
 ---
 
