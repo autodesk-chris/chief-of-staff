@@ -344,6 +344,7 @@ Work/1-Notepad/             # Notepad content
 
 **Session 13 Commits:**
 ```
+29ec17b - Fix action syntax and daily summary for Claude Code workflow (2026-03-17)
 b2b2452 - Fix quick wins: agent patterns and optional feature tags (2026-03-17)
 68b7556 - Add Strategy Agent routing for strategy queries (2026-03-17)
 ```
@@ -413,7 +414,11 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - Added `performance conversation prep:` to people_patterns in detect_agent.py
   - Added `session:` to reflection_patterns in detect_agent.py
   - Made tags optional for `new feature:` command (was required)
-- **Total project time:** ~23.5 hours
+- **Claude Code workflow fixes:**
+  - Action command now parses "Person to Action" syntax (e.g., "Sarah to review budget" extracts assignee automatically)
+  - Daily summary now non-interactive - returns draft for Claude to continue conversation
+  - Added `finalize summary:` command to complete daily summary workflow
+- **Total project time:** ~24 hours
 
 ---
 
@@ -429,10 +434,10 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure (fixed this session)
 
 ### Partially Working / Known Issues
-- ⚠️ `new action:` requires assignee field (syntax differs from docs)
-- ⚠️ `daily summary` requires interactive input (EOF in non-interactive)
-- ⚠️ `slack digest` prints instructions instead of executing (needs manual MCP calls)
-- ⚠️ Meetings Agent shows "Granola STUB" - extraction not wired to actual MCP
+- ℹ️ `slack digest` prints MCP call instructions for Claude to execute (by design)
+- ℹ️ Meetings Agent prints Granola MCP call instructions (by design)
+
+Note: MCP-related "stubs" are intentional - Python scripts cannot call MCP directly, so they provide instructions for Claude Code to execute the MCP calls.
 
 ### Not Implemented (from Julie 2.0 Brief)
 - ❌ `actions` list command
