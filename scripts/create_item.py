@@ -338,10 +338,139 @@ def update_item_status(item_type, title, new_status, status_note=None):
             flags=re.MULTILINE
         )
 
+    # Handle completed-date field when marking as completed
+    if new_status == 'completed':
+        today = datetime.now().strftime('%Y-%m-%d')
+        # Only add completed-date if not already present (preserve original completion date)
+        if not re.search(r'^completed-date:', updated_content, re.MULTILINE):
+            # Add completed-date after status line (or status-note if present)
+            if re.search(r'^status-note:', updated_content, re.MULTILINE):
+                updated_content = re.sub(
+                    r'^(status-note:.*$)',
+                    f'\\1\ncompleted-date: {today}',
+                    updated_content,
+                    count=1,
+                    flags=re.MULTILINE
+                )
+            else:
+                updated_content = re.sub(
+                    r'^(status: [\w-]+)$',
+                    f'\\1\ncompleted-date: {today}',
+                    updated_content,
+                    count=1,
+                    flags=re.MULTILINE
+                )
+
     # Write back the updated content
     file_path.write_text(updated_content)
 
     return file_path
+
+
+def archive_completed_items(days_threshold=7):
+    """
+    Move completed items older than threshold to archive folders.
+
+    Args:
+        days_threshold: Number of days after completion before archiving (default 7)
+
+    Returns:
+        dict with 'archived' (list of moved files) and 'summary' (formatted string)
+    """
+    import re
+    import shutil
+    from datetime import datetime, timedelta
+
+    # Get project root (parent of scripts folder)
+    project_root = Path(__file__).parent.parent
+
+    # Item types to archive and their folders
+    item_types = {
+        'task': 'Work/Inbox/Tasks',
+        'idea': 'Work/Inbox/Ideas',
+        'feature': 'Work/Inbox/Features',
+        'action': 'Work/Inbox/Actions',
+        'reminder': 'Work/Inbox/Reminders'
+    }
+
+    archived = []
+    skipped_no_date = 0
+    cutoff_date = datetime.now() - timedelta(days=days_threshold)
+
+    for item_type, folder_path in item_types.items():
+        inbox_folder = project_root / folder_path
+        if not inbox_folder.exists():
+            continue
+
+        # Find all markdown files in this folder
+        for file_path in inbox_folder.glob('*.md'):
+            content = file_path.read_text()
+
+            # Check if status is completed
+            status_match = re.search(r'^status:\s*([\w-]+)', content, re.MULTILINE)
+            if not status_match or status_match.group(1) != 'completed':
+                continue
+
+            # Check for completed-date
+            date_match = re.search(r'^completed-date:\s*(\d{4}-\d{2}-\d{2})', content, re.MULTILINE)
+            if not date_match:
+                skipped_no_date += 1
+                continue
+
+            # Parse the completion date
+            try:
+                completed_date = datetime.strptime(date_match.group(1), '%Y-%m-%d')
+            except ValueError:
+                skipped_no_date += 1
+                continue
+
+            # Check if older than threshold
+            if completed_date >= cutoff_date:
+                continue  # Too recent, skip
+
+            # Create archive folder: Work/Archive/{Type}s/YYYY-MM/
+            archive_month = completed_date.strftime('%Y-%m')
+            type_folder_name = item_type.capitalize() + 's'
+            archive_folder = project_root / 'Work' / 'Archive' / type_folder_name / archive_month
+            archive_folder.mkdir(parents=True, exist_ok=True)
+
+            # Move the file
+            dest_path = archive_folder / file_path.name
+            shutil.move(str(file_path), str(dest_path))
+
+            archived.append({
+                'type': item_type,
+                'name': file_path.stem,
+                'from': str(file_path),
+                'to': str(dest_path),
+                'completed_date': date_match.group(1)
+            })
+
+    # Build summary
+    if archived:
+        # Group by type
+        by_type = {}
+        for item in archived:
+            t = item['type']
+            by_type[t] = by_type.get(t, 0) + 1
+
+        summary_parts = [f"Archived {len(archived)} item(s):"]
+        for t, count in sorted(by_type.items()):
+            summary_parts.append(f"  - {count} {t}(s)")
+
+        if skipped_no_date > 0:
+            summary_parts.append(f"\nSkipped {skipped_no_date} item(s) without completed-date")
+    else:
+        summary_parts = ["No items to archive (none completed > 7 days ago)"]
+        if skipped_no_date > 0:
+            summary_parts.append(f"\nSkipped {skipped_no_date} completed item(s) without completed-date")
+            summary_parts.append("Tip: Re-mark items as completed to add completion date tracking")
+
+    return {
+        'archived': archived,
+        'skipped_no_date': skipped_no_date,
+        'summary': '\n'.join(summary_parts)
+    }
 
 
 def main():

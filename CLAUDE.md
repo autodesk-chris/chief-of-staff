@@ -32,6 +32,10 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
     │Reflection │   │ Meetings  │   │    MFM    │
     │   Agent   │   │   Agent   │   │   Agent   │
     └───────────┘   └───────────┘   └───────────┘
+    ┌───────────┐
+    │  Hiring   │
+    │   Agent   │
+    └───────────┘
 ```
 
 ### Specialized agents
@@ -44,6 +48,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 | **Reflection** | `daily summary`, `/summary`, `session:` | Daily summaries, session logging |
 | **Meetings** | `prep meeting:`, `121:`, `post meeting:` | Meeting prep, Granola integration |
 | **MFM** | `mfm review:`, `mfm summary:` | Monthly Focus Meeting reviews and summaries |
+| **Hiring** | `setup role:`, `screen CVs:`, `shortlist:`, `interview prep:`, `interview eval:` | CV screening, interview evaluation, candidate assessment |
 
 ### Key locations
 
@@ -60,6 +65,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 ./pos "update: [title] status: [completed|in-progress|blocked|waiting]"
 ./pos "/today"                          # Generate today's task summary
 ./pos "process notepad"                 # Process captured notes
+./pos "archive completed"               # Archive items completed > 7 days ago
 
 # People
 ./pos "observation: [Name] - [observation text]"
@@ -78,6 +84,15 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 # MFM
 ./pos "mfm review: [squad] [month]"     # Review MFM pre-read
 ./pos "mfm summary: [squad] [month]"    # Create post-MFM summary
+
+# Hiring
+./pos "setup role: [role name]"         # Generate evaluation guide from JD
+./pos "screen CVs: [role name]"         # Batch screen all CVs in folder
+./pos "review CV: [name] for [role]"    # Screen single CV
+./pos "shortlist: [name] for [role]"    # Move CV + create screen notes + interview prep
+./pos "interview prep: [name] for [role]" # Generate interview questions
+./pos "interview eval: [name] for [role]" # Full evaluation with Granola + CV
+./pos "candidate summary: [name]"       # Generate shareable notes
 ```
 
 ---
@@ -121,7 +136,7 @@ Chief_of_staff/
 ## Command Implementation Notes
 
 - Most commands operate on the Obsidian vault at `./Work/Inbox/` (relative to project root)
-- Observation commands operate on `./Work/Team/Observations/`
+- Observation commands operate on `./Work/People/Observations/`
 - File naming must sanitize special characters and replace spaces with underscores
 - YAML frontmatter must be properly formatted
 - Date parsing should handle YYYY-MM-DD format
@@ -177,6 +192,39 @@ When the user asks to mark something as complete, blocked, in progress, etc., **
 - ❌ Read files to confirm existence
 - ❌ Look for exact filenames
 - ✅ Just run the update command - it handles everything
+
+### Archiving Completed Items
+
+To prevent inbox folders from accumulating hundreds of completed items, use the archive command periodically.
+
+**Command:**
+```bash
+./pos "archive completed"
+```
+
+**What it does:**
+- Finds all items with status `completed` and a `completed-date` older than 7 days
+- Moves them to `Work/Archive/{Type}s/YYYY-MM/` folders (organized by completion month)
+- Returns a summary of what was archived
+
+**Archive folder structure:**
+```
+Work/Archive/
+├── Tasks/
+│   ├── 2026-01/
+│   ├── 2026-02/
+│   └── 2026-03/
+├── Ideas/
+├── Features/
+├── Actions/
+└── Reminders/
+```
+
+**Notes:**
+- Items completed in the last 7 days stay in the inbox for easy reference
+- Only items with a `completed-date` field are archived (automatically added when marking complete)
+- Archived files preserve their original names and content
+- Run periodically (weekly/monthly) to keep inbox folders clean
 
 ### Task Creation Best Practices
 
@@ -288,7 +336,7 @@ Each domain agent will later have a "digest [domain]" command to process their n
 
 - **Trigger phrases**: "observation:", "I have feedback:", "feedback:"
 - **Required format**: `Name - observation text` (name before dash is required)
-- **Files stored in**: `Work/Team/Observations/`
+- **Files stored in**: `Work/People/Observations/`
 - **Filename format**: `observation_[name]_[date].md`
 - **Example**: `observation: Sarah Johnson - Great presentation details: Excellent communication tags: leadership`
 - If name format is incorrect, the command will error and you should ask the user conversationally for the proper format
@@ -297,12 +345,12 @@ Each domain agent will later have a "digest [domain]" command to process their n
 
 **Quick 360 file creation:**
 - **Trigger**: "360 review: [Name]" or "360: [Name]"
-- Creates empty template file at `Work/Team/360_reviews/360_[name]_FY26.md`
+- Creates empty template file at `Work/People/360_reviews/360_[name]_FY26.md`
 
 **360 Review Generation (synthesis task):**
 - **Trigger**: "360 [FirstName]", "review [Name]", or "generate 360 for [Name]"
 - **Process**:
-  1. Read `Work/Team/360_reviews/360_review_workflow.md` for detailed instructions
+  1. Read `Work/People/360_reviews/360_review_workflow.md` for detailed instructions
   2. Immediately list files in person's folder and shared reference folder (no permission needed)
   3. Show document checklist to user
   4. After user confirmation, proceed with synthesis
@@ -379,7 +427,7 @@ Discussed session logging workflow in the Chief of Staff system and clarified ho
    - Read this week's 4Ps from `Work/Weekly_4Ps/` (priorities and plans)
    - Read today summary from `Work/Inbox/Today/today_YYYY-MM-DD.md` (completed/in-progress tasks)
    - Read Claude session logs from `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
-   - Read any observations created today from `Work/Team/Observations/`
+   - Read any observations created today from `Work/People/Observations/`
 
 2. **Conduct interview IN the conversation**:
    - Use gathered context to inform questions
@@ -487,7 +535,7 @@ This project uses a **router pattern** for complex, specialized workflows:
 For this project, be **proactive and automated**:
 
 **Do automatically (no permission needed):**
-- ✅ File discovery: List files in Work/Team folders
+- ✅ File discovery: List files in Work/People folders
 - ✅ Document reading: Read required files
 - ✅ Command execution: Execute ./pos commands
 - ✅ Git status: Check repository state

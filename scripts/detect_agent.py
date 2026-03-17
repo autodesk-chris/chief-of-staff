@@ -17,14 +17,23 @@ def detect_agent(command_text):
     """
     command_lower = command_text.lower()
 
-    # Task patterns (includes reminders, actions, decisions, ideas, features, notepad processing)
+    # Task patterns (includes reminders, actions, decisions, ideas, features, notepad processing, archiving)
     task_patterns = [
         'new task:', 'new reminder:', 'new action:', 'new idea:',
         'new feature:', 'new decision:', 'update:', 'change due date:', '/today',
-        'process notepad', 'notepad process', '/notepad', 'notepad confirm', 'notepad'
+        'process notepad', 'notepad process', '/notepad', 'notepad confirm', 'notepad',
+        'archive completed', 'archive'
     ]
     if any(p in command_lower for p in task_patterns):
         return ('tasks', 1.0)
+
+    # Hiring patterns (must be before people to avoid conflicts)
+    hiring_patterns = [
+        'setup role:', 'screen cvs:', 'review cv:', 'shortlist:',
+        'interview prep:', 'interview eval:', 'candidate summary:'
+    ]
+    if any(p in command_lower for p in hiring_patterns):
+        return ('hiring', 1.0)
 
     # People patterns (note: 121: is handled by meetings agent)
     people_patterns = ['observation:', '360 review:', '360:', 'feedback:']
@@ -77,7 +86,8 @@ def load_agent_context(agent_name):
         'strategy': '.claude/personas/AGENT_STRATEGY.md',
         'reflection': '.claude/personas/AGENT_REFLECTION.md',
         'meetings': '.claude/personas/AGENT_MEETINGS.md',
-        'mfm': '.claude/personas/AGENT_MFM.md'
+        'mfm': '.claude/personas/AGENT_MFM.md',
+        'hiring': '.claude/personas/AGENT_HIRING.md'
     }
 
     return agent_files.get(agent_name)
@@ -93,6 +103,9 @@ if __name__ == '__main__':
         'mfm review: strategic accounts Feb',
         'what are the current OKRs?',
         'prep meeting: Budget Review',
+        'setup role: Community Programme Manager',
+        'screen CVs: Community Programme Manager',
+        'interview eval: Tom Hamilton for Community Programme Manager',
     ]
 
     print("Testing agent detection:")

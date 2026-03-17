@@ -472,6 +472,12 @@ def execute_command(command_text):
         result = process_notepad(mode='confirm')
         return result
 
+    # Handle archive command
+    if command_text.lower() in ['archive completed', 'archive']:
+        from create_item import archive_completed_items
+        result = archive_completed_items()
+        return result['summary']
+
     # Handle session logging commands
     if command_text.lower().startswith('session:') or command_text.lower().startswith('/session'):
         from session_log import log_session
@@ -704,6 +710,16 @@ Use mcp__granola__query_granola_meetings to find the meeting."""
             response += f"\n  Created {len(result['observation_files'])} observation(s)"
 
         return response
+
+    # Handle hiring commands
+    hiring_commands = [
+        'setup role:', 'screen cvs:', 'review cv:', 'shortlist:',
+        'interview prep:', 'interview eval:', 'candidate summary:'
+    ]
+    if any(command_text.lower().startswith(cmd) for cmd in hiring_commands):
+        from hiring_agent import handle_hiring_command
+        result = handle_hiring_command(command_text)
+        return result
 
     # Handle 360 review commands
     if command_text.lower().startswith('360 review:') or command_text.lower().startswith('360:'):
