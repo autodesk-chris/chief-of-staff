@@ -53,11 +53,12 @@ def detect_agent(command_text):
     if any(k in command_lower for k in strategy_keywords):
         return ('strategy', 0.8)
 
-    # Reflection patterns (includes Slack digest and session logging)
+    # Reflection patterns (includes Slack digest, session logging, and 4Ps)
     reflection_patterns = [
         'daily summary', '/summary', '/daily', 'sync meetings',
         'slack digest', '/slack-digest', 'slack summary',
-        'session:', '/session'
+        'session:', '/session',
+        '4ps', '/4ps', 'generate 4ps', 'weekly 4ps', '/weekly', 'finalize 4ps'
     ]
     if any(p in command_lower for p in reflection_patterns):
         return ('reflection', 1.0)

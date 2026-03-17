@@ -27,6 +27,7 @@ from detect_agent import detect_agent, load_agent_context
 from process_notepad import process_notepad
 from orchestrator import orchestrate_121_prep, orchestrate_daily_summary, handle_ambiguous_query
 from strategy_agent import format_strategy_response, handle_strategy_query
+from fourps_generator import generate_4ps, finalize_4ps, format_4ps_response
 
 # Setup logging
 logging.basicConfig(
@@ -565,6 +566,27 @@ def execute_command(command_text):
         filepath = finalize_summary(result['draft'], user_additions)
 
         return f"✓ Daily summary saved: {filepath}"
+
+    # Handle 4Ps generation command
+    if command_text.lower() in ['4ps', '/4ps', 'generate 4ps', 'weekly 4ps', '/weekly']:
+        result = generate_4ps()
+        return format_4ps_response(result)
+
+    # Handle finalize 4Ps command
+    if command_text.lower().startswith('finalize 4ps'):
+        # Extract final content if provided
+        if command_text.lower() == 'finalize 4ps':
+            # Use the draft as-is
+            result = generate_4ps()
+            filepath = finalize_4ps(result['draft'])
+        else:
+            # User provided final content: "finalize 4ps: [content]"
+            final_content = command_text[13:].strip()  # After "finalize 4ps:"
+            if final_content.startswith(':'):
+                final_content = final_content[1:].strip()
+            filepath = finalize_4ps(final_content)
+
+        return f"✓ 4Ps saved to: {filepath}"
 
     # Handle Slack digest command
     if command_text.lower() in ['slack digest', '/slack-digest', 'slack summary']:
