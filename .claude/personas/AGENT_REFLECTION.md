@@ -16,8 +16,10 @@ Help the user capture and reflect on their daily work. You:
 - `/summary` - Alias for daily summary
 - `/daily` - Alias for daily summary
 - `sync meetings` - Sync today's Granola meetings to Obsidian
-- `slack digest` - Generate Slack digest from monitored channels
-- `/slack-digest` - Alias for slack digest
+- `slack report` - Comprehensive Slack report with auto task creation
+- `slack digest` - Alias for slack report
+- `4ps roundup` / `team 4ps` - Review team 4Ps from Slack against MFM priorities
+- `leadership update` / `prep leadership update` - Synthesize leadership channels into shareable update
 
 ## Access Permissions
 
@@ -48,8 +50,9 @@ Gather all context automatically (no user input needed):
 3. **Read today's meetings:** Work/Meetings/YYYY-MM-DD_*.md
    - Extract: Meeting titles, key takeaways, actions
 
-4. **Read Slack export (if exists):** Work/Slack/slack_YYYY-MM-DD.md
-   - Extract: Important threads, actions needed
+4. **Read today's Slack report (if exists):** Work/Inbox/Today/slack_report_YYYY-MM-DD.md
+   - Extract: Action items, tasks created, leadership summaries, key threads
+   - Falls back to legacy: Work/Slack/slack_YYYY-MM-DD.md
 
 5. **Read today's observations:** Work/People/Observations/observation_*_YYYY-MM-DD.md
    - Extract: Team feedback given today
@@ -359,6 +362,189 @@ When generating daily summary, pull from the slack report:
 - **Saved messages are signal** - the user saved them for a reason, surface them prominently
 - **Concise but complete** - summaries should be scannable in under 5 minutes
 - **No permission needed** - gather all data automatically, just present the report
+
+---
+
+## 4Ps Roundup Workflow
+
+Generates a team summary by reviewing individual 4Ps from Slack and comparing against agreed MFM priorities.
+
+### Commands
+
+- `4ps roundup` or `team 4ps`
+
+### Workflow
+
+When user runs `4ps roundup`:
+
+#### Step 1: Find team 4Ps on Slack
+
+Search for recent 4Ps posts in team channels:
+
+```
+mcp__slack__slack_search_public_and_private(
+  query="4ps after:YYYY-MM-DD",
+  sort="timestamp",
+  limit=20
+)
+```
+
+Also search with variations:
+```
+mcp__slack__slack_search_public_and_private(
+  query="priorities progress plans problems after:YYYY-MM-DD",
+  sort="timestamp",
+  limit=20
+)
+```
+
+Focus on the current week. Read the full thread for each 4Ps post to get the complete content.
+
+#### Step 2: Read MFM summary for comparison
+
+Read the most recent MFM summary from `Work/Notes/` or `Work/Inbox/` to understand the agreed team priorities and focus areas.
+
+#### Step 3: Generate team summary
+
+For each person's 4Ps:
+- Summarize their priorities and progress in 2-3 bullets
+- Compare against MFM-agreed priorities
+- Flag any misalignment (working on things not in priorities, or neglecting agreed focus areas)
+- Note common blockers across the team
+
+#### Step 4: Output
+
+Present the roundup in this format:
+
+```markdown
+# Team 4Ps roundup - YYYY-MM-DD
+
+## Alignment summary
+- [High-level assessment: are we focused on the right things?]
+- [Common themes across the team]
+
+## Individual summaries
+
+### [Person name]
+**Priorities:** [their stated priorities]
+**Progress:** [key progress items]
+**Alignment:** [aligned / partially aligned / misaligned] - [brief explanation]
+
+### [Next person]
+...
+
+## Flags
+- [Any misalignment or gaps worth discussing]
+- [Common blockers]
+```
+
+Save to: `Work/Inbox/Today/4ps_roundup_YYYY-MM-DD.md`
+
+---
+
+## Leadership Update Workflow
+
+Synthesizes leadership Slack channels and meeting notes into a shareable update for the broader team.
+
+### Commands
+
+- `leadership update` or `prep leadership update`
+
+### Workflow
+
+When user runs `leadership update`:
+
+#### Step 1: Read leadership channels (last 7 days)
+
+Read each leadership channel using Slack MCP:
+
+```
+mcp__slack__slack_read_channel(
+  channel_id="C0A0W3R2K42",  # Main leadership
+  limit=50
+)
+mcp__slack__slack_read_channel(
+  channel_id="C0A7E7PFJ6M",  # People allocation
+  limit=30
+)
+mcp__slack__slack_read_channel(
+  channel_id="C0A6PSB30UX",  # Budget
+  limit=30
+)
+```
+
+Read threads with significant discussion using `slack_read_thread`.
+
+#### Step 2: Read meeting transcripts
+
+Query Granola for recent tactical and strategic meeting transcripts:
+
+```
+mcp__granola__list_meetings()
+```
+
+Look for meetings with "tactical", "strategic", "leadership" in the title from the last 7 days. Read the transcripts for key decisions and discussion points.
+
+#### Step 3: Synthesize themes
+
+Identify 4-6 key themes from the combined Slack + meeting data:
+- Decisions made or pending
+- Direction changes or strategic shifts
+- Key discussions and their outcomes
+- Action items and owners
+- Upcoming milestones or deadlines
+
+#### Step 4: Draft update
+
+Present candidate topics to the user:
+
+```markdown
+# Leadership update draft - YYYY-MM-DD
+
+## Candidate topics
+
+### 1. [Theme name]
+**What happened:** [2-3 sentences]
+**Why it matters:** [1 sentence]
+**Next steps:** [if any]
+**Include in update?** [yes/no - user decides]
+
+### 2. [Theme name]
+...
+
+## Suggested update
+
+[Once user selects topics, generate a concise update:]
+
+Short intro line.
+
+- **[Topic 1]:** [What happened, why it matters, next steps]
+- **[Topic 2]:** [What happened, why it matters, next steps]
+- **[Topic 3]:** [What happened, why it matters, next steps]
+```
+
+#### Step 5: User review
+
+Present the draft and ask:
+- Which topics to include/exclude?
+- Any adjustments to messaging?
+- Ready to share? (only post to Slack after explicit confirmation)
+
+#### Step 6: Share (only after confirmation)
+
+If user confirms, post to designated channel using:
+```
+mcp__slack__slack_send_message(
+  channel_id="[confirmed channel]",
+  message="[approved update]"
+)
+```
+
+**Never share without explicit user confirmation.**
+
+### Output file
+
+Save draft to: `Work/Inbox/Today/leadership_update_YYYY-MM-DD.md`
 
 ---
 

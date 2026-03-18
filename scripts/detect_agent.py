@@ -56,13 +56,15 @@ def detect_agent(command_text):
     if any(k in command_lower for k in strategy_keywords):
         return ('strategy', 0.8)
 
-    # Reflection patterns (includes Slack digest/report, session logging, and 4Ps)
+    # Reflection patterns (includes Slack digest/report, session logging, 4Ps, and leadership update)
     reflection_patterns = [
         'daily summary', '/summary', '/daily', 'sync meetings',
         'slack report', '/slack-report',
         'slack digest', '/slack-digest', 'slack summary',
         'session:', '/session',
-        '4ps', '/4ps', 'generate 4ps', 'weekly 4ps', '/weekly', 'finalize 4ps'
+        '4ps roundup', 'team 4ps',
+        '4ps', '/4ps', 'generate 4ps', 'weekly 4ps', '/weekly', 'finalize 4ps',
+        'leadership update', 'prep leadership update'
     ]
     if any(p in command_lower for p in reflection_patterns):
         return ('reflection', 1.0)
@@ -112,6 +114,10 @@ if __name__ == '__main__':
         'session: worked on feature X',
         'slack report',
         'slack digest',
+        '4ps roundup',
+        'team 4ps',
+        'leadership update',
+        'prep leadership update',
         'mfm review: strategic accounts Feb',
         'what are the current OKRs?',
         'prep meeting: Budget Review',

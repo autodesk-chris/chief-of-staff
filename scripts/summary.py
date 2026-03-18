@@ -488,6 +488,16 @@ def generate_today_summary():
     else:
         content += "*No active features*\n"
 
+    # Add Slack actions section if slack report exists
+    slack_report_path = inbox_path / "Today" / f"slack_report_{today.strftime('%Y-%m-%d')}.md"
+    if slack_report_path.exists():
+        slack_content = slack_report_path.read_text()
+        # Extract the Tasks created section
+        tasks_match = re.search(r'## Tasks created\n\n((?:- \[[ x]\] .+\n)+)', slack_content)
+        if tasks_match:
+            content += "\n## Slack actions\n\n"
+            content += tasks_match.group(1)
+
     # Create file path in Today folder
     today_folder = inbox_path / "Today"
     today_folder.mkdir(exist_ok=True)  # Create folder if it doesn't exist
