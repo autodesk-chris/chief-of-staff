@@ -18,6 +18,7 @@ Help the user capture and reflect on their daily work. You:
 - `sync meetings` - Sync today's Granola meetings to Obsidian
 - `slack report` - Comprehensive Slack report with auto task creation
 - `slack digest` - Alias for slack report
+- `scan slack` / `slack tasks` - Scan Slack for commitments and extract tasks/actions
 - `4ps roundup` / `team 4ps` - Review team 4Ps from Slack against MFM priorities
 - `leadership update` / `prep leadership update` - Synthesize leadership channels into shareable update
 
@@ -255,9 +256,49 @@ For each significant thread:
 - Note number of participants and replies
 - Flag if user is mentioned or involved
 
-#### Step 4: Create tasks from actions
+#### Step 4: Scan for commitments (beyond mentions)
 
-For each action identified in Step 1, automatically create a task:
+Search for messages where the user made commitments:
+
+```
+mcp__slack__slack_search_public_and_private(
+  query="from:<@U082ASVFE9Y> after:YYYY-MM-DD",
+  sort="timestamp",
+  limit=20
+)
+```
+
+Scan the results for commitment language:
+- **User commitments (create tasks):** "I'll", "I will", "will do", "will send", "will follow up", "I can", "let me", "I'll take", "action on me", "I need to"
+- **Team commitments (create actions):** "[Name] to...", "[Name] will...", "[Name] should...", "[Name] needs to..."
+
+For each commitment found:
+- Read the full thread for context
+- Extract a short actionable title
+- Note who committed and what they committed to
+- Extract due date if mentioned
+- **User commitments** become tasks: `./pos "new task: [title] details: [context] tags: slack"`
+- **Team commitments** become actions: `./pos "new action: [Person] to [action] details: [context] tags: slack"`
+
+Also search team channels for commitments assigned to others:
+```
+mcp__slack__slack_search_public_and_private(
+  query="will do after:YYYY-MM-DD in:#forma-growth-leads",
+  sort="timestamp",
+  limit=10
+)
+```
+
+**Deduplication:** Before creating, check if a similar task/action already exists from the mentions search in Step 1. Skip if duplicate.
+
+**Confidence filtering:** Only extract commitments that are clearly actionable. Skip:
+- Hypothetical language ("I would", "I could", "we might")
+- Past tense ("I did", "I sent", "we completed")
+- Questions ("should I?", "will you?")
+
+#### Step 5: Create tasks from actions and commitments
+
+For each action identified in Steps 1 and 4, automatically create a task or action:
 
 ```
 ./pos "new task: [short action title] details: [1-2 sentence context from thread] tags: slack"
@@ -274,7 +315,7 @@ For each action identified in Step 1, automatically create a task:
 **Display in report:**
 After creating tasks, add a "Tasks created" section to the report listing each task with its title.
 
-#### Step 5: Leadership FY27 dedicated summaries
+#### Step 6: Leadership FY27 dedicated summaries
 
 Read each leadership channel separately and create a dedicated summary:
 
@@ -309,7 +350,18 @@ For each leadership channel:
 **What's needed:** [Clear action description]
 **Context:** [1-2 sentence thread summary]
 **Task created:** [task title]
-**Link:** [Slack link]
+
+---
+
+## Commitments detected
+
+### Your commitments
+- **[Commitment]** - [context] - #channel-name
+  **Task created:** [task title]
+
+### Team commitments
+- **[Person] to [action]** - [context] - #channel-name
+  **Action created:** [action title]
 
 ---
 
@@ -545,6 +597,81 @@ mcp__slack__slack_send_message(
 ### Output file
 
 Save draft to: `Work/Inbox/Today/leadership_update_YYYY-MM-DD.md`
+
+---
+
+## Scan Slack Workflow
+
+Standalone command to scan Slack for commitments and extract tasks/actions. This is a focused version of the commitment scanning in the Slack report - it only does commitment extraction, without the full report.
+
+### Commands
+
+- `scan slack` or `slack tasks` or `/scan-slack`
+
+### Workflow
+
+When user runs `scan slack`:
+
+#### Step 1: Search for user's commitments (last 48h)
+
+```
+mcp__slack__slack_search_public_and_private(
+  query="from:<@U082ASVFE9Y> after:YYYY-MM-DD",
+  sort="timestamp",
+  limit=20
+)
+```
+
+Scan results for commitment language:
+- "I'll", "I will", "will do", "will send", "will follow up"
+- "let me", "I'll take", "action on me", "I need to"
+
+#### Step 2: Search for team commitments in monitored channels
+
+For each channel in `.slack_digest_config.json`, search for commitment language:
+
+```
+mcp__slack__slack_read_channel(
+  channel_id="CHANNEL_ID",
+  limit=50
+)
+```
+
+Scan for patterns:
+- "[Name] to [action]", "[Name] will [action]"
+- "action: [person]", "[person] needs to"
+- Explicit action items in meeting recaps posted to Slack
+
+#### Step 3: Present for confirmation
+
+Show extracted commitments to user **before creating any items**:
+
+```markdown
+## Your commitments (X found)
+
+1. **[Title]** - [1-line context] - #channel
+2. **[Title]** - [1-line context] - #channel
+
+## Team commitments (X found)
+
+1. **[Person] to [action]** - [1-line context] - #channel
+2. **[Person] to [action]** - [1-line context] - #channel
+
+Which items should I create? (all / none / list numbers, e.g. "1, 3, 5")
+```
+
+#### Step 4: Create confirmed items
+
+For user-confirmed items:
+- User commitments: `./pos "new task: [title] details: [context] tags: slack"`
+- Team commitments: `./pos "new action: [Person] to [action] details: [context] tags: slack"`
+
+### Key principles
+
+- **Confirmation required** - unlike slack report which auto-creates, scan slack asks first (commitment detection is less precise than @mentions)
+- **Conservative extraction** - only flag clear commitments, not hypotheticals or past tense
+- **Deduplication** - check existing tasks/actions before presenting to avoid duplicates
+- **Context matters** - always read the full thread before extracting a commitment
 
 ---
 
