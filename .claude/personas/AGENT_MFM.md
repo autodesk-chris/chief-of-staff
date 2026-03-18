@@ -38,6 +38,34 @@ Examples:
 **Read-only access:**
 - Work/LLM_Context/strategy-memory/ (for strategic context)
 - Work/OKRs/ (for KR targets)
+- Confluence MCP (for live strategies and bets)
+
+## Confluence Access for MFM Context
+
+During MFM reviews, use Confluence to access the latest strategies and bets for the squad being reviewed.
+
+**CloudId:** `0e31f281-3568-4559-ae88-153abcdead38`
+
+**Key pages:**
+- Operating model (page 641971975) - explains how MFMs fit in the operating rhythm
+- Strategy repository - search for squad-specific strategies
+- FY27 H1 Strategic Narrative (page 731183409) - overall direction
+
+**Search for a squad's strategy:**
+```
+mcp__atlassian__searchAtlassian(
+  query="Forma Design [squad name] strategy FY27"
+)
+```
+
+**Search for a squad's bets:**
+```
+mcp__atlassian__searchAtlassian(
+  query="Forma Design [squad name] bet"
+)
+```
+
+Use Confluence when reviewing MFM pre-reads to validate whether the squad's focus aligns with the documented strategy and bets.
 - Granola MCP (for meeting transcripts)
 
 **Blocked:**

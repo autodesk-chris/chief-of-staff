@@ -24,12 +24,95 @@ Query-based commands (detected by keywords):
 - Work/Process/MFM/ (MFM context)
 - Work/4Ps/ (weekly priorities)
 - Work/OKRs/ (OKR files)
+- Confluence MCP (Forma Design Org space)
 
 **Read-only access:**
 - Work/Meetings/ (for strategic meeting context)
 
 **Blocked:**
 - Work/People/ - People domain (observations, 360 reviews, hiring)
+
+## Confluence Knowledge Access
+
+The Strategy agent can access Confluence via MCP for live, authoritative content. Use Confluence when local files may be outdated or when the user asks for the latest version.
+
+**CloudId:** `0e31f281-3568-4559-ae88-153abcdead38`
+**Primary space:** `fdo` (Forma Design Org)
+
+### Key Confluence pages
+
+| Knowledge area | Page title | Page ID |
+|---------------|------------|---------|
+| Operating model | Operating model | 641971975 |
+| Strategic narrative | FY27 H1 - Forma Design Strategic Narrative | 731183409 |
+| Product strategy | Forma Design Product Strategy - FY27 and Beyond | 761685470 |
+| AI strategy | Forma Design AI Strategy | 745484925 |
+| 5-year roadmap | FY27-31 - Forma Design 5-Year Capability Roadmap | 745484947 |
+| Strategy template | Strategy document | 659134101 |
+| Operating rhythm | Operating Rhythm | 727169898 |
+
+### How to use Confluence
+
+**Read a known page:**
+```
+mcp__atlassian__getConfluencePage(
+  cloudId="0e31f281-3568-4559-ae88-153abcdead38",
+  pageId="641971975",
+  contentFormat="markdown"
+)
+```
+
+**Search for content:**
+```
+mcp__atlassian__searchAtlassian(
+  query="Forma Design [topic]"
+)
+```
+
+**Search with CQL (precise queries):**
+```
+mcp__atlassian__searchConfluenceUsingCql(
+  cloudId="0e31f281-3568-4559-ae88-153abcdead38",
+  cql="space = fdo AND title ~ \"strategy\" AND type = page"
+)
+```
+
+**Find strategies in the strategy repository:**
+```
+mcp__atlassian__searchConfluenceUsingCql(
+  cloudId="0e31f281-3568-4559-ae88-153abcdead38",
+  cql="space = fdo AND ancestor = 659134101 AND type = page"
+)
+```
+
+**Find bets:**
+```
+mcp__atlassian__searchAtlassian(
+  query="Forma Design bet FY27"
+)
+```
+
+### When to use Confluence vs local files
+
+| Scenario | Source |
+|----------|--------|
+| Quick strategy context for a task | Local files (L1/L2) first |
+| "What's the latest OKR status?" | Confluence (live data) |
+| MFM prep - need current strategies | Confluence |
+| "What does the operating model say about X?" | Confluence (page 641971975) |
+| General "what are our priorities?" | Local L1-overview.md |
+| Deep dive on a specific strategy | Confluence search |
+| Cross-referencing bets against strategies | Confluence |
+
+### Progressive loading with Confluence
+
+1. **Start with local files** - faster, no API calls
+2. **Escalate to Confluence** when:
+   - Local files seem outdated
+   - User asks for "the latest" or "current"
+   - User references a specific Confluence page
+   - Content not found locally (e.g., new strategy documents)
+3. **Cache key insights** - after reading Confluence, note key findings so future queries can use local context
 
 ## Progressive Disclosure Pattern
 

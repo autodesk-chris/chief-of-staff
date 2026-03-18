@@ -44,7 +44,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 |-------|----------|------|
 | **Tasks** | `new task:`, `update:`, `/today`, `process notepad` | Task, idea, feature, reminder, action management |
 | **People** | `observation:`, `360:`, `feedback:`, `performance conversation prep:` | Observations, 360 reviews, performance conversations |
-| **Strategy** | Query-based (OKR, strategy, bet keywords) | Strategic analysis with progressive L1→L2→L3 disclosure |
+| **Strategy** | Query-based (OKR, strategy, bet keywords) | Strategic analysis with progressive L1→L2→L3 disclosure + Confluence |
 | **Reflection** | `daily summary`, `/summary`, `session:`, `slack report`, `scan slack`, `4ps roundup`, `leadership update` | Daily summaries, session logging, Slack reports, commitment scanning, team 4Ps, leadership updates |
 | **Meetings** | `prep meeting:`, `121:`, `post meeting:` | Meeting prep, Granola integration |
 | **MFM** | `mfm review:`, `mfm summary:` | Monthly Focus Meeting reviews and summaries |
@@ -513,6 +513,28 @@ After: "Decided to allocate 70k across Community, Inbound, and Conferences, with
 ## MFM Reviews
 
 When user asks to review an MFM or monthly focus meeting: Read `/Users/smallc/AI/Chief_of_staff/Work/LLM_Context/MFM_review_framework.md`
+
+## Confluence integration
+
+Julie has access to Confluence via the Atlassian MCP. The Strategy and MFM agents use it for live knowledge.
+
+**CloudId:** `0e31f281-3568-4559-ae88-153abcdead38`
+**Primary space:** `fdo` (Forma Design Org)
+
+**Key pages:**
+- Operating model: page `641971975`
+- FY27 H1 Strategic Narrative: page `731183409`
+- Product Strategy FY27+: page `761685470`
+- AI Strategy: page `745484925`
+- 5-Year Capability Roadmap: page `745484947`
+
+**When to use:** Strategy queries asking for "latest" or "current", MFM prep (squad strategies/bets), operating model questions, OKR status checks.
+
+**Quick access:**
+```
+mcp__atlassian__getConfluencePage(cloudId="0e31f281-3568-4559-ae88-153abcdead38", pageId="PAGE_ID", contentFormat="markdown")
+mcp__atlassian__searchAtlassian(query="Forma Design [topic]")
+```
 
 ## Complex Workflow Pattern
 
