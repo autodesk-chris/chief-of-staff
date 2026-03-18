@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-03-18 (Session 14)
-**Current Phase:** Phase 2.9 - List Commands + Meeting Auto-Extraction
-**Overall Status:** Full hierarchical agent system with automatic meeting extraction
+**Last Updated:** 2026-03-18 (Session 15)
+**Current Phase:** Phase 3.0 - Slack Report + Task Auto-Creation
+**Overall Status:** Full hierarchical agent system with Slack report and automatic task creation
 
 ---
 
@@ -20,9 +20,10 @@
 - ✅ **Phase 2.6:** Performance Conversation Prep + Git Hygiene (Complete)
 - ✅ **Phase 2.7:** Bug Fix + Development Review (Complete)
 - ✅ **Phase 2.8:** Strategy Agent Routing Fix (Complete)
-- ✅ **Phase 2.9:** List Commands + Meeting Auto-Extraction (Complete) ← **This Session**
+- ✅ **Phase 2.9:** List Commands + Meeting Auto-Extraction (Complete)
+- ✅ **Phase 3.0:** Slack Report + Task Auto-Creation (Complete) ← **This Session**
 
-**Overall Status:** Full Julie agent system operational with 7 specialized agents. Meeting auto-extraction from Granola now automatic. List commands for actions/decisions implemented.
+**Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack report with automatic task creation from action items. Leadership FY27 dedicated summaries.
 
 ---
 
@@ -64,7 +65,7 @@
 | Agent | Lines | Role | Commands |
 |-------|-------|------|----------|
 | AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today, process notepad |
-| AGENT_REFLECTION.md | 160 | Daily summaries | daily summary, /summary, session:, slack digest |
+| AGENT_REFLECTION.md | 320 | Daily summaries, Slack reports | daily summary, /summary, session:, slack report |
 | AGENT_MEETINGS.md | 281 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
 | AGENT_PEOPLE.md | 210 | Team feedback/observations | observation:, 360:, performance conversation prep: |
 | AGENT_STRATEGY.md | 220 | Strategic analysis | OKR queries, strategy questions (via strategy_agent.py) |
@@ -187,7 +188,7 @@ Work/1-Notepad/                   # Notepad content
 ./pos "daily summary"
 ./pos "finalize summary: [additions]"
 ./pos "session: [summary]"
-./pos "slack digest"
+./pos "slack report"                     # Comprehensive Slack report with auto task creation
 ./pos "4ps"                              # Generate weekly 4Ps draft
 ./pos "finalize 4ps: [content]"          # Save 4Ps to file
 
@@ -356,6 +357,11 @@ Work/1-Notepad/             # Notepad content
 
 ### Git Commit History
 
+**Session 15 Commits:**
+```
+62c94a9 - Add Slack report with automatic task creation (2026-03-18)
+```
+
 **Session 14 Commits:**
 ```
 36c3fe3 - Add meeting auto-extraction and list commands (2026-03-18)
@@ -446,7 +452,7 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - Commands: `4ps`, `/4ps`, `finalize 4ps`
 - **Total project time:** ~25 hours
 
-### Session 14: Phase 2.9 Complete (2026-03-18) ← **Current**
+### Session 14: Phase 2.9 Complete (2026-03-18)
 - **List commands implemented:**
   - `actions` - List all actions with assignee and due date
   - `decisions` - List all decisions with participants
@@ -466,9 +472,29 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `scripts/meeting_extractor.py` - Meeting extraction workflow
 - **Live test:** Extracted 9 actions, 6 decisions, 5 tasks from 3 meetings
 
+### Session 15: Phase 3.0 Complete (2026-03-18) ← **Current**
+- **Slack report command** (`slack report` / `/slack-report`):
+  - Searches last 48h for action items via Slack MCP (mentions + direct messages)
+  - Finds saved messages from last 7 days
+  - Summarizes thread activity across all monitored channels
+  - Dedicated paragraph summaries for 3 leadership FY27 channels
+  - Automatically creates tasks for each action item (tagged: slack)
+  - Tasks displayed as checklist at top of report
+- **Slack feature planning:**
+  - Reviewed Julie 2.0 brief for all Slack-related capabilities
+  - Mapped 6 Slack capabilities to existing/new features
+  - Extended 4 existing features (4Ps roundup, automate MFM, daily summary, today report)
+  - Created 2 new features (Slack task extraction, leadership update)
+  - Created dedicated Slack report feature
+- **Configuration updates:**
+  - Added channel_groups to .slack_digest_config.json (leadership, growth_team, squads)
+  - Added slack report routing to detect_agent.py
+  - Updated CLAUDE.md command reference
+- **Live test:** Generated report with 11 actions, created 10 tasks, 3 leadership summaries
+
 ---
 
-## Development Status Summary (Session 14)
+## Development Status Summary (Session 15)
 
 ### Fully Working
 - ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /today, archive completed, process notepad, actions list, decisions list, new_daily
@@ -476,16 +502,17 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ **Meetings Agent:** prep meeting, 121, post meeting (auto-extraction), finalize meeting
 - ✅ **MFM Agent:** mfm review, mfm summary
 - ✅ **Hiring Agent:** setup role, screen CVs (validates folders)
-- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation
+- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation, Slack report
 - ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure
 
-### Key Enhancement (Session 14)
-- `/today` now auto-extracts actions/decisions/tasks from all today's meetings via Granola
-- `post meeting:` triggers automatic extraction workflow
-- Claude queries Granola MCP and creates items automatically
+### Key Enhancement (Session 15)
+- `slack report` generates comprehensive Slack report using Slack MCP
+- Automatically creates tasks from identified action items
+- Dedicated leadership FY27 summaries for 3 channels
+- Report includes: actions, saved messages, thread activity, leadership summaries
 
 ### Partially Working / Known Issues
-- ℹ️ `slack digest` prints MCP call instructions for Claude to execute (by design - Slack MCP auth issue)
+- None currently
 
 ### Not Implemented (from Julie 2.0 Brief)
 - ✅ `actions` list command (Session 14)
@@ -493,8 +520,12 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ `new_decision:` and `decisions` list (Session 14)
 - ✅ `new_daily` contribution notes (Session 14)
 - ✅ Meeting transcript auto-extraction (Session 14)
-- ❌ Leadership update workflow (requires Slack)
-- ❌ Slack task extraction (requires Slack)
+- ✅ Slack report with action extraction and task creation (Session 15)
+- ✅ Leadership FY27 dedicated summaries (Session 15)
+- ❌ Slack task extraction from team messages (beyond mentions - scanning commitments)
+- ❌ Leadership update workflow (synthesis + sharing to Slack)
+- ❌ 4Ps team summary (review 4Ps Slack channel against MFM)
+- ❌ MFM Slack notifications (reminders + team sharing)
 - ❌ Confluence MCP integration for knowledge features
 
 ---
