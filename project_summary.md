@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-03-17 (Session 13)
-**Current Phase:** Phase 2.8 - Strategy Agent + Quick Wins
-**Overall Status:** Full hierarchical agent system with all routing fixes applied
+**Last Updated:** 2026-03-18 (Session 14)
+**Current Phase:** Phase 2.9 - List Commands + Meeting Auto-Extraction
+**Overall Status:** Full hierarchical agent system with automatic meeting extraction
 
 ---
 
@@ -19,9 +19,10 @@
 - ✅ **Phase 2.5:** Slack MCP Integration (Complete)
 - ✅ **Phase 2.6:** Performance Conversation Prep + Git Hygiene (Complete)
 - ✅ **Phase 2.7:** Bug Fix + Development Review (Complete)
-- ✅ **Phase 2.8:** Strategy Agent Routing Fix (Complete) ← **This Session**
+- ✅ **Phase 2.8:** Strategy Agent Routing Fix (Complete)
+- ✅ **Phase 2.9:** List Commands + Meeting Auto-Extraction (Complete) ← **This Session**
 
-**Overall Status:** Full Julie agent system operational with 7 specialized agents. All agents tested and verified. Strategy Agent queries now working.
+**Overall Status:** Full Julie agent system operational with 7 specialized agents. Meeting auto-extraction from Granola now automatic. List commands for actions/decisions implemented.
 
 ---
 
@@ -172,10 +173,15 @@ Work/1-Notepad/                   # Notepad content
 ./pos "new task: [title] due: [date] details: [text] tags: [tags]"
 ./pos "new idea: [title] details: [text]"
 ./pos "new reminder: [title] due: [date]"
+./pos "new decision: [title] participants: [names] rationale: [why]"
 ./pos "update: [title] status: [status]"
-./pos "/today"
+./pos "change due date: [title] to: [YYYY-MM-DD]"
+./pos "/today"                            # Auto-extracts from meetings first
 ./pos "process notepad"
 ./pos "archive completed"
+./pos "actions"                           # List all actions
+./pos "decisions"                         # List all decisions
+./pos "new_daily: [note]"                 # Add contribution note
 
 # Reflection Agent
 ./pos "daily summary"
@@ -188,7 +194,8 @@ Work/1-Notepad/                   # Notepad content
 # Meetings Agent
 ./pos "prep meeting: [title]"
 ./pos "121: [name]"
-./pos "post meeting: [title]"
+./pos "post meeting: [title]"             # Auto-extracts actions/decisions/tasks from Granola
+./pos "finalize meeting: [title]"         # Create summary after extraction
 
 # People Agent
 ./pos "observation: [Name] - [observation]"
@@ -308,6 +315,10 @@ git ls-tree -r HEAD --name-only
 
 ### Key File Locations
 
+**Phase 2.9 Files:**
+- `scripts/list_items.py` - List actions/decisions, change due date, daily notes
+- `scripts/meeting_extractor.py` - Meeting auto-extraction workflow
+
 **Phase 2.8 Files:**
 - `scripts/strategy_agent.py` - Strategy query handler with progressive disclosure
 
@@ -344,6 +355,11 @@ Work/1-Notepad/             # Notepad content
 ```
 
 ### Git Commit History
+
+**Session 14 Commits:**
+```
+36c3fe3 - Add meeting auto-extraction and list commands (2026-03-18)
+```
 
 **Session 13 Commits:**
 ```
@@ -407,7 +423,7 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - Verified observation command now works correctly
 - Confirmed 7 agents operational (Hiring Agent added since last session)
 
-### Session 13: Phase 2.8 Complete (2026-03-17) ← **Current**
+### Session 13: Phase 2.8 Complete (2026-03-17)
 - Comprehensive testing of all 7 agents via `./pos` commands
 - Compiled detailed implementation status report
 - Fixed Strategy Agent routing (was detected but had no handler)
@@ -430,33 +446,55 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - Commands: `4ps`, `/4ps`, `finalize 4ps`
 - **Total project time:** ~25 hours
 
+### Session 14: Phase 2.9 Complete (2026-03-18) ← **Current**
+- **List commands implemented:**
+  - `actions` - List all actions with assignee and due date
+  - `decisions` - List all decisions with participants
+  - `change due date:` - Modify due date on existing items
+  - `new_daily:` - Add contribution notes for daily summary
+- **Meeting auto-extraction:**
+  - `post meeting:` now triggers automatic extraction from Granola
+  - Claude queries Granola, analyzes summary, extracts actions/decisions/tasks
+  - Creates items automatically using existing `./pos` commands
+  - `finalize meeting:` creates summary after extraction
+- **`/today` enhanced:**
+  - Now extracts from all today's meetings before generating summary
+  - Ensures meeting actions/decisions appear in today view
+  - Uses `/today-generate` internally after extraction
+- **New files:**
+  - `scripts/list_items.py` - List and date change commands
+  - `scripts/meeting_extractor.py` - Meeting extraction workflow
+- **Live test:** Extracted 9 actions, 6 decisions, 5 tasks from 3 meetings
+
 ---
 
-## Development Status Summary (Session 13)
+## Development Status Summary (Session 14)
 
 ### Fully Working
-- ✅ **Tasks Agent:** new task, new idea, new reminder, update, /today, archive completed, process notepad
+- ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /today, archive completed, process notepad, actions list, decisions list, new_daily
 - ✅ **People Agent:** observation, 360 review (creates template)
-- ✅ **Meetings Agent:** prep meeting, 121, post meeting (Granola stubbed)
+- ✅ **Meetings Agent:** prep meeting, 121, post meeting (auto-extraction), finalize meeting
 - ✅ **MFM Agent:** mfm review, mfm summary
 - ✅ **Hiring Agent:** setup role, screen CVs (validates folders)
-- ✅ **Reflection Agent:** session logging
-- ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure (fixed this session)
+- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation
+- ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure
+
+### Key Enhancement (Session 14)
+- `/today` now auto-extracts actions/decisions/tasks from all today's meetings via Granola
+- `post meeting:` triggers automatic extraction workflow
+- Claude queries Granola MCP and creates items automatically
 
 ### Partially Working / Known Issues
-- ℹ️ `slack digest` prints MCP call instructions for Claude to execute (by design)
-- ℹ️ Meetings Agent prints Granola MCP call instructions (by design)
-
-Note: MCP-related "stubs" are intentional - Python scripts cannot call MCP directly, so they provide instructions for Claude Code to execute the MCP calls.
+- ℹ️ `slack digest` prints MCP call instructions for Claude to execute (by design - Slack MCP auth issue)
 
 ### Not Implemented (from Julie 2.0 Brief)
-- ❌ `actions` list command
-- ❌ `change due date:` command
-- ❌ `new_decision:` and `decisions` list
-- ❌ `new_daily` contribution notes
-- ❌ Leadership update workflow
-- ❌ Slack task extraction
-- ❌ Meeting transcript auto-extraction
+- ✅ `actions` list command (Session 14)
+- ✅ `change due date:` command (Session 14)
+- ✅ `new_decision:` and `decisions` list (Session 14)
+- ✅ `new_daily` contribution notes (Session 14)
+- ✅ Meeting transcript auto-extraction (Session 14)
+- ❌ Leadership update workflow (requires Slack)
+- ❌ Slack task extraction (requires Slack)
 - ❌ Confluence MCP integration for knowledge features
 
 ---
