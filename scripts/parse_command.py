@@ -28,6 +28,8 @@ from process_notepad import process_notepad
 from orchestrator import orchestrate_121_prep, orchestrate_daily_summary, handle_ambiguous_query
 from strategy_agent import format_strategy_response, handle_strategy_query
 from fourps_generator import generate_4ps, finalize_4ps, format_4ps_response
+from list_items import list_actions, list_decisions, change_due_date, add_daily_note
+from meeting_extractor import format_post_meeting_instructions, save_meeting_summary, create_meeting_summary_from_extraction
 
 # Setup logging
 logging.basicConfig(
@@ -483,6 +485,23 @@ def execute_command(command_text):
 
     # Handle summary commands
     if command_text == '/today':
+        # Return signal for Claude to extract meetings first, then generate summary
+        today_date = datetime.now().strftime('%Y-%m-%d')
+        return f"""TODAY_WITH_MEETING_EXTRACT:{today_date}
+
+Claude should automatically:
+1. Query today's meetings: mcp__granola__list_meetings(time_range="this_week") and filter for today
+2. For each meeting from today that hasn't been processed:
+   - Get details: mcp__granola__get_meetings(meeting_ids=["<id>"])
+   - Extract actions, decisions, tasks, observations from the summary
+   - Create items using ./pos commands
+3. After processing all meetings, generate the today summary:
+   - Run: ./pos "/today-generate"
+
+IMPORTANT: Execute this workflow automatically without asking for confirmation."""
+
+    # Internal command to just generate today summary (called after meeting extraction)
+    if command_text == '/today-generate':
         file_path, content = generate_today_summary()
         file_path.write_text(content)
         return f"✓ Generated today summary: {file_path}"
@@ -508,6 +527,60 @@ def execute_command(command_text):
         from create_item import archive_completed_items
         result = archive_completed_items()
         return result['summary']
+
+    # Handle actions list command
+    if command_text.lower() in ['actions', '/actions', 'list actions']:
+        result = list_actions()
+        return result['summary']
+
+    # Handle decisions list command
+    if command_text.lower() in ['decisions', '/decisions', 'list decisions']:
+        result = list_decisions()
+        return result['summary']
+
+    # Handle change due date command
+    if command_text.lower().startswith('change due date:'):
+        # Format: "change due date: [title] to: [date]" or "change due date: [title] [date]"
+        args = command_text[16:].strip()
+
+        # Try "to:" syntax first
+        if ' to: ' in args.lower():
+            parts = re.split(r'\s+to:\s*', args, flags=re.IGNORECASE)
+            if len(parts) == 2:
+                title = parts[0].strip()
+                new_date = parts[1].strip()
+            else:
+                return "✗ Invalid format. Use: change due date: [title] to: [YYYY-MM-DD]"
+        else:
+            # Try space-separated: last token is date
+            parts = args.rsplit(' ', 1)
+            if len(parts) == 2 and re.match(r'\d{4}-\d{2}-\d{2}', parts[1]):
+                title = parts[0].strip()
+                new_date = parts[1].strip()
+            else:
+                return "✗ Invalid format. Use: change due date: [title] to: [YYYY-MM-DD]"
+
+        result = change_due_date(title, new_date)
+        if result['success']:
+            # Update today document
+            today_path = update_today_document()
+            return f"✓ {result['message']}\n✓ Updated today summary: {today_path}"
+        else:
+            return f"✗ {result['message']}"
+
+    # Handle new_daily contribution notes
+    if command_text.lower().startswith('new_daily:') or command_text.lower().startswith('new daily:'):
+        # Extract the note content
+        if command_text.lower().startswith('new_daily:'):
+            note = command_text[10:].strip()
+        else:
+            note = command_text[10:].strip()
+
+        if not note:
+            return "✗ Please provide a note: new_daily: [your contribution note]"
+
+        result = add_daily_note(note)
+        return f"✓ {result['message']}"
 
     # Handle session logging commands
     if command_text.lower().startswith('session:') or command_text.lower().startswith('/session'):
@@ -756,28 +829,105 @@ Use mcp__granola__query_granola_meetings to find the meeting."""
 
         return f"✓ Created MFM summary: {result['output_path']}"
 
-    # Handle post-meeting processing commands
+    # Handle post-meeting processing commands (auto-extraction workflow)
     if command_text.lower().startswith('post meeting:') or command_text.lower().startswith('process meeting:'):
-        from process_meeting import process_meeting
-
         # Extract title after the colon
         if command_text.lower().startswith('post meeting:'):
             title = command_text[13:].strip()
         else:  # process meeting:
             title = command_text[16:].strip()
 
-        result = process_meeting(title)
+        # Return a signal for Claude to execute the automatic extraction workflow
+        return f"""MEETING_AUTO_EXTRACT:{title}
 
-        # Build response
-        response = f"✓ Processed meeting: {result['summary_file']}"
-        if result['action_files']:
-            response += f"\n  Created {len(result['action_files'])} action(s)"
-        if result['decision_files']:
-            response += f"\n  Created {len(result['decision_files'])} decision(s)"
-        if result['observation_files']:
-            response += f"\n  Created {len(result['observation_files'])} observation(s)"
+Claude should now automatically:
+1. Query Granola: mcp__granola__query_granola_meetings(query="{title}") or mcp__granola__list_meetings(time_range="this_week")
+2. Get meeting details: mcp__granola__get_meetings(meeting_ids=["<meeting_id>"])
+3. Get transcript if available: mcp__granola__get_meeting_transcript(meeting_id="<meeting_id>")
+4. Analyze the summary/transcript to extract:
+   - ACTIONS: [Person] to [task] by [date]
+   - DECISIONS: What was decided, rationale, participants
+   - TASKS FOR ME: Things I committed to doing
+   - OBSERVATIONS: Feedback about team members
+5. Create items using ./pos commands:
+   - ./pos "new action: [Person] to [task] due: [date]"
+   - ./pos "new decision: [decision] participants: [names]"
+   - ./pos "new task: [title] due: [date] details: [context]"
+   - ./pos "observation: [Person] - [feedback]"
+6. Finalize: ./pos "finalize meeting: {title} | actions: X | decisions: Y | tasks: Z"
 
-        return response
+IMPORTANT: Execute this workflow automatically without asking for confirmation."""
+
+    # Handle finalize meeting command (creates summary after extraction)
+    if command_text.lower().startswith('finalize meeting:'):
+        # This is called after Claude has extracted and created items
+        # Format: finalize meeting: [title] | takeaways: [...] | actions: X | decisions: Y
+        args = command_text[17:].strip()
+
+        # Simple case: just the title - create a basic summary
+        if '|' not in args:
+            title = args
+            content = f"""# {title} - {datetime.now().strftime('%Y-%m-%d')}
+
+## Key takeaways
+
+- Meeting processed - see individual items created
+
+## Actions
+
+- See Work/Inbox/Actions/ for extracted actions
+
+## Decisions
+
+- See Work/Decisions/ for extracted decisions
+
+---
+Processed by Meetings Agent
+"""
+            filepath = save_meeting_summary(title, content)
+            return f"✓ Created meeting summary: {filepath}"
+
+        # Parse structured input
+        parts = [p.strip() for p in args.split('|')]
+        title = parts[0]
+
+        # Count items from parts (format: "actions: 3")
+        items_created = {'actions': 0, 'decisions': 0, 'tasks': 0, 'observations': 0}
+        for part in parts[1:]:
+            if ':' in part:
+                key, val = part.split(':', 1)
+                key = key.strip().lower()
+                if key in items_created:
+                    try:
+                        items_created[key] = int(val.strip())
+                    except ValueError:
+                        pass
+
+        content = f"""# {title} - {datetime.now().strftime('%Y-%m-%d')}
+
+## Summary
+
+Meeting processed with automatic extraction.
+
+**Items created:**
+- Actions: {items_created['actions']}
+- Decisions: {items_created['decisions']}
+- Tasks: {items_created['tasks']}
+- Observations: {items_created['observations']}
+
+## Actions
+
+See Work/Inbox/Actions/ for extracted action items.
+
+## Decisions
+
+See Work/Decisions/ for extracted decisions.
+
+---
+Processed by Meetings Agent with auto-extraction
+"""
+        filepath = save_meeting_summary(title, content)
+        return f"✓ Created meeting summary: {filepath}\n  Actions: {items_created['actions']}, Decisions: {items_created['decisions']}, Tasks: {items_created['tasks']}, Observations: {items_created['observations']}"
 
     # Handle hiring commands
     hiring_commands = [

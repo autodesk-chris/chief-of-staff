@@ -22,7 +22,10 @@ def detect_agent(command_text):
         'new task:', 'new reminder:', 'new action:', 'new idea:',
         'new feature:', 'new decision:', 'update:', 'change due date:', '/today',
         'process notepad', 'notepad process', '/notepad', 'notepad confirm', 'notepad',
-        'archive completed', 'archive'
+        'archive completed', 'archive',
+        'actions', '/actions', 'list actions',
+        'decisions', '/decisions', 'list decisions',
+        'new_daily:', 'new daily:'
     ]
     if any(p in command_lower for p in task_patterns):
         return ('tasks', 1.0)
@@ -64,7 +67,7 @@ def detect_agent(command_text):
         return ('reflection', 1.0)
 
     # Meetings patterns
-    meetings_patterns = ['prep meeting:', '121:', 'post meeting:', 'process meeting:']
+    meetings_patterns = ['prep meeting:', '121:', 'post meeting:', 'process meeting:', 'finalize meeting:']
     if any(p in command_lower for p in meetings_patterns):
         return ('meetings', 1.0)
 
