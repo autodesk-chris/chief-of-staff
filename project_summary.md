@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
 **Last Updated:** 2026-03-18 (Session 15)
-**Current Phase:** Phase 3.0 - Slack Report + Task Auto-Creation
-**Overall Status:** Full hierarchical agent system with Slack report and automatic task creation
+**Current Phase:** Phase 3.1 - Full Slack Integration Suite
+**Overall Status:** Full hierarchical agent system with comprehensive Slack integration across all workflows
 
 ---
 
@@ -21,9 +21,10 @@
 - ✅ **Phase 2.7:** Bug Fix + Development Review (Complete)
 - ✅ **Phase 2.8:** Strategy Agent Routing Fix (Complete)
 - ✅ **Phase 2.9:** List Commands + Meeting Auto-Extraction (Complete)
-- ✅ **Phase 3.0:** Slack Report + Task Auto-Creation (Complete) ← **This Session**
+- ✅ **Phase 3.0:** Slack Report + Task Auto-Creation (Complete)
+- ✅ **Phase 3.1:** Full Slack Integration Suite (Complete) ← **This Session**
 
-**Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack report with automatic task creation from action items. Leadership FY27 dedicated summaries.
+**Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration: report with auto task creation, 4Ps roundup, leadership update, Slack context in daily summary and today report.
 
 ---
 
@@ -65,7 +66,7 @@
 | Agent | Lines | Role | Commands |
 |-------|-------|------|----------|
 | AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today, process notepad |
-| AGENT_REFLECTION.md | 320 | Daily summaries, Slack reports | daily summary, /summary, session:, slack report |
+| AGENT_REFLECTION.md | 500 | Daily summaries, Slack reports, 4Ps roundup, leadership updates | daily summary, session:, slack report, 4ps roundup, leadership update |
 | AGENT_MEETINGS.md | 281 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
 | AGENT_PEOPLE.md | 210 | Team feedback/observations | observation:, 360:, performance conversation prep: |
 | AGENT_STRATEGY.md | 220 | Strategic analysis | OKR queries, strategy questions (via strategy_agent.py) |
@@ -189,6 +190,8 @@ Work/1-Notepad/                   # Notepad content
 ./pos "finalize summary: [additions]"
 ./pos "session: [summary]"
 ./pos "slack report"                     # Comprehensive Slack report with auto task creation
+./pos "4ps roundup"                      # Review team 4Ps from Slack vs MFM priorities
+./pos "leadership update"                # Synthesize leadership channels into shareable update
 ./pos "4ps"                              # Generate weekly 4Ps draft
 ./pos "finalize 4ps: [content]"          # Save 4Ps to file
 
@@ -359,6 +362,7 @@ Work/1-Notepad/             # Notepad content
 
 **Session 15 Commits:**
 ```
+a7124f4 - Add 4Ps roundup, leadership update, and Slack integration for daily summary and today report (2026-03-18)
 62c94a9 - Add Slack report with automatic task creation (2026-03-18)
 ```
 
@@ -492,6 +496,32 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - Updated CLAUDE.md command reference
 - **Live test:** Generated report with 11 actions, created 10 tasks, 3 leadership summaries
 
+### Session 15b: Phase 3.1 Complete (2026-03-18) ← **Current**
+- **4Ps roundup command** (`4ps roundup` / `team 4ps`):
+  - Searches Slack for team 4Ps posts
+  - Compares against MFM priorities
+  - Generates team summary with alignment flags
+  - Output: `Work/Inbox/Today/4ps_roundup_YYYY-MM-DD.md`
+- **Leadership update command** (`leadership update` / `prep leadership update`):
+  - Reads 3 leadership FY27 channels (last 7 days)
+  - Queries Granola for tactical/strategic meeting transcripts
+  - Synthesizes 4-6 themes with candidate topics
+  - User selects and confirms before sharing to Slack
+  - Output: `Work/Inbox/Today/leadership_update_YYYY-MM-DD.md`
+- **Daily summary Slack integration:**
+  - `get_slack_summary()` now reads slack report as primary context source
+  - Falls back to legacy `Work/Slack/` export if no report exists
+- **Today report Slack integration:**
+  - `/today` now includes "Slack actions" section
+  - Extracts task checklist from slack report and displays in today view
+  - Verified: 10 tasks showing in today document
+- **Files modified:**
+  - `scripts/daily_summary.py` - slack report as context source
+  - `scripts/summary.py` - Slack actions section in today report
+  - `scripts/detect_agent.py` - routing for 4ps roundup, leadership update
+  - `AGENT_REFLECTION.md` - two new workflow sections (~180 lines)
+  - `CLAUDE.md` - updated command reference
+
 ---
 
 ## Development Status Summary (Session 15)
@@ -502,14 +532,14 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ **Meetings Agent:** prep meeting, 121, post meeting (auto-extraction), finalize meeting
 - ✅ **MFM Agent:** mfm review, mfm summary
 - ✅ **Hiring Agent:** setup role, screen CVs (validates folders)
-- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation, Slack report
+- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation, Slack report, 4Ps roundup, leadership update
 - ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure
 
 ### Key Enhancement (Session 15)
-- `slack report` generates comprehensive Slack report using Slack MCP
-- Automatically creates tasks from identified action items
-- Dedicated leadership FY27 summaries for 3 channels
-- Report includes: actions, saved messages, thread activity, leadership summaries
+- `slack report` generates comprehensive Slack report using Slack MCP with auto task creation
+- `4ps roundup` reviews team 4Ps from Slack against MFM priorities
+- `leadership update` synthesizes leadership channels + meetings into shareable update
+- `/today` includes Slack actions section; daily summary uses slack report as context
 
 ### Partially Working / Known Issues
 - None currently
@@ -522,9 +552,11 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ Meeting transcript auto-extraction (Session 14)
 - ✅ Slack report with action extraction and task creation (Session 15)
 - ✅ Leadership FY27 dedicated summaries (Session 15)
+- ✅ 4Ps team roundup from Slack vs MFM priorities (Session 15)
+- ✅ Leadership update workflow with synthesis + confirmation before sharing (Session 15)
+- ✅ Daily summary reads slack report as context (Session 15)
+- ✅ Today report includes Slack actions section (Session 15)
 - ❌ Slack task extraction from team messages (beyond mentions - scanning commitments)
-- ❌ Leadership update workflow (synthesis + sharing to Slack)
-- ❌ 4Ps team summary (review 4Ps Slack channel against MFM)
 - ❌ MFM Slack notifications (reminders + team sharing)
 - ❌ Confluence MCP integration for knowledge features
 
