@@ -167,87 +167,198 @@ For `daily summary` commands, the orchestrator gathers context from multiple age
 
 ---
 
-## Slack Digest Workflow
+## Slack Report Workflow
 
-The Slack digest automates monitoring of configured channels using Slack MCP.
+The Slack report is a comprehensive daily report generated from Slack MCP. It replaces the simpler slack digest with a richer, structured view.
+
+### Commands
+
+- `slack report` or `/slack-report` - Generate full Slack report
+- `slack digest` or `/slack-digest` - Alias, runs the same report
 
 ### Configuration
 
 **Config file:** `.slack_digest_config.json` at project root
 
-**Settings:**
-- `user_id` - Your Slack user ID (for mention detection)
+**Key settings:**
+- `user.id` - Your Slack user ID: `U082ASVFE9Y`
 - `channels` - List of channels with monitor levels
+- `channel_groups` - Named groups (leadership, growth_team, squads) for dedicated summaries
 - `keywords` - Domain keywords for inferred action detection
 - `digest.lookback_hours` - How far back to fetch (default 48h)
-- `digest.activity_threshold_hours` - What's "active" (default 24h)
+- `digest.saved_messages_days` - How far back for saved messages (default 7 days)
 
-**Monitor levels:**
-- `full` - Detect explicit mentions + inferred actions (domain keywords)
-- `mentions_only` - Only detect explicit @mentions
+### Report Generation Steps
 
-### Slack Digest Command
+When user runs `slack report`:
 
-When user runs `slack digest`:
+#### Step 1: Gather actions (last 48 hours)
 
-1. **Load configuration** from `.slack_digest_config.json`
-2. **For each channel**, use Slack MCP to fetch history:
-   ```
-   mcp__SlackMCPServer__conversations_history(
-     channel_id='CHANNEL_ID',
-     limit='2d'
-   )
-   ```
-3. **Parse responses** using `parse_slack_csv()`
-4. **Process channel data** using `process_channel_data()`
-5. **Generate digest** using `generate_digest_from_data()`
-6. **Output file:** `Work/Inbox/Today/slack_digest_YYYY-MM-DD.md`
+Search for messages requiring user action across all monitored channels:
 
-### Categorization Logic
-
-**Action items (Category A - explicit):**
-- Direct @mention of user
-- User name referenced with question or assignment
-- User made commitment in thread ("I'll...", "I will...")
-
-**Action items (Category B - inferred, full-monitor channels only):**
-- Thread contains domain keywords
-- Has question or decision language
-- Relates to user's areas of responsibility
-
-**Review items:**
-- User participated in thread
-- Relevant discussion (keywords matched)
-
-**FYI items:**
-- Everything else in monitored channels
-
-### Integration with Daily Summary
-
-When generating daily summary, include Slack highlights:
-
-```markdown
-## Slack highlights
-
-### Actions for you (N)
-- **Thread title** (explicit/inferred) - Summary [#channel]
-
-### Active discussions
-- Thread 1 - N msgs, you: M [#channel]
-
-[View full Slack digest](./slack_digest_YYYY-MM-DD.md)
+```
+mcp__slack__slack_search_public_and_private(
+  query="to:<@U082ASVFE9Y> after:YYYY-MM-DD",
+  sort="timestamp"
+)
 ```
 
-**Key principle:** Include ALL actions in daily summary (never limit). Link to full digest for details.
+Also search for mentions:
+```
+mcp__slack__slack_search_public_and_private(
+  query="from:* <@U082ASVFE9Y> after:YYYY-MM-DD",
+  sort="timestamp"
+)
+```
+
+For each action found:
+- Read the thread using `slack_read_thread` to get context
+- Write a 1-2 sentence summary of the thread
+- Identify what action is needed from the user
+- Note the channel and timestamp for reference
+- **Create a task** for each action using `./pos "new task: [action title] details: [context] tags: slack"`
+
+#### Step 2: Gather saved messages (last 7 days)
+
+```
+mcp__slack__slack_search_public_and_private(
+  query="is:saved after:YYYY-MM-DD",
+  sort="timestamp"
+)
+```
+
+For each saved message:
+- Read the thread to understand context
+- Write a short summary of what the thread is about
+- Note when it was saved and the channel
+
+#### Step 3: Thread activity across monitored channels
+
+For each channel in the config, read recent messages:
+```
+mcp__slack__slack_read_channel(
+  channel_id="CHANNEL_ID",
+  limit=50
+)
+```
+
+Identify:
+- **New threads** started in the last 48 hours
+- **Updated threads** that had new replies in the last 48 hours
+- Skip trivial messages (emoji-only reactions, bot notifications)
+
+For each significant thread:
+- Summarize the topic in 1-2 sentences
+- Note number of participants and replies
+- Flag if user is mentioned or involved
+
+#### Step 4: Create tasks from actions
+
+For each action identified in Step 1, automatically create a task:
+
+```
+./pos "new task: [short action title] details: [1-2 sentence context from thread] tags: slack"
+```
+
+**Task creation rules:**
+- Title should be short and actionable (3-8 words), e.g. "Review FY27H1 strategic narrative"
+- Details should include enough context to act on without re-reading Slack
+- Tag all tasks with `slack` so they can be filtered
+- Include due date if one is mentioned or implied in the thread
+- Skip actions that are purely informational (FYI items) - only create tasks for things requiring Chris to do something
+- The task system has built-in duplicate detection via memory, so duplicates will be flagged automatically
+
+**Display in report:**
+After creating tasks, add a "Tasks created" section to the report listing each task with its title.
+
+#### Step 5: Leadership FY27 dedicated summaries
+
+Read each leadership channel separately and create a dedicated summary:
+
+**Channels:**
+- `C0A0W3R2K42` - #priv-forma-design-leadership-fy27 (main leadership)
+- `C0A7E7PFJ6M` - #priv-forma-design-leadership-people-allocation-fy27 (people/hiring)
+- `C0A6PSB30UX` - #priv-forma-design-leadership-budget-fy27 (budget)
+
+For each leadership channel:
+- Read last 48 hours of messages
+- Read threads to get full context
+- Write a paragraph summary covering: key topics discussed, decisions made or pending, action items, and overall sentiment/direction
+- Flag anything that needs user's attention or response
 
 ### Output Structure
 
-The digest file contains:
-1. Channels monitored (with monitor levels)
-2. Actions for you (explicit + inferred)
-3. Review in detail (threads you participated in)
-4. FYI - awareness only (condensed)
-5. Summary stats
+```markdown
+# Slack report - YYYY-MM-DD
+
+## Tasks created
+
+- [ ] Task title 1
+- [ ] Task title 2
+- [ ] Task title 3
+...
+
+---
+
+## Actions for you (last 48h)
+
+### [Thread topic] - #channel-name
+**What's needed:** [Clear action description]
+**Context:** [1-2 sentence thread summary]
+**Task created:** [task title]
+**Link:** [Slack link]
+
+---
+
+## Saved messages (last 7 days)
+
+### [Thread topic] - #channel-name
+**Summary:** [Short thread summary]
+**Saved:** YYYY-MM-DD
+
+---
+
+## Thread activity
+
+### #channel-name
+- **[Thread topic]** - [1-line summary] (N replies, [active/new])
+- **[Thread topic]** - [1-line summary] (N replies, [active/new])
+
+### #another-channel
+- ...
+
+---
+
+## Leadership FY27
+
+### Main leadership (#priv-forma-design-leadership-fy27)
+[Paragraph summary of key discussions, decisions, direction]
+
+### People allocation (#priv-forma-design-leadership-people-allocation-fy27)
+[Paragraph summary of hiring, resourcing, allocation discussions]
+
+### Budget (#priv-forma-design-leadership-budget-fy27)
+[Paragraph summary of budget discussions and decisions]
+```
+
+### Output file
+
+Save to: `Work/Inbox/Today/slack_report_YYYY-MM-DD.md`
+
+### Integration with Daily Summary
+
+When generating daily summary, pull from the slack report:
+- All action items go into the daily summary "Slack highlights" section
+- Leadership summary included as a subsection
+- Link to full report for thread activity details
+
+### Key principles
+
+- **Thread context is essential** - never list an action without summarizing the thread
+- **Leadership gets dedicated attention** - these channels warrant paragraph summaries, not just bullet points
+- **Saved messages are signal** - the user saved them for a reason, surface them prominently
+- **Concise but complete** - summaries should be scannable in under 5 minutes
+- **No permission needed** - gather all data automatically, just present the report
 
 ---
 

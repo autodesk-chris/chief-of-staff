@@ -87,10 +87,25 @@
     "budget",
     "growth"
   ],
+  "channel_groups": {
+    "leadership": {
+      "label": "Leadership FY27",
+      "description": "Dedicated summary section in slack report",
+      "channel_ids": ["C0A0W3R2K42", "C0A7E7PFJ6M", "C0A6PSB30UX"]
+    },
+    "growth_team": {
+      "label": "Growth team",
+      "channel_ids": ["C07PZN3V7V5", "C087RFDDLSE", "C08U86YBJ21"]
+    },
+    "squads": {
+      "label": "Squads",
+      "channel_ids": ["C08AD37JL85", "C08A0TA961M", "C08B45K9SU8", "CJE49G8ET"]
+    }
+  },
   "digest": {
     "lookback_hours": 48,
     "activity_threshold_hours": 24,
-    "saved_messages_days": 30,
+    "saved_messages_days": 7,
     "saved_messages_show_recent": 10
   }
 }

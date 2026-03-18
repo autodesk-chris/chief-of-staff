@@ -45,7 +45,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 | **Tasks** | `new task:`, `update:`, `/today`, `process notepad` | Task, idea, feature, reminder, action management |
 | **People** | `observation:`, `360:`, `feedback:`, `performance conversation prep:` | Observations, 360 reviews, performance conversations |
 | **Strategy** | Query-based (OKR, strategy, bet keywords) | Strategic analysis with progressive L1→L2→L3 disclosure |
-| **Reflection** | `daily summary`, `/summary`, `session:` | Daily summaries, session logging |
+| **Reflection** | `daily summary`, `/summary`, `session:`, `slack report` | Daily summaries, session logging, Slack reports |
 | **Meetings** | `prep meeting:`, `121:`, `post meeting:` | Meeting prep, Granola integration |
 | **MFM** | `mfm review:`, `mfm summary:` | Monthly Focus Meeting reviews and summaries |
 | **Hiring** | `setup role:`, `screen CVs:`, `shortlist:`, `interview prep:`, `interview eval:` | CV screening, interview evaluation, candidate assessment |
@@ -80,6 +80,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 # Reflection
 ./pos "session: [summary of work]"      # Log work session
 ./pos "daily summary"                   # End-of-day interview
+./pos "slack report"                    # Comprehensive Slack report
 
 # MFM
 ./pos "mfm review: [squad] [month]"     # Review MFM pre-read
