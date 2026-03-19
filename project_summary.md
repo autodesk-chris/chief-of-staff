@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-03-18 (Session 15)
-**Current Phase:** Phase 3.1 - Full Slack Integration Suite
-**Overall Status:** Full hierarchical agent system with comprehensive Slack integration across all workflows
+**Last Updated:** 2026-03-19 (Session 15)
+**Current Phase:** Phase 3.2 - Slack + Confluence Integration Complete
+**Overall Status:** Full hierarchical agent system with comprehensive Slack and Confluence integration
 
 ---
 
@@ -22,9 +22,10 @@
 - ✅ **Phase 2.8:** Strategy Agent Routing Fix (Complete)
 - ✅ **Phase 2.9:** List Commands + Meeting Auto-Extraction (Complete)
 - ✅ **Phase 3.0:** Slack Report + Task Auto-Creation (Complete)
-- ✅ **Phase 3.1:** Full Slack Integration Suite (Complete) ← **This Session**
+- ✅ **Phase 3.1:** Full Slack Integration Suite (Complete)
+- ✅ **Phase 3.2:** Slack Commitment Scanning + Confluence Integration (Complete) ← **This Session**
 
-**Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration: report with auto task creation, 4Ps roundup, leadership update, Slack context in daily summary and today report.
+**Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
 ---
 
@@ -66,11 +67,11 @@
 | Agent | Lines | Role | Commands |
 |-------|-------|------|----------|
 | AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today, process notepad |
-| AGENT_REFLECTION.md | 500 | Daily summaries, Slack reports, 4Ps roundup, leadership updates | daily summary, session:, slack report, 4ps roundup, leadership update |
+| AGENT_REFLECTION.md | 580 | Daily summaries, Slack reports, commitment scanning, 4Ps roundup, leadership updates | daily summary, session:, slack report, scan slack, 4ps roundup, leadership update |
 | AGENT_MEETINGS.md | 281 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
 | AGENT_PEOPLE.md | 210 | Team feedback/observations | observation:, 360:, performance conversation prep: |
-| AGENT_STRATEGY.md | 220 | Strategic analysis | OKR queries, strategy questions (via strategy_agent.py) |
-| AGENT_MFM.md | 285 | MFM review/summary | mfm review:, mfm summary: |
+| AGENT_STRATEGY.md | 320 | Strategic analysis + Confluence | OKR queries, strategy questions (via strategy_agent.py + Confluence MCP) |
+| AGENT_MFM.md | 310 | MFM review/summary + Confluence | mfm review:, mfm summary: (+ Confluence for strategies/bets) |
 | AGENT_HIRING.md | 374 | Candidate evaluation | setup role:, screen CVs:, shortlist:, interview eval: |
 
 ### New Workflow (Phase 2.6)
@@ -190,6 +191,7 @@ Work/1-Notepad/                   # Notepad content
 ./pos "finalize summary: [additions]"
 ./pos "session: [summary]"
 ./pos "slack report"                     # Comprehensive Slack report with auto task creation
+./pos "scan slack"                       # Scan for commitments, extract tasks/actions
 ./pos "4ps roundup"                      # Review team 4Ps from Slack vs MFM priorities
 ./pos "leadership update"                # Synthesize leadership channels into shareable update
 ./pos "4ps"                              # Generate weekly 4Ps draft
@@ -362,6 +364,8 @@ Work/1-Notepad/             # Notepad content
 
 **Session 15 Commits:**
 ```
+a7a7bd5 - Add Confluence MCP integration for Strategy and MFM agents (2026-03-19)
+d2d24ca - Add Slack commitment scanning for task and action extraction (2026-03-19)
 a7124f4 - Add 4Ps roundup, leadership update, and Slack integration for daily summary and today report (2026-03-18)
 62c94a9 - Add Slack report with automatic task creation (2026-03-18)
 ```
@@ -522,6 +526,27 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `AGENT_REFLECTION.md` - two new workflow sections (~180 lines)
   - `CLAUDE.md` - updated command reference
 
+### Session 15c: Phase 3.2 Complete (2026-03-19) ← **Current**
+- **Slack commitment scanning** (`scan slack` / `slack tasks`):
+  - Searches user's messages for commitment language ("I'll", "will do", "let me", etc.)
+  - Scans team channels for commitments assigned to others ("[Name] to...")
+  - Standalone mode: presents for user confirmation before creating
+  - Integrated into slack report as Step 4 (auto-creates alongside mentions)
+  - Filters out hypotheticals, past tense, and questions
+- **Confluence MCP integration:**
+  - Strategy agent: 7 key pages mapped (operating model, strategic narrative, product strategy, AI strategy, 5-year roadmap, strategy template, operating rhythm)
+  - MFM agent: search for squad strategies and bets during MFM review prep
+  - CloudId: `0e31f281-3568-4559-ae88-153abcdead38`, space: `fdo`
+  - Progressive loading: local files first, Confluence for latest/live data
+  - CLAUDE.md: new Confluence section with page IDs and quick access patterns
+- **Julie 2.0 brief status:** All items implemented except MFM Slack notifications (skipped by user request)
+- **Files modified:**
+  - `AGENT_STRATEGY.md` - Confluence knowledge access section (~100 lines)
+  - `AGENT_MFM.md` - Confluence access for MFM context
+  - `AGENT_REFLECTION.md` - commitment scanning workflow + scan slack command
+  - `detect_agent.py` - routing for scan slack / slack tasks
+  - `CLAUDE.md` - Confluence section + scan slack command
+
 ---
 
 ## Development Status Summary (Session 15)
@@ -532,14 +557,16 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ **Meetings Agent:** prep meeting, 121, post meeting (auto-extraction), finalize meeting
 - ✅ **MFM Agent:** mfm review, mfm summary
 - ✅ **Hiring Agent:** setup role, screen CVs (validates folders)
-- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation, Slack report, 4Ps roundup, leadership update
-- ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure
+- ✅ **Reflection Agent:** session logging, daily summary, 4Ps generation, Slack report, scan slack, 4Ps roundup, leadership update
+- ✅ **Strategy Agent:** OKR/strategy/bet queries with progressive disclosure + Confluence MCP
 
 ### Key Enhancement (Session 15)
-- `slack report` generates comprehensive Slack report using Slack MCP with auto task creation
+- `slack report` generates comprehensive Slack report with auto task creation + commitment scanning
+- `scan slack` standalone commitment extraction with user confirmation
 - `4ps roundup` reviews team 4Ps from Slack against MFM priorities
 - `leadership update` synthesizes leadership channels + meetings into shareable update
 - `/today` includes Slack actions section; daily summary uses slack report as context
+- Strategy + MFM agents have live Confluence access for OKRs, strategies, bets, operating model
 
 ### Partially Working / Known Issues
 - None currently
@@ -556,9 +583,9 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - ✅ Leadership update workflow with synthesis + confirmation before sharing (Session 15)
 - ✅ Daily summary reads slack report as context (Session 15)
 - ✅ Today report includes Slack actions section (Session 15)
-- ❌ Slack task extraction from team messages (beyond mentions - scanning commitments)
-- ❌ MFM Slack notifications (reminders + team sharing)
-- ❌ Confluence MCP integration for knowledge features
+- ✅ Slack commitment scanning - scan slack / slack tasks (Session 15)
+- ✅ Confluence MCP integration for Strategy + MFM agents (Session 15)
+- ❌ MFM Slack notifications (reminders + team sharing - skipped by user request)
 
 ---
 
