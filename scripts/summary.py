@@ -358,6 +358,34 @@ def generate_today_summary():
     ideas = get_items_from_folder(inbox_path / "Ideas")
     features = get_items_from_folder(inbox_path / "Features")
 
+    # Get reminders
+    reminders = get_items_from_folder(inbox_path / "Reminders")
+
+    # Filter active reminders (due today or upcoming, and overdue)
+    reminders_today = []
+    reminders_upcoming = []
+    reminders_overdue = []
+    week_end_rem = today + timedelta(days=7)
+    for reminder in reminders:
+        status = reminder['frontmatter'].get('status', 'active')
+        if status in ['completed', 'archived']:
+            continue
+        # Check reminder-date or due-date
+        date_str = reminder['frontmatter'].get('reminder-date') or reminder['frontmatter'].get('due-date')
+        if date_str:
+            try:
+                rem_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                if rem_date < today:
+                    reminders_overdue.append(reminder)
+                elif rem_date == today:
+                    reminders_today.append(reminder)
+                elif rem_date <= week_end_rem:
+                    reminders_upcoming.append(reminder)
+            except ValueError:
+                reminders_today.append(reminder)  # No valid date, show today
+        else:
+            reminders_today.append(reminder)  # No date, show today
+
     # Filter overdue tasks (due before today and not completed)
     overdue_tasks = []
     for task in tasks:
@@ -458,6 +486,20 @@ def generate_today_summary():
             content += f"- ~~{task['title']}~~\n"
     else:
         content += "*No tasks due today*\n"
+
+    # Add reminders section
+    if reminders_overdue or reminders_today or reminders_upcoming:
+        content += "\n## Reminders\n\n"
+        if reminders_overdue:
+            for r in reminders_overdue:
+                date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
+                content += f"- **OVERDUE ({date_str})**: {r['title']}\n"
+        for r in reminders_today:
+            content += f"- {r['title']}\n"
+        if reminders_upcoming:
+            for r in reminders_upcoming:
+                date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
+                content += f"- **{date_str}**: {r['title']}\n"
 
     content += "\n## Tasks Due This Week\n\n"
 
