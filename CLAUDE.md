@@ -42,12 +42,12 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 
 | Agent | Commands | Role |
 |-------|----------|------|
-| **Tasks** | `new task:`, `update:`, `/today`, `process notepad` | Task, idea, feature, reminder, action management |
+| **Tasks** | `new task:`, `update:`, `/todo`, `process notepad` | Task, idea, feature, reminder, action management |
 | **People** | `observation:`, `360:`, `feedback:`, `performance conversation prep:` | Observations, 360 reviews, performance conversations |
 | **Strategy** | Query-based (OKR, strategy, bet keywords) | Strategic analysis with progressive L1→L2→L3 disclosure + Confluence |
 | **Reflection** | `daily summary`, `/summary`, `session:`, `slack report`, `scan slack`, `4ps roundup`, `leadership update` | Daily summaries, session logging, Slack reports, commitment scanning, team 4Ps, leadership updates |
 | **Meetings** | `prep meeting:`, `121:`, `post meeting:` | Meeting prep, Granola integration |
-| **MFM** | `mfm review:`, `mfm summary:` | Monthly Focus Meeting reviews and summaries |
+| **MFM** | `mfm review:`, `mfm summary:`, `run [month] monthly focus meeting for [squad]` | Monthly Focus Meeting reviews (Confluence input) and summaries |
 | **Hiring** | `setup role:`, `screen CVs:`, `shortlist:`, `interview prep:`, `interview eval:` | CV screening, interview evaluation, candidate assessment |
 
 ### Key locations
@@ -63,7 +63,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 # Tasks
 ./pos "new task: [title] due: [YYYY-MM-DD] details: [text] tags: [tag1, tag2]"
 ./pos "update: [title] status: [completed|in-progress|blocked|waiting]"
-./pos "/today"                          # Generate today's task summary
+./pos "/todo"                           # Generate daily to-do list
 ./pos "process notepad"                 # Process captured notes
 ./pos "archive completed"               # Archive items completed > 7 days ago
 
@@ -88,6 +88,7 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 # MFM
 ./pos "mfm review: [squad] [month]"     # Review MFM pre-read
 ./pos "mfm summary: [squad] [month]"    # Create post-MFM summary
+./pos "run [month] monthly focus meeting for [squad]"  # Natural language MFM trigger
 
 # Hiring
 ./pos "setup role: [role name]"         # Generate evaluation guide from JD
@@ -389,6 +390,12 @@ When the user types **"session"** in the Claude conversation (not in terminal), 
    - Enough detail for someone else to understand what was worked on
 3. **Immediately run** `./pos "session: [generated summary]"` via Bash tool
 4. **Confirm** the session was logged
+5. **Review for personal growth signals:** Read `Work/LLM_Context/Personal/growth_patterns.md` and review the conversation for:
+   - Moments matching known patterns (e.g., sharing before aligning, communication struggles)
+   - New signals worth reflecting on (e.g., asking for help framing a message, reworking communications, expressing frustration about interactions)
+   - If anything is spotted, flag it concisely: *"Growth note: I noticed [specific observation]. Want to add this to your growth log?"*
+   - If Chris confirms, append to the growth patterns file
+   - If nothing relevant, say nothing - no noise
 
 **Summary format guidelines:**
 - Start with brief overview sentence
@@ -429,7 +436,7 @@ Discussed session logging workflow in the Chief of Staff system and clarified ho
 
 1. **Automatically gather context** (no permission needed):
    - Read this week's 4Ps from `Work/Weekly_4Ps/` (priorities and plans)
-   - Read today summary from `Work/Inbox/Today/today_YYYY-MM-DD.md` (completed/in-progress tasks)
+   - Read to-do list from `Work/Inbox/Today/todo_YYYY-MM-DD.md` (completed/in-progress tasks)
    - Read Claude session logs from `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
    - Read any observations created today from `Work/People/Observations/`
 
@@ -444,13 +451,19 @@ Discussed session logging workflow in the Chief of Staff system and clarified ho
      - Anything else important to capture?
    - Let user answer each question in the conversation
 
-3. **Collate and summarize**:
+3. **Review for personal growth signals:**
+   - Read `Work/LLM_Context/Personal/growth_patterns.md`
+   - Review meeting notes, Slack context, and user answers for moments matching known patterns or new growth signals
+   - If anything is spotted, flag it before finalizing the summary
+   - If confirmed, append to the growth patterns file
+
+4. **Collate and summarize**:
    - Combine file contents + user answers
    - Generate structured bullet-point summary
    - Include meetings, decisions, progress, Claude sessions, completed tasks
 
 4. **Save summary**:
-   - Write to `Work/Inbox/Today/summary_YYYY-MM-DD.md`
+   - Write to `Work/Daily_Logs/daily_summary_YYYY-MM-DD.md`
    - Confirm to user that summary was saved
 
 **Key principle:** Files provide baseline context, interview fills in gaps (meetings, Slack discussions, decisions not captured elsewhere).
@@ -469,21 +482,40 @@ Discussed session logging workflow in the Chief of Staff system and clarified ho
 2. End of day: Type "daily summary" to conduct interview and generate summary
 3. End of week: Use daily summaries to write 4Ps
 
+### 4Ps writing guidance
+
+**Week boundaries:**
+- **Progress** covers the previous calendar week (Monday to Friday) only.
+- **Plans** covers the current/upcoming calendar week (Monday to Friday).
+- **Problems** are current regardless of week.
+- **Priorities** are ongoing and usually don't change week to week.
+
+**Audience:** The 4Ps are read by Chris's organisation - squad leads, their reports, and cross-functional partners. See `Work/LLM_Context/Squads/Squads_overview.md` for team context. Write as a leadership update for this audience, not as a personal task tracker.
+
+**Style rules:**
+1. **Priorities:** 2-3 high-level strategic themes, not a detailed list of categories.
+2. **Progress:** Group related activities into narrative bullets. Don't list every meeting or task separately - synthesise into what was achieved. One bullet per initiative or theme, not per event.
+3. **Plans:** Describe initiatives and outcomes, not individual tasks. If it wouldn't make sense to a leadership audience, it's too granular (e.g. "Complete Naptha documentation" is too granular; "Reset product teams and kick off engineering hiring" is the right level).
+4. **Problems:** Frame as strategic questions or decisions needed, not just status updates on blockers. Make the ask clear.
+5. **Exclude:** Individual performance situations, comp details, and HR-sensitive matters.
+6. **Include a "Leadership discussions" section** briefly summarising key topics from the leadership Slack channel (#priv-forma-design-leadership-fy27) for the week.
+7. **Tone:** Confident peer update. Direct, concise, outcome-focused.
+
 **File naming:**
 - Session logs: `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
-- Daily summaries: `Work/Inbox/Today/summary_YYYY-MM-DD.md`
-- Distinct from auto-generated: `Work/Inbox/Today/today_YYYY-MM-DD.md` (task lists)
+- Daily summaries: `Work/Daily_Logs/daily_summary_YYYY-MM-DD.md`
+- To-do lists: `Work/Inbox/Today/todo_YYYY-MM-DD.md`
 
-### Today Summary (Smart Summary)
+### Today To-do List
 
-**Purpose:** Generate today's task summary with an intelligently condensed yesterday overview
+**Purpose:** Generate today's to-do list with an intelligently condensed yesterday overview
 
-**Trigger:** When user says "today", "show today", "today summary", or similar
+**Trigger:** When user says "todo", "show todo", or similar
 
 **Automated workflow:**
 
-1. **Generate base summary**: Run `./pos "/today"` via Bash tool
-2. **Read the generated file**: `Work/Inbox/Today/today_YYYY-MM-DD.md`
+1. **Generate to-do list**: Run `./pos "/todo"` via Bash tool
+2. **Read the generated file**: `Work/Inbox/Today/todo_YYYY-MM-DD.md`
 3. **Extract yesterday overview section**: Get content between "## Yesterday's overview" and "## Overdue Tasks" (or next section)
 4. **Summarize using LLM**: Process the yesterday overview to:
    - Keep meeting names (bold headers) but condense to 1-2 sentences focusing on outputs/decisions/actions
@@ -491,7 +523,7 @@ Discussed session logging workflow in the Chief of Staff system and clarified ho
    - Aim for ~5-10 lines total for yesterday overview
    - Preserve the most actionable information
 5. **Update the file**: Replace the yesterday overview section with the condensed version
-6. **Display to user**: Show the updated today summary
+6. **Display to user**: Show the updated to-do list
 
 **Summarization prompt guidelines:**
 - Focus on outputs, decisions, and action items
@@ -501,8 +533,8 @@ Discussed session logging workflow in the Chief of Staff system and clarified ho
 - Preserve formatting (bold headers, bullet points)
 
 **Why this approach:**
-- Detailed summaries remain in `summary_YYYY-MM-DD.md` files for 4Ps writing
-- Today view stays concise and scannable
+- Detailed summaries remain in `Work/Daily_Logs/daily_summary_YYYY-MM-DD.md` files for 4Ps writing
+- To-do view stays concise and scannable
 - No API costs (uses current Claude conversation)
 - User gets context without information overload
 

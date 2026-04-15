@@ -5,7 +5,7 @@ Parse natural language commands and execute the appropriate scripts.
 Usage:
     python parse_command.py "new task: Buy groceries due: 2026-01-10 details: Get milk tags: personal"
     python parse_command.py "new idea: Dashboard redesign details: Improve UX tags: product, ui"
-    python parse_command.py "/today"
+    python parse_command.py "/todo"
     python parse_command.py "/weekly"
 """
 
@@ -13,7 +13,7 @@ import argparse
 import sys
 import re
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 # Add parent directory to path to import other scripts
@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from create_item import create_item, update_item_status
 from create_observation import create_observation, create_360_review
 from utils import parse_tags, find_item_by_title
-from summary import generate_today_summary, generate_weekly_summary, update_today_document
+from todo import generate_todo, generate_weekly_summary, update_todo_document
 from detect_agent import detect_agent, load_agent_context
 from process_notepad import process_notepad
 from orchestrator import orchestrate_121_prep, orchestrate_daily_summary, handle_ambiguous_query
@@ -483,28 +483,29 @@ def execute_command(command_text):
         # Agent handled it, we're done
         return agent_result
 
-    # Handle summary commands
-    if command_text == '/today':
-        # Return signal for Claude to extract meetings first, then generate summary
+    # Handle to-do list commands
+    if command_text == '/todo':
+        # Return signal for Claude to extract meetings first, then generate to-do list
         today_date = datetime.now().strftime('%Y-%m-%d')
-        return f"""TODAY_WITH_MEETING_EXTRACT:{today_date}
+        yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        return f"""TODO_WITH_MEETING_EXTRACT:{today_date}
 
 Claude should automatically:
-1. Query today's meetings: mcp__granola__list_meetings(time_range="this_week") and filter for today
-2. For each meeting from today that hasn't been processed:
+1. Query yesterday's meetings: mcp__granola__list_meetings(time_range="this_week") and filter for yesterday ({yesterday_date})
+2. For each meeting from yesterday that hasn't been processed:
    - Get details: mcp__granola__get_meetings(meeting_ids=["<id>"])
    - Extract actions, decisions, tasks, observations from the summary
    - Create items using ./pos commands
-3. After processing all meetings, generate the today summary:
-   - Run: ./pos "/today-generate"
+3. After processing all meetings, generate the to-do list:
+   - Run: ./pos "/todo-generate"
 
 IMPORTANT: Execute this workflow automatically without asking for confirmation."""
 
-    # Internal command to just generate today summary (called after meeting extraction)
-    if command_text == '/today-generate':
-        file_path, content = generate_today_summary()
+    # Internal command to just generate to-do list (called after meeting extraction)
+    if command_text == '/todo-generate':
+        file_path, content = generate_todo()
         file_path.write_text(content)
-        return f"✓ Generated today summary: {file_path}"
+        return f"✓ Generated to-do list: {file_path}"
 
     if command_text == '/weekly':
         file_path, content = generate_weekly_summary()
@@ -563,8 +564,8 @@ IMPORTANT: Execute this workflow automatically without asking for confirmation."
         result = change_due_date(title, new_date)
         if result['success']:
             # Update today document
-            today_path = update_today_document()
-            return f"✓ {result['message']}\n✓ Updated today summary: {today_path}"
+            today_path = update_todo_document()
+            return f"✓ {result['message']}\n✓ Updated to-do list: {today_path}"
         else:
             return f"✗ {result['message']}"
 
@@ -614,10 +615,13 @@ IMPORTANT: Execute this workflow automatically without asking for confirmation."
         output.append("=" * 60)
         output.append("")
         output.append("**Next steps for Claude:**")
-        output.append("1. Display this draft to the user")
-        output.append("2. Ask: 'Have I missed anything you'd like to capture?'")
-        output.append("3. If user has additions, run: ./pos \"finalize summary: [user additions]\"")
-        output.append("4. If no additions, run: ./pos \"finalize summary\"")
+        output.append("1. Query today's meetings from Granola: mcp__granola__list_meetings(time_range=\"this_week\") and filter for today's date")
+        output.append("2. For each meeting, get details: mcp__granola__get_meetings(meeting_ids=[...])")
+        output.append("3. Incorporate meeting summaries into the draft (key decisions, actions, outcomes per meeting)")
+        output.append("4. Display the enriched draft to the user")
+        output.append("5. Ask: 'Have I missed anything you'd like to capture?'")
+        output.append("6. If user has additions, run: ./pos \"finalize summary: [user additions]\"")
+        output.append("7. If no additions, run: ./pos \"finalize summary\"")
 
         return '\n'.join(output)
 
@@ -995,9 +999,9 @@ Processed by Meetings Agent with auto-extraction
         )
 
         # Auto-update today document
-        today_path = update_today_document()
+        today_path = update_todo_document()
 
-        return f"✓ Created {parsed['type']}: {file_path}\n✓ Updated today summary: {today_path}"
+        return f"✓ Created {parsed['type']}: {file_path}\n✓ Updated to-do list: {today_path}"
 
     # Handle complete/archive commands (legacy)
     if command_text.startswith('complete ') or command_text.startswith('archive '):
@@ -1010,10 +1014,10 @@ Processed by Meetings Agent with auto-extraction
         )
 
         # Auto-update today document
-        today_path = update_today_document()
+        today_path = update_todo_document()
 
         status_action = 'completed' if parsed['status'] == 'completed' else 'archived'
-        return f"✓ Marked {parsed['item_type']} as {status_action}: {file_path}\n✓ Updated today summary: {today_path}"
+        return f"✓ Marked {parsed['item_type']} as {status_action}: {file_path}\n✓ Updated to-do list: {today_path}"
 
     # Handle update command (new primary method)
     if command_text.startswith('update:'):
@@ -1056,18 +1060,18 @@ Processed by Meetings Agent with auto-extraction
         )
 
         # Auto-update today document
-        today_path = update_today_document()
+        today_path = update_todo_document()
 
         # Build result message
         note_text = f" (note: {note})" if note else ""
-        return f"✓ Marked {item_type} '{file_title}' as {status}{note_text}\n✓ Updated: {file_path}\n✓ Updated today summary: {today_path}"
+        return f"✓ Marked {item_type} '{file_title}' as {status}{note_text}\n✓ Updated: {file_path}\n✓ Updated to-do list: {today_path}"
 
     # Handle strategy queries (detected by keywords like OKR, strategy, bet)
     agent, confidence = detect_agent(command_text)
     if agent == 'strategy':
         return format_strategy_response(command_text)
 
-    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'update:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/today', or '/weekly'")
+    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'update:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/todo', or '/weekly'")
 
 
 def main():
@@ -1079,7 +1083,7 @@ Examples:
   %(prog)s "new task: Buy groceries due: 2026-01-10 details: Get milk and bread tags: personal, shopping"
   %(prog)s "new idea: Dashboard redesign details: Improve the analytics UI tags: product, ui"
   %(prog)s "new feature: Dark mode details: Add dark theme support tags: ui, frontend"
-  %(prog)s "/today"
+  %(prog)s "/todo"
   %(prog)s "/weekly"
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter

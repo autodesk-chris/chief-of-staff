@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Generate daily and weekly summaries of tasks, ideas, and features.
+Generate daily to-do list and weekly summaries of tasks, ideas, and features.
 
 Usage:
-    python summary.py today
-    python summary.py weekly
+    python todo.py today
+    python todo.py weekly
 """
 
 import argparse
@@ -17,6 +17,46 @@ import re
 sys.path.insert(0, str(Path(__file__).parent))
 
 from utils import get_vault_path
+
+
+def load_team_members():
+    """Load team member names from the squads overview file.
+
+    Returns a set of lowercase first+last name strings for matching against action assignees.
+    """
+    squads_file = Path(__file__).parent.parent / "Work" / "LLM_Context" / "Squads" / "Squads_overview.md"
+    if not squads_file.exists():
+        return set()
+
+    members = set()
+    in_members_section = False
+    content = squads_file.read_text()
+    for line in content.splitlines():
+        if line.strip() == "## Growth Organisation members":
+            in_members_section = True
+            continue
+        if in_members_section:
+            if line.startswith("## ") and "Growth Organisation" not in line:
+                break
+            if line.startswith("- ") and not line.startswith("- **"):
+                name = line.lstrip("- ").strip()
+                if name:
+                    members.add(name.lower())
+    return members
+
+
+def is_team_member(assignee, team_members):
+    """Check if an assignee matches a team member (fuzzy first-name or full-name match)."""
+    if not team_members or not assignee or assignee.lower() == 'unassigned':
+        return True  # Show unassigned actions
+    assignee_lower = assignee.lower()
+    assignee_first = assignee_lower.split()[0] if assignee_lower else ''
+    for member in team_members:
+        member_first = member.split()[0] if member else ''
+        # Full name match or first name match (either direction)
+        if assignee_lower == member or assignee_first == member_first:
+            return True
+    return False
 
 
 def get_previous_working_day(today):
@@ -48,7 +88,7 @@ def read_previous_day_summary(previous_date):
         Formatted string with previous day overview, or None if not found
     """
     vault_path = get_vault_path()
-    summary_path = vault_path / "Inbox" / "Today" / f"summary_{previous_date.strftime('%Y-%m-%d')}.md"
+    summary_path = vault_path / "Daily_Logs" / f"daily_summary_{previous_date.strftime('%Y-%m-%d')}.md"
 
     if not summary_path.exists():
         return None
@@ -214,12 +254,12 @@ def parse_manual_completions(today_path):
     content = today_path.read_text(encoding='utf-8')
     manually_completed = []
 
-    # Pattern to match strikethrough items: - ~~Title~~
+    # Pattern to match checked checkbox items: - [x] Title
     import re
-    pattern = r'^-\s+~~(.+?)~~\s*$'
+    pattern = r'^-\s+\[x\]\s+(.+?)$'
 
     for line in content.split('\n'):
-        match = re.match(pattern, line.strip())
+        match = re.match(pattern, line.strip(), re.IGNORECASE)
         if match:
             title = match.group(1).strip()
 
@@ -286,6 +326,38 @@ def sync_manual_completions_to_source(manually_completed_titles):
     return updated_count
 
 
+def get_item_details(content):
+    """
+    Extract the details section from markdown content.
+
+    Args:
+        content: Full file content as string
+
+    Returns:
+        Details string (first paragraph after ## Details), or empty string
+    """
+    lines = content.split('\n')
+    in_details = False
+    details_lines = []
+
+    for line in lines:
+        if line.strip().startswith('## Details'):
+            in_details = True
+            continue
+        if in_details:
+            # Stop at next heading or end of content
+            if line.startswith('## ') or line.startswith('# '):
+                break
+            stripped = line.strip()
+            if stripped:
+                details_lines.append(stripped)
+
+    details = ' '.join(details_lines).strip()
+    # Remove due date references from details
+    details = re.sub(r'\s*due:\s*\d{4}-\d{2}-\d{2}\s*', '', details).strip()
+    return details
+
+
 def get_items_from_folder(folder_path):
     """
     Get all items from a folder with their metadata.
@@ -303,7 +375,7 @@ def get_items_from_folder(folder_path):
 
     for file_path in folder_path.glob('*.md'):
         # Skip summary files
-        if file_path.name.startswith('today_') or file_path.name.startswith('weekly_'):
+        if file_path.name.startswith('todo_') or file_path.name.startswith('today_') or file_path.name.startswith('weekly_'):
             continue
 
         content = file_path.read_text()
@@ -314,11 +386,14 @@ def get_items_from_folder(folder_path):
         created_time = datetime.fromtimestamp(file_path.stat().st_birthtime)
         modified_time = datetime.fromtimestamp(file_path.stat().st_mtime)
 
+        details = get_item_details(content)
+
         items.append({
             'file_path': file_path,
             'file_name': file_path.name,
             'title': title,
             'frontmatter': frontmatter,
+            'details': details,
             'created': created_time,
             'modified': modified_time
         })
@@ -326,9 +401,70 @@ def get_items_from_folder(folder_path):
     return items
 
 
-def generate_today_summary():
+def _format_item_line(item, checkbox=" "):
     """
-    Generate today's summary.
+    Format a single item as a checkbox line with optional details.
+
+    Args:
+        item: Item dict with 'title' and 'details'
+        checkbox: Checkbox content, e.g. ' ' or 'x'
+
+    Returns:
+        Formatted string (may be multi-line if details present)
+    """
+    line = f"- [{checkbox}] **{item['title']}**"
+    details = item.get('details', '')
+    if details:
+        # Truncate long details to keep summary scannable
+        if len(details) > 200:
+            details = details[:197] + '...'
+        line += f"\n  - *{details}*"
+    return line
+
+
+def _format_tasks_by_day(tasks):
+    """
+    Group tasks by due date and format with day-name subheadings.
+
+    Args:
+        tasks: List of task dicts with frontmatter containing 'due-date'
+
+    Returns:
+        Formatted string with tasks grouped under day subheadings
+    """
+    from collections import OrderedDict
+
+    day_abbrevs = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    grouped = OrderedDict()
+
+    for task in tasks:
+        due_date_str = task['frontmatter'].get('due-date', '')
+        try:
+            due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+            day_name = day_abbrevs[due_date.weekday()]
+            key = f"{day_name} {due_date_str}"
+        except (ValueError, TypeError):
+            key = "No date"
+
+        if key not in grouped:
+            grouped[key] = []
+        grouped[key].append(task)
+
+    result = ""
+    for day_heading, day_tasks in grouped.items():
+        result += f"### {day_heading}\n"
+        for task in day_tasks:
+            status = task['frontmatter'].get('status', 'active')
+            cb = "x" if status in ['completed', 'archived'] else " "
+            result += _format_item_line(task, cb) + "\n"
+        result += "\n"
+
+    return result
+
+
+def generate_todo():
+    """
+    Generate today's to-do list.
 
     Returns:
         Tuple of (file_path, content)
@@ -339,7 +475,7 @@ def generate_today_summary():
 
     # Sync manual completions from existing today document (if it exists)
     today_folder = inbox_path / "Today"
-    today_path = today_folder / f"today_{today.strftime('%Y-%m-%d')}.md"
+    today_path = today_folder / f"todo_{today.strftime('%Y-%m-%d')}.md"
 
     if today_path.exists():
         manually_completed = parse_manual_completions(today_path)
@@ -357,6 +493,7 @@ def generate_today_summary():
     tasks = get_items_from_folder(inbox_path / "Tasks")
     ideas = get_items_from_folder(inbox_path / "Ideas")
     features = get_items_from_folder(inbox_path / "Features")
+    actions = get_items_from_folder(inbox_path / "Actions")
 
     # Get reminders
     reminders = get_items_from_folder(inbox_path / "Reminders")
@@ -450,73 +587,138 @@ def generate_today_summary():
     features_active = [feature for feature in features if feature['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
     features_completed = [feature for feature in features if feature['frontmatter'].get('status', 'active') in ['completed', 'archived']]
 
-    # Generate summary content with previous day overview at the top
-    content = f"""# Daily Summary - {today.strftime('%B %d, %Y')}
+    # Generate summary content
+    day_abbrevs = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    today_day_name = day_abbrevs[today.weekday()]
+    content = f"""# Daily to-do - {today_day_name} {today.strftime('%Y-%m-%d')}
 
 """
 
-    # Add previous day overview if available
-    if previous_overview:
-        day_name = "Friday" if today.weekday() == 0 else "Yesterday"
-        content += f"""## {day_name}'s overview ({previous_date.strftime('%B %d')})
+    # Monday: auto-create 4Ps task and show reminder
+    if today.weekday() == 0:
+        fourps_task_exists = any(
+            'complete' in t['frontmatter'].get('title', '').lower()
+            and '4ps' in t['frontmatter'].get('title', '').lower()
+            and t['frontmatter'].get('due-date') == today.strftime('%Y-%m-%d')
+            and t['frontmatter'].get('status', 'active') not in ['completed', 'archived']
+            for t in tasks
+        )
+        if not fourps_task_exists:
+            import subprocess
+            subprocess.run(
+                ['python3', str(Path(__file__).parent / 'create_item.py'),
+                 'task', 'Complete weekly 4Ps',
+                 '--due', today.strftime('%Y-%m-%d'),
+                 '--details', 'Write and submit weekly 4Ps update. Review daily summaries from the past week, gather context, and draft Progress, Plans, Problems, Priorities.',
+                 '--tags', 'weekly, reflection'],
+                capture_output=True, text=True
+            )
+            print("📋 Created weekly 4Ps task (Monday auto-reminder)")
+            # Reload tasks to include the new one
+            tasks = get_items_from_folder(inbox_path / "Tasks")
 
-{previous_overview}
+        content += """## Monday reminder: weekly 4Ps
+
+**Time to write your 4Ps.** Review daily summaries from last week and draft your update.
+Run `./pos "4ps"` or `./pos "generate 4ps"` to get started.
 
 """
 
-    # Add overdue tasks section if any exist
+    # Overdue tasks first
     if overdue_tasks:
-        content += """## Overdue Tasks
+        content += "## Overdue tasks\n\n"
+        content += _format_tasks_by_day(overdue_tasks)
 
-"""
-        for task in overdue_tasks:
-            due_date = task['frontmatter'].get('due-date', 'No date')
-            content += f"- **{due_date}**: {task['title']}\n"
-        content += "\n"
+    # Tasks due today
+    content += "## Tasks due today\n\n"
 
-    content += """## Tasks Due Today
-
-"""
-
-    # Show active tasks first, then completed with strikethrough
     if tasks_due_today_active or tasks_due_today_completed:
         for task in tasks_due_today_active:
-            content += f"- {task['title']}\n"
+            content += _format_item_line(task, " ") + "\n"
         for task in tasks_due_today_completed:
-            content += f"- ~~{task['title']}~~\n"
+            content += _format_item_line(task, "x") + "\n"
     else:
         content += "*No tasks due today*\n"
 
-    # Add reminders section
+    # Tasks due this week
+    content += "\n## Tasks due this week\n\n"
+
+    if tasks_due_this_week:
+        content += _format_tasks_by_day(tasks_due_this_week)
+    else:
+        content += "*No tasks due this week*\n\n"
+
+    # Reminders
     if reminders_overdue or reminders_today or reminders_upcoming:
         content += "\n## Reminders\n\n"
         if reminders_overdue:
             for r in reminders_overdue:
                 date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
-                content += f"- **OVERDUE ({date_str})**: {r['title']}\n"
+                details = r.get('details', '')
+                content += f"- [ ] **OVERDUE ({date_str})**: **{r['title']}**\n"
+                if details:
+                    detail_text = details[:200] + '...' if len(details) > 200 else details
+                    content += f"  - *{detail_text}*\n"
         for r in reminders_today:
-            content += f"- {r['title']}\n"
+            details = r.get('details', '')
+            content += f"- [ ] **{r['title']}**\n"
+            if details:
+                detail_text = details[:200] + '...' if len(details) > 200 else details
+                content += f"  - *{detail_text}*\n"
         if reminders_upcoming:
             for r in reminders_upcoming:
                 date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
-                content += f"- **{date_str}**: {r['title']}\n"
+                details = r.get('details', '')
+                content += f"- [ ] **{date_str}**: **{r['title']}**\n"
+                if details:
+                    detail_text = details[:200] + '...' if len(details) > 200 else details
+                    content += f"  - *{detail_text}*\n"
 
-    content += "\n## Tasks Due This Week\n\n"
+    # Previous day overview
+    if previous_overview:
+        day_name = "Friday" if today.weekday() == 0 else "Yesterday"
+        content += f"\n## {day_name}'s overview ({previous_date.strftime('%B %d')})\n\n"
+        content += f"{previous_overview}\n\n"
 
-    if tasks_due_this_week:
-        for task in tasks_due_this_week:
-            due_date = task['frontmatter'].get('due-date', 'No date')
-            content += f"- **{due_date}**: {task['title']}\n"
-    else:
-        content += "*No tasks due this week*\n"
+    # Active actions (assigned to others) - filtered to team members only, sorted by date
+    team_members = load_team_members()
+    actions_active = [a for a in actions if a['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
+    actions_team = [a for a in actions_active if is_team_member(a['frontmatter'].get('assignee', 'Unassigned'), team_members)]
+    if actions_team:
+        # Split into dated and undated
+        actions_dated = [a for a in actions_team if a['frontmatter'].get('due-date')]
+        actions_undated = [a for a in actions_team if not a['frontmatter'].get('due-date')]
 
-    content += "\n## Recent Ideas\n\n"
+        # Sort dated actions by due date (earliest first)
+        actions_dated.sort(key=lambda x: x['frontmatter'].get('due-date', ''))
+
+        content += "\n## Open actions\n\n"
+        for action in actions_dated:
+            assignee = action['frontmatter'].get('assignee', 'Unassigned')
+            due_date_str = action['frontmatter'].get('due-date', '')
+            details = action.get('details', '')
+            content += f"- [ ] **{assignee}**: **{action['title']}** (due: {due_date_str})\n"
+            if details:
+                detail_text = details[:200] + '...' if len(details) > 200 else details
+                content += f"  - *{detail_text}*\n"
+        if actions_undated:
+            if actions_dated:
+                content += "\n### No due date\n\n"
+            for action in actions_undated:
+                assignee = action['frontmatter'].get('assignee', 'Unassigned')
+                details = action.get('details', '')
+                content += f"- [ ] **{assignee}**: **{action['title']}**\n"
+                if details:
+                    detail_text = details[:200] + '...' if len(details) > 200 else details
+                    content += f"  - *{detail_text}*\n"
+
+    content += "\n## Recent ideas\n\n"
 
     if ideas_active or ideas_completed:
         for idea in ideas_active:
-            content += f"- {idea['title']}\n"
+            content += f"- [ ] {idea['title']}\n"
         for idea in ideas_completed:
-            content += f"- ~~{idea['title']}~~\n"
+            content += f"- [x] {idea['title']}\n"
     else:
         content += "*No active ideas*\n"
 
@@ -524,9 +726,9 @@ def generate_today_summary():
 
     if features_active or features_completed:
         for feature in features_active:
-            content += f"- {feature['title']}\n"
+            content += f"- [ ] {feature['title']}\n"
         for feature in features_completed:
-            content += f"- ~~{feature['title']}~~\n"
+            content += f"- [x] {feature['title']}\n"
     else:
         content += "*No active features*\n"
 
@@ -543,21 +745,21 @@ def generate_today_summary():
     # Create file path in Today folder
     today_folder = inbox_path / "Today"
     today_folder.mkdir(exist_ok=True)  # Create folder if it doesn't exist
-    file_name = f"today_{today.strftime('%Y-%m-%d')}.md"
+    file_name = f"todo_{today.strftime('%Y-%m-%d')}.md"
     file_path = today_folder / file_name
 
     return file_path, content
 
 
-def update_today_document():
+def update_todo_document():
     """
-    Update today's document with current summary.
+    Update today's to-do list with current state.
     This is called automatically after creating tasks/ideas/features.
 
     Returns:
-        Path to the updated today document
+        Path to the updated to-do document
     """
-    file_path, content = generate_today_summary()
+    file_path, content = generate_todo()
     file_path.write_text(content)
     return file_path
 
@@ -633,27 +835,27 @@ def generate_weekly_summary():
 def main():
     """Main entry point for command-line usage."""
     parser = argparse.ArgumentParser(
-        description="Generate daily or weekly summaries"
+        description="Generate daily to-do list or weekly summaries"
     )
 
     parser.add_argument(
         'type',
         choices=['today', 'weekly'],
-        help='Type of summary to generate'
+        help='Type of output to generate (today = to-do list, weekly = summary)'
     )
 
     args = parser.parse_args()
 
     try:
         if args.type == 'today':
-            file_path, content = generate_today_summary()
+            file_path, content = generate_todo()
         else:
             file_path, content = generate_weekly_summary()
 
-        # Write the summary file
+        # Write the file
         file_path.write_text(content)
 
-        print(f"✓ Generated {args.type} summary: {file_path}")
+        print(f"✓ Generated {args.type}: {file_path}")
         return 0
 
     except Exception as e:

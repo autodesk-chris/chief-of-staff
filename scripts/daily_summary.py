@@ -161,7 +161,7 @@ def get_today_file() -> Optional[str]:
     """
     vault = get_vault_path()
     today = datetime.now().strftime("%Y-%m-%d")
-    filepath = vault / "Inbox" / "Today" / f"today_{today}.md"
+    filepath = vault / "Inbox" / "Today" / f"todo_{today}.md"
     return read_file_if_exists(str(filepath))
 
 
@@ -396,7 +396,7 @@ def save_summary(summary_content: str) -> Path:
     """
     vault = get_vault_path()
     today = datetime.now().strftime("%Y-%m-%d")
-    filepath = vault / "Inbox" / "Today" / f"summary_{today}.md"
+    filepath = vault / "Daily_Logs" / f"daily_summary_{today}.md"
 
     # Ensure directory exists
     filepath.parent.mkdir(parents=True, exist_ok=True)

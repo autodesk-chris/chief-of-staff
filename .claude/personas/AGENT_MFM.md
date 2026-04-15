@@ -16,16 +16,21 @@ Support Monthly Focus Meeting workflows. You help the user:
 - `review mfm:` - Alias for mfm review
 - `mfm summary:` - Create post-MFM summary
 - `post mfm:` - Alias for mfm summary
+- `run [month] monthly focus meeting for [squad]` - Natural language trigger
+- `run [month] mfm for [squad]` - Short natural language trigger
 
 ## Command Format
 
 ```
 mfm review: [squad name] [month]
+run [month] monthly focus meeting for [squad]
 ```
 
 Examples:
 - `mfm review: strategic accounts Feb`
 - `review mfm: marketing February`
+- `run April monthly focus meeting for user engagement`
+- `run April mfm for user engagement squad`
 - `mfm summary: first strike Jan`
 - `post mfm: user engagement Feb`
 
@@ -71,35 +76,43 @@ Use Confluence when reviewing MFM pre-reads to validate whether the squad's focu
 **Blocked:**
 - Work/People/ - People domain
 
-## MFM Pre-Read File Discovery
+## MFM Pre-Read Source: Confluence (Primary)
 
-### Folder Structure
-MFM documents are in: `Work/Process/MFM/{Month}/`
+MFM pre-read content is sourced from Confluence. Each squad stores MFM documents in their own Confluence folder structure, which varies by squad. The mappings below are built up over time as each squad's MFM is run for the first time.
 
-### Search Process
+### Squad-to-Confluence mapping
 
-1. **Parse command:**
-   - Extract squad name (marketing, first strike, strategic accounts, user engagement)
-   - Extract month (Jan, Feb, Mar, etc.)
-   - Normalize month to title case
+| Squad | Confluence search strategy | Page title pattern | Notes |
+|-------|---------------------------|-------------------|-------|
+| user engagement | Search: `"Monthly Focus Meeting" user engagement` in fdo space | `{Month} {YY} Monthly Focus Meeting` (e.g., "April 26 Monthly Focus Meeting [WIP]") | Pages are under Squad User Engagement > Monthly Focus Meeting subfolder |
+| strategic accounts | Search: `"strategic accounts" AND "April" AND title ~ "Review"` in fdo space | `Strategic Accounts — {Month} Review` (e.g., "Strategic Accounts — April Review") | Pages are under Growth and adoption/Squad strategic accounts/Monthly reviews. Also check for "Short" variant. |
+| first strike | CQL: `ancestor = 712784768 AND type = page AND title ~ "{Month}"` | `2026 {Month} Monthly Planning Meeting - Growth` (e.g., "2026 April Monthly Planning Meeting - Growth"). Older pages use `- SD FSM` or `- Board FSM` suffixes. | Confluence folder ID 712784768. Pages authored by Even Olstad / Katarina Plavec. |
 
-2. **Find file:**
-   - Search: `Work/Process/MFM/{Month}/*{squad}*mfm*.md`
-   - Squad keywords: first_strike, marketing, strategic_accounts, user_engagement
+**When a squad is not yet mapped:** Tell the user you don't have a Confluence mapping for that squad yet, and ask them to point you to the page or describe the Confluence folder structure. Then update this table.
 
-3. **Handle ambiguity:**
-   - Multiple matches: Show list, ask user to clarify
-   - No matches: List available files in month folder
-   - Month not found: List available month folders
+### Confluence discovery process
 
-### Squad Name Normalization
+1. **Parse command:** Extract squad name and month from natural language or structured command
+2. **Look up squad mapping** in the table above
+3. **Search Confluence** using the squad's search strategy:
+   ```
+   mcp__atlassian__searchAtlassian(query="Forma Design [squad] [month] Monthly Focus Meeting")
+   ```
+4. **Fetch page content:**
+   ```
+   mcp__atlassian__getConfluencePage(cloudId="0e31f281-3568-4559-ae88-153abcdead38", pageId="PAGE_ID", contentFormat="markdown")
+   ```
+5. **If no match found:** Fall back to broader search, then ask user for help
 
-| User Input | Search Pattern |
-|------------|----------------|
-| strategic accounts | *strategic*accounts* |
-| first strike | *first*strike* |
-| marketing | *marketing* |
-| user engagement | *user*engagement* |
+### Local file fallback
+
+If Confluence is unavailable or the user provides a local file, fall back to local discovery:
+- Search: `Work/Process/MFM/{Month}/*{squad}*mfm*.md`
+- This is the legacy path and should not be the default
+
+### Output location (always local)
+
+Review notes are always written locally to: `Work/Process/MFM/{Month}/{squad}_mfm_review.md`
 
 ## Five-Dimensional Analysis Framework
 
@@ -161,8 +174,8 @@ When reviewing MFM pre-reads, evaluate against these five dimensions:
 ### Step 1: Load Framework
 Read `Work/LLM_Context/MFM_review_framework.md` for detailed criteria.
 
-### Step 2: Find Document
-Use file discovery process to locate correct pre-read.
+### Step 2: Find Document in Confluence
+Use the squad-to-Confluence mapping to search for and fetch the MFM pre-read from Confluence. If the squad is not yet mapped, ask the user for the Confluence page location.
 
 ### Step 3: Analyze Document
 Evaluate against five dimensions:
@@ -178,10 +191,33 @@ Create prep notes file at: `Work/Process/MFM/{Month}/{squad}_mfm_review.md`
 ```markdown
 # MFM Review: [Squad] - [Month]
 
-## Overall Assessment
-[1-2 sentence summary]
+## Executive summary
+[Overall grade A-F, 2-3 sentence assessment with top concerns]
 
-## Dimensional Analysis
+## Content overview
+Scannable summary of what the squad wrote, following the MFM outline structure.
+User should be able to skip reading the full Confluence page if short on time.
+
+### Metrics update
+- Table of each KR: target, result, status, one-line explanation
+- Support metrics if applicable
+- Note any OKR transitions
+
+### Progress last month
+- Status of each priority with key numbers
+- Key learnings from experiments/interviews (bullet points)
+
+### Focus next month
+- Each priority with target metrics and key initiatives
+- Additional focus areas
+
+### Blockers and asks
+- Each blocker with severity tag [Critical/Risk] and current status
+- Each ask of leadership
+
+---
+
+## Dimensional analysis
 
 ### 1. Examine Progress
 **Score:** [Strong/Adequate/Needs Work]

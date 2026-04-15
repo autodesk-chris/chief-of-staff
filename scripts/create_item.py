@@ -453,10 +453,92 @@ def archive_completed_items(days_threshold=7):
             summary_parts.append(f"\nSkipped {skipped_no_date} completed item(s) without completed-date")
             summary_parts.append("Tip: Re-mark items as completed to add completion date tracking")
 
+    # Also archive old today/slack files
+    today_result = archive_today_files(days_threshold=days_threshold)
+    if today_result['archived']:
+        by_type = {}
+        for item in today_result['archived']:
+            t = item['type']
+            by_type[t] = by_type.get(t, 0) + 1
+        for t, count in sorted(by_type.items()):
+            summary_parts.append(f"  - {count} {t} file(s)")
+
     return {
-        'archived': archived,
+        'archived': archived + today_result['archived'],
         'skipped_no_date': skipped_no_date,
         'summary': '\n'.join(summary_parts)
+    }
+
+
+def archive_today_files(days_threshold=7):
+    """
+    Archive dated files from Work/Inbox/Today/ after threshold days.
+
+    Routes files to separate archive folders:
+    - todo_*.md, today_*.md, summary_*.md -> Work/Archive/Today/YYYY-MM/
+    - slack_report_*.md, slack_digest_*.md -> Work/Archive/Slack_Reports/YYYY-MM/
+
+    Args:
+        days_threshold: Number of days before archiving (default 7)
+
+    Returns:
+        dict with 'archived' list and 'summary' string
+    """
+    import re
+    import shutil
+    from datetime import datetime, timedelta
+
+    project_root = Path(__file__).parent.parent
+    today_folder = project_root / 'Work' / 'Inbox' / 'Today'
+    cutoff_date = datetime.now() - timedelta(days=days_threshold)
+
+    archived = []
+
+    if not today_folder.exists():
+        return {'archived': archived, 'summary': 'No Today folder found'}
+
+    date_pattern = re.compile(r'(\d{4}-\d{2}-\d{2})')
+
+    for file_path in sorted(today_folder.glob('*.md')):
+        date_match = date_pattern.search(file_path.stem)
+        if not date_match:
+            continue
+
+        try:
+            file_date = datetime.strptime(date_match.group(1), '%Y-%m-%d')
+        except ValueError:
+            continue
+
+        if file_date >= cutoff_date:
+            continue
+
+        # Route to the right archive folder
+        name = file_path.name
+        if name.startswith('slack_report_') or name.startswith('slack_digest_'):
+            archive_type = 'Slack_Reports'
+            item_type = 'slack_report'
+        else:
+            archive_type = 'Today'
+            item_type = 'today_summary'
+
+        archive_month = file_date.strftime('%Y-%m')
+        archive_folder = project_root / 'Work' / 'Archive' / archive_type / archive_month
+        archive_folder.mkdir(parents=True, exist_ok=True)
+
+        dest_path = archive_folder / file_path.name
+        shutil.move(str(file_path), str(dest_path))
+
+        archived.append({
+            'type': item_type,
+            'name': file_path.stem,
+            'from': str(file_path),
+            'to': str(dest_path),
+            'completed_date': date_match.group(1)
+        })
+
+    return {
+        'archived': archived,
+        'summary': f"Archived {len(archived)} today/slack file(s)" if archived else "No today/slack files to archive"
     }
 
 

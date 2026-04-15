@@ -259,7 +259,7 @@ def find_item_by_title(search_title, threshold=0.6):
 
         for file_path in folder_path.glob('*.md'):
             # Skip summary files
-            if file_path.name.startswith('today_') or file_path.name.startswith('weekly_'):
+            if file_path.name.startswith('todo_') or file_path.name.startswith('today_') or file_path.name.startswith('weekly_'):
                 continue
 
             # Extract title from file

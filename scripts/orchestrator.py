@@ -523,7 +523,7 @@ def orchestrate_daily_summary() -> Dict[str, Any]:
     result['sources_checked'].append('fourps')
 
     # Check for existing today summary
-    today_path = get_vault_path() / "Inbox" / "Today" / f"today_{today_str}.md"
+    today_path = get_vault_path() / "Inbox" / "Today" / f"todo_{today_str}.md"
     if today_path.exists():
         result['today_summary'] = {
             'path': str(today_path),

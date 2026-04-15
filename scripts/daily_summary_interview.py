@@ -206,9 +206,9 @@ def process_actionable_items(summary_path):
         print(f"\n✓ Created {len(created_items)} items from summary")
 
         # Auto-update today document
-        from summary import update_today_document
-        today_path = update_today_document()
-        print(f"✓ Updated today summary: {today_path}")
+        from todo import update_todo_document
+        today_path = update_todo_document()
+        print(f"✓ Updated to-do list: {today_path}")
 
     return created_items
 
@@ -242,7 +242,7 @@ def gather_context():
     # Read today summary
     try:
         today = datetime.now().date()
-        today_path = Path(get_vault_path()) / "Inbox" / "Today" / f"today_{today.strftime('%Y-%m-%d')}.md"
+        today_path = Path(get_vault_path()) / "Inbox" / "Today" / f"todo_{today.strftime('%Y-%m-%d')}.md"
         if today_path.exists():
             context['today_summary'] = parse_today_summary(today_path.read_text(encoding='utf-8'))
     except Exception as e:
@@ -779,7 +779,7 @@ class DailySummaryInterview:
         print("="*60)
 
         today = datetime.now().date()
-        summary_path = Path(get_vault_path()) / "Inbox" / "Today" / f"summary_{today.strftime('%Y-%m-%d')}.md"
+        summary_path = Path(get_vault_path()) / "Daily_Logs" / f"daily_summary_{today.strftime('%Y-%m-%d')}.md"
 
         # Check if file already exists
         if summary_path.exists():

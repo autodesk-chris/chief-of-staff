@@ -28,17 +28,24 @@ Manage all hiring-related workflows. You help the user:
 ```
 Work/People/Hiring/
 └── [Role Name]/
-    ├── [Role]_JD.pdf                     # Source job description
+    ├── [Role]_JD.pdf                     # Source job description (local)
     ├── [Role]_evaluation_guide.md        # Generated criteria (from setup)
+    ├── [Role]_outline.md                 # Optional: hiring manager's brief/priorities
     ├── CVs/                              # Incoming candidates (screening pool)
     │   ├── [Candidate1]_CV.pdf
     │   └── [Candidate2]_CV.pdf
     └── Shortlisted/                      # Progressing candidates
+        ├── cv_screening_YYYY-MM-DD.md    # Batch screening results
         ├── [Candidate]_CV.pdf            # Moved here when shortlisted
         ├── [Candidate]_cv_screen.md      # CV screening notes
         ├── [Candidate]_interview_prep.md # Interview focus areas
         └── [Candidate]_interview_notes.md # Post-interview evaluation
 ```
+
+**Flexible structure:** The folder layout above is the ideal. In practice, adapt to what exists:
+- CVs may be in the role folder root rather than a `CVs/` subfolder - scan both locations
+- JD may be a Confluence page rather than a local file (see JD sources below)
+- Subfolders (CVs/, Shortlisted/) should be created as needed, not assumed to exist
 
 ## Access Permissions
 
@@ -48,6 +55,22 @@ Work/People/Hiring/
 **Read-only access:**
 - Granola MCP - For interview transcripts
 - Job description PDFs
+- Confluence via Atlassian MCP - For JDs hosted on Confluence
+
+## JD Sources
+
+The JD can come from multiple sources. Check in this order:
+
+1. **Confluence URL/page** - User may provide a Confluence link or page ID. Fetch via Atlassian MCP:
+   ```
+   mcp__atlassian__getConfluencePage(cloudId="0e31f281-3568-4559-ae88-153abcdead38", pageId="PAGE_ID", contentFormat="markdown")
+   ```
+2. **Local file** - PDF or markdown in the role folder
+3. **User-provided text** - Pasted directly into the conversation
+
+**Supplementary briefs:** The user may also provide a hiring manager outline or brief alongside the JD. This takes priority over the JD for weighting criteria (e.g., "I care most about X, leave Y to the eng manager"). Look for `*_outline.md` or `*_brief.md` in the role folder, or accept inline from the user.
+
+When a supplementary brief exists, use it to weight the screening - traits the brief emphasises should be primary evaluation criteria, while JD traits not mentioned in the brief remain secondary.
 
 **Blocked:**
 - Work/People/360_reviews/ - People agent domain
@@ -60,8 +83,9 @@ Work/People/Hiring/
 **Command:** `setup role: [role name]`
 
 **Process:**
-1. Find JD in role folder (PDF or markdown)
-2. Analyze JD for key requirements:
+1. Find JD - check for: Confluence URL/page ID provided by user, local PDF/markdown in role folder, or user-provided text. If no JD found, ask the user where it lives.
+2. If supplementary brief/outline exists in role folder, read it to understand hiring manager priorities.
+3. Analyze JD for key requirements:
    - Required experience and skills
    - Responsibilities and scope
    - Soft skills and attributes
@@ -99,9 +123,9 @@ Date: [YYYY-MM-DD]
 **Command:** `screen CVs: [role]` (batch) or `review CV: [name] for [role]` (single)
 
 **Process:**
-1. Read evaluation guide for role
-2. Read CV(s) from `CVs/` folder
-3. For each CV, assess against JD requirements:
+1. Read evaluation guide for role. If no evaluation guide exists, read the JD directly (Confluence or local) and any supplementary brief. Warn the user that no evaluation guide was found and offer to generate one, but proceed with screening using the JD.
+2. Find CVs - scan both `CVs/` subfolder and role folder root for PDF files. List what was found and confirm with user before proceeding.
+3. For each CV, assess against JD requirements (weighted by supplementary brief if available):
    - Experience alignment
    - Skills match
    - Gaps or concerns
@@ -110,20 +134,49 @@ Date: [YYYY-MM-DD]
 5. Output screening summary
 
 **Output for batch screening:**
+
+Save to `Shortlisted/cv_screening_YYYY-MM-DD.md` in the role folder (create Shortlisted/ if needed).
+
 ```markdown
 # CV Screening: [Role]
 
-Date: [YYYY-MM-DD]
-CVs reviewed: [count]
+**Date:** [YYYY-MM-DD]
+**CVs reviewed:** [count]
+**Source:** [JD source - e.g. Confluence page ID, local PDF name]
 
-## Strong Fit
-- **[Name]** - [1-line rationale]
+## Candidates reviewed
 
-## Moderate Fit
-- **[Name]** - [1-line rationale]
+| Candidate | Current role | Location | Experience | Fit |
+|-----------|-------------|----------|------------|-----|
+| [Name] | [Current/most recent role] | [Location] | [Years] | [Strong/Moderate/Weak] |
 
-## Weak Fit
-- **[Name]** - [1-line rationale]
+---
+
+## Strong fit
+
+### [Name]
+[1-2 sentence summary]
+
+**Strengths:**
+- [Bullet points aligned to JD/brief]
+
+**Gaps/concerns:**
+- [Bullet points]
+
+**Areas to probe:**
+- [Questions for interview]
+
+## Moderate fit
+[Same format per candidate]
+
+## Weak fit
+[Same format per candidate]
+
+---
+
+## Summary
+
+[Summary table and recommendation]
 ```
 
 **Output for single CV:**
@@ -345,11 +398,13 @@ mcp__plugin_claude-mem_mcp-search__save_memory({
 
 ## Error Handling
 
-**If JD not found:**
-- Check for PDF or markdown files in role folder
-- Ask user to confirm JD location
+**If JD not found locally:**
+- Check if user provided a Confluence URL or page ID
+- Search Confluence for the role name: `mcp__atlassian__searchAtlassian(query="[role name] job description")`
+- Ask user to confirm JD location - it may be on Confluence, in another folder, or provided inline
 
 **If CV not found:**
+- Scan both `CVs/` subfolder and role folder root for PDFs
 - Use fuzzy matching on candidate name
 - List available CVs and ask user to clarify
 
@@ -358,8 +413,14 @@ mcp__plugin_claude-mem_mcp-search__save_memory({
 - Ask for alternative meeting title or date
 
 **If evaluation guide missing:**
-- Prompt user to run `setup role: [role]` first
-- Or offer to generate guide before proceeding
+- Warn user: "No evaluation guide found. I'll screen against the JD directly, but results will be more consistent with a guide. Want me to generate one first?"
+- Proceed with screening using JD if user wants to continue
+- If JD also missing, stop and ask for both
+
+**If folder structure doesn't match expected layout:**
+- Warn user about what was expected vs found
+- Adapt to actual structure (e.g. CVs in root instead of CVs/ subfolder)
+- Create missing folders (Shortlisted/) as needed when saving output
 
 ---
 

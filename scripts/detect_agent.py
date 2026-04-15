@@ -3,6 +3,8 @@ Agent detection module for Julie (Chief of Staff agent system)
 Routes commands to appropriate specialized agents based on pattern matching
 """
 
+import re
+
 def detect_agent(command_text):
     """
     Detect which agent should handle a command based on pattern matching.
@@ -20,7 +22,7 @@ def detect_agent(command_text):
     # Task patterns (includes reminders, actions, decisions, ideas, features, notepad processing, archiving)
     task_patterns = [
         'new task:', 'new reminder:', 'new action:', 'new idea:',
-        'new feature:', 'new decision:', 'update:', 'change due date:', '/today',
+        'new feature:', 'new decision:', 'update:', 'change due date:', '/todo',
         'process notepad', 'notepad process', '/notepad', 'notepad confirm', 'notepad',
         'archive completed', 'archive',
         'actions', '/actions', 'list actions',
@@ -49,6 +51,12 @@ def detect_agent(command_text):
     # MFM patterns (specific MFM commands route to MFM Agent)
     mfm_patterns = ['mfm review:', 'review mfm:', 'mfm summary:', 'post mfm:']
     if any(p in command_lower for p in mfm_patterns):
+        return ('mfm', 1.0)
+
+    # MFM natural language patterns (e.g., "run April monthly focus meeting for user engagement")
+    if 'monthly focus meeting' in command_lower or 'monthly focus' in command_lower:
+        return ('mfm', 1.0)
+    if re.search(r'run\s+\w+\s+mfm', command_lower):
         return ('mfm', 1.0)
 
     # Strategy patterns (general strategy work, not MFM-specific)
@@ -122,6 +130,8 @@ if __name__ == '__main__':
         'leadership update',
         'prep leadership update',
         'mfm review: strategic accounts Feb',
+        'run April monthly focus meeting for user engagement',
+        'run April mfm for user engagement squad',
         'what are the current OKRs?',
         'prep meeting: Budget Review',
         'setup role: Community Programme Manager',
