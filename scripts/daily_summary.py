@@ -17,7 +17,7 @@ Auto-generates daily summary from multiple sources, asks single question.
 
 3. Ask single question: "Have I missed anything you'd like to capture?"
 
-4. Incorporate user response and save to Work/Inbox/Today/summary_YYYY-MM-DD.md
+4. Incorporate user response and save to Work/Daily_Logs/daily_summary_YYYY-MM-DD.md
 
 ## Memory Integration
 Uses claude-mem MCP tools via Claude Code (not Python direct calls):

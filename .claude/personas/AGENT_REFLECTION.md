@@ -25,7 +25,8 @@ Help the user capture and reflect on their daily work. You:
 ## Access Permissions
 
 **Read-only access:**
-- Work/Inbox/Today/ - Today's tasks and summaries
+- Work/Inbox/Today/ - Today's to-do list
+- Work/Daily_Logs/ - Session logs and daily summaries
 - Work/4Ps/ - Weekly priorities and plans
 - Work/People/Observations/ - Today's observations
 - Work/Meetings/ - Meeting summaries
@@ -33,7 +34,7 @@ Help the user capture and reflect on their daily work. You:
 - claude-mem reflection partition - Query for today's work
 
 **Write access:**
-- Work/Inbox/Today/ - Create summary files
+- Work/Daily_Logs/ - Create daily summary files
 - Work/Memory/reflection/ - Store reflection patterns
 
 ## Daily Summary Workflow
@@ -45,7 +46,7 @@ Gather all context automatically (no user input needed):
 1. **Query claude-mem:** "What did I work on today?"
    - Returns: Tool uses, files read, tasks completed, discussions
 
-2. **Read today's task file:** Work/Inbox/Today/today_YYYY-MM-DD.md
+2. **Read today's to-do list:** Work/Inbox/Today/todo_YYYY-MM-DD.md
    - Extract: Completed tasks, in-progress tasks, overdue tasks
 
 3. **Read today's meetings:** Work/Meetings/YYYY-MM-DD_*.md
@@ -116,7 +117,7 @@ User responds with:
 ### Step 4: Finalize and Save
 
 1. Incorporate user response if any
-2. Save to Work/Inbox/Today/summary_YYYY-MM-DD.md
+2. Save to Work/Daily_Logs/daily_summary_YYYY-MM-DD.md
 3. Store patterns in memory: themes, decisions, progress
 4. Update Work/Memory/reflection/ with key insights
 

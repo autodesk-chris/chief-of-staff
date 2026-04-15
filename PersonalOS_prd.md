@@ -34,7 +34,7 @@ Chief_of_staff/
 ├── CLAUDE.md              # Project-specific instructions
 ├── scripts/               # Python automation scripts
 │   ├── create_item.py     # Create tasks/ideas/features/actions
-│   ├── summary.py         # Generate summaries
+│   ├── todo.py            # Generate daily to-do list and weekly summaries
 │   ├── parse_command.py   # Parse natural language commands
 │   └── utils.py           # Helper functions
 └── Work/                  # Obsidian vault
@@ -178,11 +178,11 @@ tags: [finance, urgent]
 Needs approval before board meeting
 ```
 
-### 3.5. `/today` Command
+### 3.5. `/todo` Command
 
-- **Functionality**: Generates a daily summary of work items due today and upcoming tasks for the next week.
-- **Syntax**: `/today`
-- **Output**: A new Markdown file (e.g., `Inbox/today_2026-01-15.md`) with the following sections:
+- **Functionality**: Generates a daily to-do list of work items due today and upcoming tasks for the next week.
+- **Syntax**: `/todo`
+- **Output**: A new Markdown file (e.g., `Inbox/Today/todo_2026-01-15.md`) with the following sections:
 
 **Tasks Due Today**: Lists all tasks with a due date matching today.
 
@@ -229,8 +229,8 @@ Needs approval before board meeting
 - Tested with normal inputs, special characters, and edge cases
 
 ### ✅ Stage 4: Summary Commands (Completed)
-- Built `scripts/summary.py` - Summary generation for daily and weekly reports
-- Implemented `/today` command with tasks due today/this week, recent ideas/features
+- Built `scripts/todo.py` - To-do list generation for daily and weekly reports
+- Implemented `/todo` command with tasks due today/this week, recent ideas/features
 - Implemented `/weekly` command with 7-day activity and counts
 - Added frontmatter parsing to extract metadata from markdown files
 - Tested summary generation with various date ranges

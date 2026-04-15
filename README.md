@@ -46,7 +46,7 @@ Julie uses a hierarchical agent system where specialized agents handle different
 
 | Agent | Role | Key Commands |
 |-------|------|--------------|
-| **Tasks** | Task, idea, feature, action management | `new task:`, `update:`, `/today` |
+| **Tasks** | Task, idea, feature, action management | `new task:`, `update:`, `/todo` |
 | **People** | Observations, 360 reviews, team feedback | `observation:`, `360:`, `feedback:` |
 | **Strategy** | OKR analysis, strategic insights | Query-based (uses L1→L2→L3 progressive disclosure) |
 | **Reflection** | Daily summaries, session logging | `daily summary`, `session:` |
@@ -91,8 +91,8 @@ Use `./pos` to interact with your Personal OS:
 ./pos "update: Review Q1 report status: completed"
 ./pos "update: Dark mode status: in-progress note: Starting design phase"
 
-# Generate summaries
-./pos "/today"
+# Generate to-do list
+./pos "/todo"
 ```
 
 ### Task management
@@ -105,8 +105,8 @@ Use `./pos` to interact with your Personal OS:
 ./pos "update: [title] status: [completed|in-progress|blocked|waiting|on-hold|archived]"
 ./pos "update: [title] status: [status] note: [optional note]"
 
-# Generate today's summary
-./pos "/today"
+# Generate daily to-do list
+./pos "/todo"
 
 # Process notepad captures
 ./pos "process notepad"
@@ -170,7 +170,7 @@ Chief_of_staff/
 │   ├── parse_command.py      # Command routing and parsing
 │   ├── detect_agent.py       # Agent detection logic
 │   ├── create_item.py        # Create tasks/ideas/features
-│   ├── summary.py            # Today summary generation
+│   ├── todo.py               # Daily to-do list generation
 │   ├── update_item.py        # Status updates
 │   ├── observation.py        # Team observations
 │   ├── meeting_prep.py       # Meeting preparation

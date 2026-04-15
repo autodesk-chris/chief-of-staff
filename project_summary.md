@@ -66,7 +66,7 @@
 
 | Agent | Lines | Role | Commands |
 |-------|-------|------|----------|
-| AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /today, process notepad |
+| AGENT_TASKS.md | 263 | Task/idea/feature management | new task:, update:, /todo, process notepad |
 | AGENT_REFLECTION.md | 580 | Daily summaries, Slack reports, commitment scanning, 4Ps roundup, leadership updates | daily summary, session:, slack report, scan slack, 4ps roundup, leadership update |
 | AGENT_MEETINGS.md | 281 | Meeting prep/processing | prep meeting:, 121:, post meeting: |
 | AGENT_PEOPLE.md | 210 | Team feedback/observations | observation:, 360:, performance conversation prep: |
@@ -179,7 +179,7 @@ Work/1-Notepad/                   # Notepad content
 ./pos "new decision: [title] participants: [names] rationale: [why]"
 ./pos "update: [title] status: [status]"
 ./pos "change due date: [title] to: [YYYY-MM-DD]"
-./pos "/today"                            # Auto-extracts from meetings first
+./pos "/todo"                             # Auto-extracts from meetings first
 ./pos "process notepad"
 ./pos "archive completed"
 ./pos "actions"                           # List all actions
@@ -471,10 +471,10 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - Claude queries Granola, analyzes summary, extracts actions/decisions/tasks
   - Creates items automatically using existing `./pos` commands
   - `finalize meeting:` creates summary after extraction
-- **`/today` enhanced:**
-  - Now extracts from all today's meetings before generating summary
-  - Ensures meeting actions/decisions appear in today view
-  - Uses `/today-generate` internally after extraction
+- **`/todo` enhanced:**
+  - Now extracts from all today's meetings before generating to-do list
+  - Ensures meeting actions/decisions appear in to-do view
+  - Uses `/todo-generate` internally after extraction
 - **New files:**
   - `scripts/list_items.py` - List and date change commands
   - `scripts/meeting_extractor.py` - Meeting extraction workflow
@@ -516,12 +516,12 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `get_slack_summary()` now reads slack report as primary context source
   - Falls back to legacy `Work/Slack/` export if no report exists
 - **Today report Slack integration:**
-  - `/today` now includes "Slack actions" section
-  - Extracts task checklist from slack report and displays in today view
-  - Verified: 10 tasks showing in today document
+  - `/todo` now includes "Slack actions" section
+  - Extracts task checklist from slack report and displays in to-do view
+  - Verified: 10 tasks showing in to-do document
 - **Files modified:**
   - `scripts/daily_summary.py` - slack report as context source
-  - `scripts/summary.py` - Slack actions section in today report
+  - `scripts/todo.py` - Slack actions section in to-do list
   - `scripts/detect_agent.py` - routing for 4ps roundup, leadership update
   - `AGENT_REFLECTION.md` - two new workflow sections (~180 lines)
   - `CLAUDE.md` - updated command reference
@@ -552,7 +552,7 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 ## Development Status Summary (Session 15)
 
 ### Fully Working
-- ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /today, archive completed, process notepad, actions list, decisions list, new_daily
+- ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /todo, archive completed, process notepad, actions list, decisions list, new_daily
 - ✅ **People Agent:** observation, 360 review (creates template)
 - ✅ **Meetings Agent:** prep meeting, 121, post meeting (auto-extraction), finalize meeting
 - ✅ **MFM Agent:** mfm review, mfm summary
@@ -565,7 +565,7 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - `scan slack` standalone commitment extraction with user confirmation
 - `4ps roundup` reviews team 4Ps from Slack against MFM priorities
 - `leadership update` synthesizes leadership channels + meetings into shareable update
-- `/today` includes Slack actions section; daily summary uses slack report as context
+- `/todo` includes Slack actions section; daily summary uses slack report as context
 - Strategy + MFM agents have live Confluence access for OKRs, strategies, bets, operating model
 
 ### Partially Working / Known Issues
