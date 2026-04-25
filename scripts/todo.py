@@ -326,6 +326,58 @@ def sync_manual_completions_to_source(manually_completed_titles):
     return updated_count
 
 
+def parse_manual_deletions(today_path):
+    """
+    Parse existing today document to find external actions marked for deletion.
+
+    Looks for checked delete markers in the format:
+      - [x] 🗑 Remove <!-- file:filename.md -->
+
+    Args:
+        today_path: Path to the today document
+
+    Returns:
+        List of filenames to delete
+    """
+    if not today_path.exists():
+        return []
+
+    content = today_path.read_text(encoding='utf-8')
+    deletions = []
+
+    pattern = r'-\s+\[x\]\s+🗑\s+Remove\s+<!--\s+file:(.+?)\s+-->'
+    for match in re.finditer(pattern, content, re.IGNORECASE):
+        deletions.append(match.group(1).strip())
+
+    return deletions
+
+
+def sync_manual_deletions(filenames_to_delete):
+    """
+    Delete action files that were marked for removal in today document.
+
+    Args:
+        filenames_to_delete: List of filenames (e.g., 'action_Foo.md')
+
+    Returns:
+        Number of files deleted
+    """
+    vault_path = get_vault_path()
+    actions_folder = vault_path / "Inbox" / "Actions"
+    deleted = 0
+
+    for filename in filenames_to_delete:
+        file_path = actions_folder / filename
+        if file_path.exists():
+            file_path.unlink()
+            print(f"🗑 Deleted external action: {filename}")
+            deleted += 1
+        else:
+            print(f"⚠ Could not find file to delete: {filename}")
+
+    return deleted
+
+
 def get_item_details(content):
     """
     Extract the details section from markdown content.
@@ -485,6 +537,13 @@ def generate_todo():
             if updated > 0:
                 print(f"✓ Synced {updated} item(s) to source files\n")
 
+        manual_deletions = parse_manual_deletions(today_path)
+        if manual_deletions:
+            print(f"\n🗑 Processing {len(manual_deletions)} deletion(s)...")
+            deleted = sync_manual_deletions(manual_deletions)
+            if deleted > 0:
+                print(f"✓ Deleted {deleted} external action(s)\n")
+
     # Get previous working day overview
     previous_date = get_previous_working_day(today)
     previous_overview = read_previous_day_summary(previous_date)
@@ -498,7 +557,7 @@ def generate_todo():
     # Get reminders
     reminders = get_items_from_folder(inbox_path / "Reminders")
 
-    # Filter active reminders (due today or upcoming, and overdue)
+    # Filter reminders (due today or upcoming, and overdue; include items completed today)
     reminders_today = []
     reminders_upcoming = []
     reminders_overdue = []
@@ -506,7 +565,14 @@ def generate_todo():
     for reminder in reminders:
         status = reminder['frontmatter'].get('status', 'active')
         if status in ['completed', 'archived']:
-            continue
+            # Keep if completed today, otherwise hide
+            completed_date_str = reminder['frontmatter'].get('completed-date', '')
+            try:
+                completed_date = datetime.strptime(completed_date_str, '%Y-%m-%d').date()
+                if completed_date != today:
+                    continue
+            except (ValueError, TypeError):
+                continue
         # Check reminder-date or due-date
         date_str = reminder['frontmatter'].get('reminder-date') or reminder['frontmatter'].get('due-date')
         if date_str:
@@ -523,12 +589,19 @@ def generate_todo():
         else:
             reminders_today.append(reminder)  # No date, show today
 
-    # Filter overdue tasks (due before today and not completed)
+    # Filter overdue tasks (due before today; include items completed today so they stay checked)
     overdue_tasks = []
     for task in tasks:
         status = task['frontmatter'].get('status', 'active')
         if status in ['completed', 'archived']:
-            continue
+            # Keep if completed today, otherwise hide
+            completed_date_str = task['frontmatter'].get('completed-date', '')
+            try:
+                completed_date = datetime.strptime(completed_date_str, '%Y-%m-%d').date()
+                if completed_date != today:
+                    continue
+            except (ValueError, TypeError):
+                continue
 
         due_date_str = task['frontmatter'].get('due-date')
         if due_date_str:
@@ -559,13 +632,20 @@ def generate_todo():
             except ValueError:
                 pass
 
-    # Filter tasks due this week (next 7 days, excluding today, only active)
+    # Filter tasks due this week (next 7 days, excluding today; include items completed today)
     tasks_due_this_week = []
     week_end = today + timedelta(days=7)
     for task in tasks:
         status = task['frontmatter'].get('status', 'active')
         if status in ['completed', 'archived']:
-            continue
+            # Keep if completed today, otherwise hide
+            completed_date_str = task['frontmatter'].get('completed-date', '')
+            try:
+                completed_date = datetime.strptime(completed_date_str, '%Y-%m-%d').date()
+                if completed_date != today:
+                    continue
+            except (ValueError, TypeError):
+                continue
 
         due_date_str = task['frontmatter'].get('due-date')
         if due_date_str:
@@ -648,31 +728,36 @@ Run `./pos "4ps"` or `./pos "generate 4ps"` to get started.
     else:
         content += "*No tasks due this week*\n\n"
 
-    # Reminders
+    # Reminders - grouped by date with subheadings
     if reminders_overdue or reminders_today or reminders_upcoming:
         content += "\n## Reminders\n\n"
-        if reminders_overdue:
-            for r in reminders_overdue:
-                date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
+        all_reminders = reminders_overdue + reminders_today + reminders_upcoming
+        from collections import OrderedDict
+        rem_grouped = OrderedDict()
+        day_abbrevs_rem = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        for r in all_reminders:
+            date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
+            try:
+                rem_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                day_name = day_abbrevs_rem[rem_date.weekday()]
+                key = (rem_date, f"{day_name} {date_str}")
+            except (ValueError, TypeError):
+                key = (datetime.max.date(), "No date")
+            if key not in rem_grouped:
+                rem_grouped[key] = []
+            rem_grouped[key].append(r)
+        rem_grouped = OrderedDict(sorted(rem_grouped.items(), key=lambda x: x[0][0]))
+        for (rem_date, heading), group_reminders in rem_grouped.items():
+            overdue_label = " (overdue)" if rem_date < today else ""
+            content += f"### {heading}{overdue_label}\n"
+            for r in group_reminders:
                 details = r.get('details', '')
-                content += f"- [ ] **OVERDUE ({date_str})**: **{r['title']}**\n"
+                cb = "x" if r['frontmatter'].get('status') in ['completed', 'archived'] else " "
+                content += f"- [{cb}] **{r['title']}**\n"
                 if details:
                     detail_text = details[:200] + '...' if len(details) > 200 else details
                     content += f"  - *{detail_text}*\n"
-        for r in reminders_today:
-            details = r.get('details', '')
-            content += f"- [ ] **{r['title']}**\n"
-            if details:
-                detail_text = details[:200] + '...' if len(details) > 200 else details
-                content += f"  - *{detail_text}*\n"
-        if reminders_upcoming:
-            for r in reminders_upcoming:
-                date_str = r['frontmatter'].get('reminder-date') or r['frontmatter'].get('due-date', '')
-                details = r.get('details', '')
-                content += f"- [ ] **{date_str}**: **{r['title']}**\n"
-                if details:
-                    detail_text = details[:200] + '...' if len(details) > 200 else details
-                    content += f"  - *{detail_text}*\n"
+            content += "\n"
 
     # Previous day overview
     if previous_overview:
@@ -682,7 +767,20 @@ Run `./pos "4ps"` or `./pos "generate 4ps"` to get started.
 
     # Active actions (assigned to others) - filtered to team members only, sorted by date
     team_members = load_team_members()
-    actions_active = [a for a in actions if a['frontmatter'].get('status', 'active') not in ['completed', 'archived']]
+    actions_active = []
+    for a in actions:
+        status = a['frontmatter'].get('status', 'active')
+        if status in ['completed', 'archived']:
+            # Keep if completed today
+            completed_date_str = a['frontmatter'].get('completed-date', '')
+            try:
+                completed_date = datetime.strptime(completed_date_str, '%Y-%m-%d').date()
+                if completed_date == today:
+                    actions_active.append(a)
+            except (ValueError, TypeError):
+                pass
+        else:
+            actions_active.append(a)
     actions_team = [a for a in actions_active if is_team_member(a['frontmatter'].get('assignee', 'Unassigned'), team_members)]
     if actions_team:
         # Split into dated and undated
@@ -693,24 +791,96 @@ Run `./pos "4ps"` or `./pos "generate 4ps"` to get started.
         actions_dated.sort(key=lambda x: x['frontmatter'].get('due-date', ''))
 
         content += "\n## Open actions\n\n"
+        # Group dated actions by due date with subheadings
+        from collections import OrderedDict
+        act_grouped = OrderedDict()
+        day_abbrevs_act = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         for action in actions_dated:
-            assignee = action['frontmatter'].get('assignee', 'Unassigned')
             due_date_str = action['frontmatter'].get('due-date', '')
-            details = action.get('details', '')
-            content += f"- [ ] **{assignee}**: **{action['title']}** (due: {due_date_str})\n"
-            if details:
-                detail_text = details[:200] + '...' if len(details) > 200 else details
-                content += f"  - *{detail_text}*\n"
-        if actions_undated:
-            if actions_dated:
-                content += "\n### No due date\n\n"
-            for action in actions_undated:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                day_name = day_abbrevs_act[due_date.weekday()]
+                key = (due_date, f"{day_name} {due_date_str}")
+            except (ValueError, TypeError):
+                key = (datetime.max.date(), "No date")
+            if key not in act_grouped:
+                act_grouped[key] = []
+            act_grouped[key].append(action)
+        act_grouped = OrderedDict(sorted(act_grouped.items(), key=lambda x: x[0][0]))
+        for (act_date, heading), group_actions in act_grouped.items():
+            overdue_label = " (overdue)" if act_date < today else ""
+            content += f"### {heading}{overdue_label}\n"
+            for action in group_actions:
                 assignee = action['frontmatter'].get('assignee', 'Unassigned')
                 details = action.get('details', '')
-                content += f"- [ ] **{assignee}**: **{action['title']}**\n"
+                cb = "x" if action['frontmatter'].get('status') in ['completed', 'archived'] else " "
+                content += f"- [{cb}] **{assignee}**: **{action['title']}**\n"
                 if details:
                     detail_text = details[:200] + '...' if len(details) > 200 else details
                     content += f"  - *{detail_text}*\n"
+            content += "\n"
+        if actions_undated:
+            content += "### No due date\n"
+            for action in actions_undated:
+                assignee = action['frontmatter'].get('assignee', 'Unassigned')
+                details = action.get('details', '')
+                cb = "x" if action['frontmatter'].get('status') in ['completed', 'archived'] else " "
+                content += f"- [{cb}] **{assignee}**: **{action['title']}**\n"
+                if details:
+                    detail_text = details[:200] + '...' if len(details) > 200 else details
+                    content += f"  - *{detail_text}*\n"
+            content += "\n"
+
+    # External actions (assigned to people outside the team), sorted by date
+    actions_external = [a for a in actions_active if not is_team_member(a['frontmatter'].get('assignee', 'Unassigned'), team_members)]
+    if actions_external:
+        actions_ext_dated = [a for a in actions_external if a['frontmatter'].get('due-date')]
+        actions_ext_undated = [a for a in actions_external if not a['frontmatter'].get('due-date')]
+        actions_ext_dated.sort(key=lambda x: x['frontmatter'].get('due-date', ''))
+
+        content += "\n## External actions\n\n"
+        if actions_ext_dated:
+            from collections import OrderedDict
+            ext_grouped = OrderedDict()
+            day_abbrevs_ext = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            for action in actions_ext_dated:
+                due_date_str = action['frontmatter'].get('due-date', '')
+                try:
+                    due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                    day_name = day_abbrevs_ext[due_date.weekday()]
+                    key = (due_date, f"{day_name} {due_date_str}")
+                except (ValueError, TypeError):
+                    key = (datetime.max.date(), "No date")
+                if key not in ext_grouped:
+                    ext_grouped[key] = []
+                ext_grouped[key].append(action)
+            ext_grouped = OrderedDict(sorted(ext_grouped.items(), key=lambda x: x[0][0]))
+            for (ext_date, heading), group_actions in ext_grouped.items():
+                overdue_label = " (overdue)" if ext_date < today else ""
+                content += f"### {heading}{overdue_label}\n"
+                for action in group_actions:
+                    assignee = action['frontmatter'].get('assignee', 'Unassigned')
+                    details = action.get('details', '')
+                    cb = "x" if action['frontmatter'].get('status') in ['completed', 'archived'] else " "
+                    content += f"- [{cb}] **{assignee}**: **{action['title']}**\n"
+                    if details:
+                        detail_text = details[:200] + '...' if len(details) > 200 else details
+                        content += f"  - *{detail_text}*\n"
+                    content += f"  - [ ] 🗑 Remove <!-- file:{action['file_name']} -->\n"
+                content += "\n"
+        if actions_ext_undated:
+            if actions_ext_dated:
+                content += "### No due date\n"
+            for action in actions_ext_undated:
+                assignee = action['frontmatter'].get('assignee', 'Unassigned')
+                details = action.get('details', '')
+                cb = "x" if action['frontmatter'].get('status') in ['completed', 'archived'] else " "
+                content += f"- [{cb}] **{assignee}**: **{action['title']}**\n"
+                if details:
+                    detail_text = details[:200] + '...' if len(details) > 200 else details
+                    content += f"  - *{detail_text}*\n"
+                content += f"  - [ ] 🗑 Remove <!-- file:{action['file_name']} -->\n"
+            content += "\n"
 
     content += "\n## Recent ideas\n\n"
 

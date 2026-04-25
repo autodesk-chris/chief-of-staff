@@ -20,7 +20,7 @@ Manage all hiring-related workflows. You help the user:
 | `review CV: [name] for [role]` | Screen single CV |
 | `shortlist: [name] for [role]` | Move CV to Shortlisted, create screen notes and interview prep |
 | `interview prep: [name] for [role]` | Generate interview questions from CV gaps |
-| `interview eval: [name] for [role]` | Full evaluation with Granola + CV context |
+| `interview eval: [name] for [role]` | Update prep doc with Granola feedback, rename to outcome |
 | `candidate summary: [name]` | Generate shareable bullet-point notes |
 
 ## Folder Structure
@@ -38,8 +38,8 @@ Work/People/Hiring/
         ├── cv_screening_YYYY-MM-DD.md    # Batch screening results
         ├── [Candidate]_CV.pdf            # Moved here when shortlisted
         ├── [Candidate]_cv_screen.md      # CV screening notes
-        ├── [Candidate]_interview_prep.md # Interview focus areas
-        └── [Candidate]_interview_notes.md # Post-interview evaluation
+        ├── [Candidate]_interview_prep.md    # Pre-interview (becomes _outcome after eval)
+        └── [Candidate]_interview_outcome.md # Post-interview (evolved from _prep)
 ```
 
 **Flexible structure:** The folder layout above is the ideal. In practice, adapt to what exists:
@@ -274,68 +274,106 @@ Save to `Shortlisted/cv_screening_YYYY-MM-DD.md` in the role folder (create Shor
 
 **Command:** `interview eval: [name] for [role]`
 
+This command updates the existing interview prep document with post-interview findings from Granola, then renames it to an outcome document. One file per candidate that evolves through the process.
+
 **Process:**
 
-### Step 1: Find Granola meetings
-1. Search Granola for meetings matching candidate name
-2. Present list of matches with dates/titles
-3. **Ask user to confirm which meetings to use**
-4. Do not proceed until user confirms
+### Step 1: Find existing prep document
+1. Look for `Shortlisted/[Name]_interview_prep.md` (fuzzy match on name)
+2. If no prep doc exists, warn user and offer to create the outcome doc from scratch
+
+### Step 2: Find Granola meetings
+1. Search Granola for meetings matching candidate name (try variations: first name, full name)
+2. Also search for "debrief" or "hiring" meetings from the same day/next day
+3. Present list of matches with dates/titles
+4. **Ask user to confirm which meetings to use**
+5. Do not proceed until user confirms
 
 **Example confirmation:**
 ```
 Found 2 meetings for "Tom Hamilton":
-1. Tom Hamilton (24 Feb 3:01pm)
-2. Tom Hamilton follow-up (26 Feb 2:00pm)
+1. Tom Hamilton interview (24 Feb 10:00am)
+2. Interview debrief (24 Feb 11:00am)
 
-Which meetings should I use for the evaluation? (all / select by number)
+Which meetings should I use? (all / select by number)
 ```
 
-### Step 2: Gather context
+### Step 3: Gather context
 After user confirms meetings:
-1. Fetch confirmed meeting notes from Granola
-2. Read CV from `Shortlisted/` folder
-3. Read evaluation guide for role
-4. Read CV screen notes (if available)
+1. Fetch confirmed meeting notes from Granola (summaries + private notes)
+2. Read the existing prep document
+3. Read CV from `Shortlisted/` folder
+4. Read evaluation guide for role (if available)
 
-### Step 3: Evaluate
-1. Score each competency using:
-   - **Primary:** Interview evidence (what they said/demonstrated)
-   - **Secondary:** CV context (claims vs demonstrated)
-2. Note discrepancies between CV and interview
-3. Incorporate user observations if provided
-4. Generate overall recommendation
+### Step 4: Build the outcome document
+Structure the updated document with interview findings first, then the original prep:
 
-### Step 4: Output
-1. Show full evaluation to user
-2. After user approval, save to `Shortlisted/[Name]_interview_notes.md`
-
-**Output format:**
 ```markdown
-# Interview Evaluation: [Name]
+---
+candidate: [Name]
+role: [Role]
+date: [Interview date]
+stage: post-interview
+---
 
-**Role:** [Role]
-**Interview date(s):** [Dates]
-**Recommendation:** [Yes/No/Maybe]
+# [Name] - Interview outcome
 
-## Competency Scores
+## Interview ([Date])
 
-| Competency | Score | Evidence |
-|------------|-------|----------|
-| [Name] | [1-5] | [Brief evidence from interview] |
+Source: [Granola link]
 
-## CV vs Interview
-- [Any discrepancies or confirmations]
+### Background and context
+- [Key facts learned during interview]
 
-## Strengths
-- [Bullet points]
+### Strengths observed
+- [What went well, with specific examples from the interview]
 
-## Concerns
-- [Bullet points]
+### Concerns observed
+- [What raised flags, with specific examples]
 
-## Recommendation
-[2-3 sentence summary with hiring recommendation]
+---
+
+## Debrief ([Date])
+
+Source: [Granola link]
+
+### Assessment
+- [Key points from the debrief discussion]
+- [Hiring recommendation if discussed]
+
+### Decision context
+- [Next steps agreed, comparison candidates, timeline]
+
+---
+
+## Pre-interview prep ([Original date])
+
+[Original prep content preserved below - strengths from CV, concerns identified,
+suggested questions, and scorecard]
+
+### Interview scorecard (map to JD traits)
+
+| JD trait | Pre-interview signal | Post-interview assessment |
+|----------|---------------------|--------------------------|
+| [Trait] | [CV signal] | [What the interview revealed] |
+
+### Bottom line
+
+[Updated summary combining pre-interview analysis with interview findings.
+What was confirmed, what was surprising, and what the recommendation is.]
 ```
+
+### Step 5: Save and rename
+1. Show the outcome document to the user
+2. After approval, write to `Shortlisted/[Name]_interview_outcome.md`
+3. Delete the old `[Name]_interview_prep.md`
+4. Confirm completion
+
+**Key principles:**
+- The scorecard should be updated to show pre vs post-interview columns
+- The bottom line should be rewritten to reflect what the interview actually revealed
+- Granola private notes contain the interviewer's real-time observations - use these
+- Preserve the original prep content so the evolution of thinking is visible
 
 ---
 

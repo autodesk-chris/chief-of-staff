@@ -49,7 +49,17 @@
       "Bash(ls:*)",
       "Bash(curl -s https://www.google.com/search?q=Prexition+Ltd+Ghana+Innclusive+platform)",
       "Bash(curl -s https://www.google.com/search?q=Netgrid+Ltd+Ghana+software+company)",
-      "Bash(curl -s https://www.google.com/search?q=MoneyLink+Microfinance+Ghana)"
+      "Bash(curl -s https://www.google.com/search?q=MoneyLink+Microfinance+Ghana)",
+      "Bash(curl -s https://en.wikipedia.org/wiki/Enento_Group)",
+      "Bash(curl -s https://en.wikipedia.org/wiki/PayEx)",
+      "Bash(curl -s https://en.wikipedia.org/wiki/NHST_Media_Group)",
+      "Bash(curl -s https://en.wikipedia.org/wiki/Netlight)",
+      "Bash(curl -s https://www.soundsensing.no)",
+      "WebFetch(domain:autodesk.atlassian.net)",
+      "Bash(claude plugin:*)",
+      "mcp__atlassian__createConfluencePage",
+      "Bash(find /Users/smallc/AI/Chief_of_staff/Work/LLM_Context -name *team* -o -name *org* -o -name *structure*)",
+      "Bash(echo \"Exit: $?\")"
     ]
   }
 }

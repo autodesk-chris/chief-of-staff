@@ -32,7 +32,7 @@ Thumbs.db
 # claude-mem semantic memory (not tracked)
 .claude-mem/
 
-# Strategy memory synced from Confluence (not tracked)
+# Strategy memory synced from Confluence (now in external repo)
 Work/LLM_Context/strategy-memory/
 
 # Julie log file (runtime logs, not tracked)
@@ -41,25 +41,43 @@ julie.log
 # Keep Memory folder (human-readable, tracked)
 !Work/Memory/
 
-# Role expectations documents (sensitive/personal)
-Work/People/121s/**/*_expectations_*.md
+# ============================================
+# SENSITIVE / PERSONAL FILES (never tracked)
+# ============================================
+
+# People - all person-related content
+Work/People/121s/
+Work/People/360_reviews/
+Work/People/Carl/
+Work/People/Hiring/
+Work/People/Status updates/
+Work/People/Observations/
+Work/People/notepad.md
+
+# Recovery codes and credentials
+*recovery-codes*
+*credentials*
+
+# ============================================
+# BINARY FILES (not tracked - only .md files)
+# ============================================
+*.pdf
+*.xlsx
+*.xls
+*.pptx
+*.docx
+*.doc
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.mov
+*.mp4
+*.zip
 
 # ============================================
 # JULIE OUTPUT FILES (generated, not tracked)
 # ============================================
-
-# 360 reviews and performance conversations (person folders)
-# Keep Context/ folder (workflows, reference docs)
-Work/People/360_reviews/*/360_*.md
-Work/People/360_reviews/*/Performance_conversation_*.md
-Work/People/360_reviews/*/*.csv
-Work/People/360_reviews/*/Self-assessment*.md
-Work/People/360_reviews/*/*_self_review*.md
-Work/People/360_reviews/*/*_feedback*.csv
-Work/People/360_reviews/*/*_checkin*.md
-
-# Observations (generated from observation: commands)
-Work/People/Observations/
 
 # Tasks, Ideas, Features, Actions, Reminders (generated content)
 Work/Inbox/Tasks/

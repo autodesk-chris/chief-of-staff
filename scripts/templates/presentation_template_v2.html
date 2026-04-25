@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========== RESET & BASE ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--navy);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ========== DESIGN TOKENS ========== */
+    :root {
+      --navy: #1B2559;
+      --light-blue: #E8F0FE;
+      --card-border: #D0DFFF;
+      --accent-pink: #E96EC0;
+      --white: #FFFFFF;
+      --body-text: #3C4257;
+      --muted: #6B7294;
+      --callout-bg: #DEEAFC;
+      --text-muted: #8BAEE3;
+    }
+
+    /* ========== TYPOGRAPHY ========== */
+    h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.15; color: var(--navy); }
+    h2 { font-size: 2.6rem; font-weight: 800; line-height: 1.2; color: var(--navy); margin-bottom: 16px; }
+    h3 { font-size: 1.25rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    h4 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    p { font-size: 1rem; line-height: 1.6; color: var(--body-text); }
+    .subtitle { font-size: 1.3rem; font-weight: 600; color: var(--navy); margin-top: 12px; }
+    .text-muted { color: var(--text-muted); }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 6px;
+      background: var(--light-blue);
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+
+    /* ========== SLIDE LAYOUT ========== */
+    section {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 60px 40px;
+    }
+    .slide-inner {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ========== CORPORATE BRANDING (optional) ========== */
+    body.branded section::after {
+      content: '';
+      position: absolute;
+      top: 28px;
+      right: 40px;
+      width: 36px;
+      height: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2L2 22h20L12 2zm0 4l7.5 14h-15L12 6z' fill='%231B2559' opacity='0.15'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      z-index: 10;
+      pointer-events: none;
+    }
+    /* Override: no logo on title slides */
+    body.branded .slide-title::after,
+    body.branded .slide-statement::after { display: none; }
+
+    /* ========== CARDS ========== */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: var(--light-blue);
+      padding: 16px 24px;
+      text-align: center;
+    }
+    .card-header .number {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .card-body { padding: 24px; }
+
+    /* ========== CALLOUT BOX ========== */
+    .callout {
+      background: var(--callout-bg);
+      border-radius: 12px;
+      padding: 24px 28px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-top: 40px;
+    }
+    .callout-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--navy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-top: 2px;
+    }
+    .callout p { color: var(--navy); font-size: 0.95rem; }
+    .callout strong { font-weight: 700; }
+
+    /* ========== NAVIGATION ========== */
+    .nav-arrows {
+      position: fixed;
+      bottom: 30px;
+      right: 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+    .nav-arrows .page-indicator {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--navy);
+      opacity: 0.6;
+    }
+    .nav-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--card-border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      color: var(--navy);
+    }
+    .nav-btn:hover { background: var(--light-blue); border-color: var(--navy); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .nav-btn:disabled:hover { background: var(--white); border-color: var(--card-border); }
+    .nav-btn svg { width: 18px; height: 18px; }
+
+    /* ========== ANIMATIONS ========== */
+    .animate { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .animate.visible { opacity: 1; transform: translateY(0); }
+    .animate-delay-1 { transition-delay: 0.1s; }
+    .animate-delay-2 { transition-delay: 0.2s; }
+    .animate-delay-3 { transition-delay: 0.3s; }
+    .animate-delay-4 { transition-delay: 0.4s; }
+
+    /* ============================================================
+       LAYOUT: TITLE SLIDE (split image left, text right)
+       ============================================================ */
+    .slide-title .slide-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .slide-title .illustration-col {
+      background: var(--light-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      min-height: 500px;
+      margin: -60px 0 -60px -40px;
+    }
+    .slide-title .illustration-col img {
+      max-width: 100%;
+      max-height: 480px;
+      object-fit: contain;
+    }
+    .slide-title .accent-pill {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 10px 24px;
+      border: 1px solid var(--card-border);
+      border-radius: 30px;
+      color: var(--card-border);
+    }
+
+    /* ============================================================
+       LAYOUT: BIG STATEMENT (centered mission/vision text)
+       ============================================================ */
+    .slide-statement {
+      background: var(--white);
+    }
+    .slide-statement .slide-inner {
+      text-align: left;
+      max-width: 1000px;
+    }
+    .slide-statement .statement-text {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: var(--navy);
+      margin-top: 40px;
+    }
+    .slide-statement .statement-text .text-muted {
+      color: var(--text-muted);
+    }
+
+    /* ============================================================
+       LAYOUT: ANNOUNCEMENT LIST (people updates, team changes)
+       ============================================================ */
+    .announcement-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 40px;
+    }
+    .announcement-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .announcement-item:last-child { border-bottom: none; }
+    .announcement-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.3rem;
+    }
+    .announcement-icon.celebrate { background: #FFF3E0; }
+    .announcement-icon.farewell { background: #E8F0FE; }
+    .announcement-icon.welcome { background: #E8F5E9; }
+    .announcement-icon.info { background: #F3E5F5; }
+    .announcement-content h4 { margin-bottom: 4px; }
+    .announcement-content p { font-size: 0.95rem; color: var(--body-text); }
+
+    /* ============================================================
+       LAYOUT: VISUAL WITH METRICS (diagram left, metrics right)
+       ============================================================ */
+    .visual-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin: 32px 0;
+      align-items: start;
+    }
+    .visual-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .visual-col svg,
+    .visual-col img { width: 100%; max-width: 500px; }
+    .metrics-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      justify-content: center;
+      padding-top: 20px;
+    }
+    .metric-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--light-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .metric-icon svg { width: 18px; height: 18px; }
+    .metric-row p { font-size: 0.95rem; color: var(--navy); }
+
+    /* ============================================================
+       LAYOUT: STAT GRID (2x2 big numbers)
+       ============================================================ */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px 80px;
+      margin: 48px 0;
+      text-align: center;
+    }
+    .stat-block .number {
+      font-size: 4rem;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+    .stat-block .label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-top: 8px;
+    }
+
+    /* ============================================================
+       LAYOUT: NUMBERED CARD GRID (2, 3, or 4 columns)
+       ============================================================ */
+    .card-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 40px; }
+    .card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+    .card-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
+
+    /* ============================================================
+       LAYOUT: SPLIT (image + text, either side)
+       ============================================================ */
+    .split { display: grid; grid-template-columns: 1fr 1.4fr; gap: 60px; align-items: center; }
+    .split.reverse { grid-template-columns: 1.4fr 1fr; }
+    .split .illustration-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .split .illustration-col img {
+      max-width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+    }
+    .split .illustration-col.boxed {
+      background: var(--light-blue);
+      border-radius: 16px;
+      padding: 40px;
+      min-height: 300px;
+    }
+    .text-sections { display: flex; flex-direction: column; gap: 24px; }
+    .text-section { padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
+    .text-section:last-child { border-bottom: none; }
+
+    /* ============================================================
+       LAYOUT: ICON GRID (2-col with icon + heading + text)
+       ============================================================ */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px 60px;
+      margin-top: 40px;
+    }
+    .icon-block { display: flex; flex-direction: column; gap: 8px; }
+    .icon-block .block-icon {
+      width: 44px;
+      height: 44px;
+      color: var(--card-border);
+    }
+    .icon-block .block-icon svg { width: 44px; height: 44px; }
+
+    /* ============================================================
+       LAYOUT: COLORED TAG CARDS (row of 3-5 cards)
+       ============================================================ */
+    .tag-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .tag-card {
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 90px;
+    }
+    .tag-card h4 { margin-bottom: 4px; }
+    .tag-card p { font-size: 0.85rem; }
+    .tag-card.pink { background: var(--accent-pink); }
+    .tag-card.pink h4, .tag-card.pink p { color: var(--white); }
+    .tag-card.blue { background: var(--light-blue); }
+
+    /* ============================================================
+       LAYOUT: ZIGZAG FLOW (alternating top/bottom steps)
+       ============================================================ */
+    .zigzag-flow {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      margin-top: 48px;
+      padding: 0 10px;
+    }
+    .zigzag-step {
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px 12px;
+      text-align: center;
+      background: var(--white);
+      position: relative;
+      z-index: 2;
+    }
+    .zigzag-step.top { align-self: start; }
+    .zigzag-step.bottom { align-self: end; margin-top: 80px; }
+    .zigzag-step h4 { font-size: 0.9rem; margin-bottom: 6px; }
+    .zigzag-step p { font-size: 0.8rem; color: var(--muted); }
+    .step-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+
+    /* ============================================================
+       LAYOUT: NUMBERED STEPS (vertical list with bracket)
+       ============================================================ */
+    .numbered-steps {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-left: 60px;
+    }
+    .numbered-steps .bracket {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+    }
+    .step-item {
+      padding: 20px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .step-item .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--light-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--navy);
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       LAYOUT: FLYWHEEL (circular diagram with labels)
+       ============================================================ */
+    .flywheel-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      margin: 60px 0;
+      align-items: center;
+    }
+    .flywheel-col { display: flex; flex-direction: column; gap: 48px; }
+    .flywheel-item { text-align: center; }
+    .flywheel-item h4 { font-size: 1.05rem; margin-bottom: 6px; }
+    .flywheel-item p { font-size: 0.9rem; }
+    .flywheel-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .flywheel-center { display: flex; align-items: center; justify-content: center; }
+    .flywheel-svg { width: 100%; max-width: 260px; }
+
+    /* ============================================================
+       LAYOUT: ASYMMETRIC CARDS (large left + stacked right)
+       ============================================================ */
+    .asymmetric-layout {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .main-card {
+      background: var(--light-blue);
+      border-radius: 12px;
+      padding: 32px;
+    }
+    .main-card h3 { font-size: 1.2rem; margin-bottom: 12px; }
+    .main-card ul { padding-left: 20px; margin-bottom: 20px; }
+    .main-card li { font-size: 0.95rem; color: var(--body-text); margin-bottom: 8px; line-height: 1.5; }
+    .side-cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .side-card {
+      background: var(--light-blue);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+    .side-card h4 { font-size: 1rem; margin-bottom: 6px; }
+    .side-card p { font-size: 0.85rem; }
+
+    /* ============================================================
+       LAYOUT: NUMBERED QUESTION CARDS (2x2 with circle numbers)
+       ============================================================ */
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .question-card {
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .question-card .card-header-bar {
+      background: var(--light-blue);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .question-card .card-header-bar .circle-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--navy);
+    }
+
+    /* ============================================================
+       LAYOUT: SUMMARY BOXES (side-by-side comparison)
+       ============================================================ */
+    .summary-boxes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .summary-box {
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .summary-box h4 { font-size: 1rem; margin-bottom: 12px; }
+    .summary-box p { font-size: 0.9rem; margin-bottom: 6px; }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 900px) {
+      h1 { font-size: 2.2rem; }
+      h2 { font-size: 2rem; }
+      section { padding: 40px 24px; }
+      .slide-title .slide-inner,
+      .split, .split.reverse { grid-template-columns: 1fr; }
+      .slide-title .illustration-col { margin: -40px -24px 20px -24px; min-height: 300px; }
+      .card-grid-3, .card-grid-4 { grid-template-columns: 1fr; }
+      .stat-grid { gap: 32px 40px; }
+      .stat-block .number { font-size: 2.8rem; }
+      .icon-grid { grid-template-columns: 1fr; }
+      .zigzag-flow { grid-template-columns: 1fr !important; }
+      .zigzag-step.bottom { margin-top: 0; }
+      .flywheel-layout { grid-template-columns: 1fr; }
+      .asymmetric-layout { grid-template-columns: 1fr; }
+      .question-grid { grid-template-columns: 1fr; }
+      .summary-boxes { grid-template-columns: 1fr; }
+      .visual-metrics { grid-template-columns: 1fr; }
+      .slide-statement .statement-text { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!--
+  ============================================================
+  PRESENTATION TEMPLATE v2 - SLIDE PATTERNS
+  ============================================================
+
+  Each slide is a <section> with a .slide-inner container.
+  Below are the available layout patterns. Copy the one that
+  fits your content, populate it, and delete this comment block.
+
+  PATTERNS AVAILABLE:
+  1.  Title slide          - Hero with image + title
+  2.  Big statement        - Full-width centered mission/vision text
+  3.  Announcement list    - People updates, team changes, news items
+  4.  Visual with metrics  - Diagram/chart left, metric rows right
+  5.  Stat grid            - Big numbers in 2x2
+  6.  Numbered card grid   - 2, 3, or 4 column cards with headers
+  7.  Split layout         - Image + text (either side)
+  8.  Icon grid            - 2-col grid with icons
+  9.  Tag cards            - Colored label cards in a row
+  10. Zigzag flow          - Process steps alternating top/bottom
+  11. Numbered steps       - Vertical numbered list with bracket
+  12. Flywheel             - Circular diagram with labeled quadrants
+  13. Asymmetric cards     - Large card + stacked small cards
+  14. Question cards       - 2x2 numbered question cards
+  15. Summary boxes        - Side-by-side comparison boxes
+  16. Callout box          - Key insight / quote block
+
+  BRANDING: Add class="branded" to <body> to show a subtle
+  logo watermark in the top-right of each slide.
+
+  Every slide can include a .callout at the bottom for a
+  key takeaway. Add .animate classes for scroll-triggered
+  fade-in effects.
+
+  Use .text-muted on <span> elements to color words in
+  a lighter shade for emphasis contrast.
+  ============================================================
+-->
+
+<!-- SLIDE: TITLE ============================================ -->
+<section class="slide-title" id="slide-1">
+  <div class="slide-inner">
+    <div class="illustration-col">
+      <img src="IMAGE_PATH" alt="DESCRIPTION">
+    </div>
+    <div class="text-col">
+      <h1>TITLE</h1>
+      <p class="subtitle">SUBTITLE</p>
+      <span class="accent-pill">TAGLINE</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE: BIG STATEMENT ==================================== -->
+<!--
+<section class="slide-statement" id="slide-N">
+  <div class="slide-inner">
+    <span class="badge animate">BADGE TEXT</span>
+    <p class="statement-text animate animate-delay-1">
+      We are enabling the industry to move from
+      <span class="text-muted">old way of working</span> to platforms that
+      <span class="text-muted">deliver the future</span>
+    </p>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: ANNOUNCEMENT LIST ================================ -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <div class="announcement-list">
+      <div class="announcement-item animate animate-delay-1">
+        <div class="announcement-icon celebrate">&#127881;</div>
+        <div class="announcement-content">
+          <h4>Announcement title</h4>
+          <p>Details about this announcement.</p>
+        </div>
+      </div>
+      <div class="announcement-item animate animate-delay-2">
+        <div class="announcement-icon farewell">&#128075;</div>
+        <div class="announcement-content">
+          <h4>Announcement title</h4>
+          <p>Details about this announcement.</p>
+        </div>
+      </div>
+      <div class="announcement-item animate animate-delay-3">
+        <div class="announcement-icon welcome">&#128400;</div>
+        <div class="announcement-content">
+          <h4>Announcement title</h4>
+          <p>Details about this announcement.</p>
+        </div>
+      </div>
+      <div class="announcement-item animate animate-delay-4">
+        <div class="announcement-icon info">&#9889;</div>
+        <div class="announcement-content">
+          <h4>Announcement title</h4>
+          <p>Details about this announcement.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: VISUAL WITH METRICS ============================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="visual-metrics animate animate-delay-2">
+      <div class="visual-col">
+        <svg viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg">
+          CUSTOM_SVG_CONTENT
+        </svg>
+      </div>
+      <div class="metrics-col">
+        <div class="metric-row">
+          <div class="metric-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1B2559" stroke-width="2">ICON_PATHS</svg>
+          </div>
+          <p>Metric description text</p>
+        </div>
+      </div>
+    </div>
+    <div class="summary-boxes animate animate-delay-3">
+      <div class="summary-box">
+        <h4>Category title</h4>
+        <p>Detail line one</p>
+        <p>Detail line two</p>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: STAT GRID ======================================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="stat-grid">
+      <div class="stat-block animate animate-delay-1">
+        <div class="number">$3T</div>
+        <div class="label">Label text</div>
+      </div>
+      <div class="stat-block animate animate-delay-2">
+        <div class="number">85%</div>
+        <div class="label">Label text</div>
+      </div>
+    </div>
+    <div class="callout animate">
+      <div class="callout-icon">i</div>
+      <p>Key takeaway text</p>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: NUMBERED CARD GRID =============================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="card-grid-3">
+      <div class="card animate animate-delay-1">
+        <div class="card-header"><span class="number">1</span></div>
+        <div class="card-body">
+          <h3>Card title</h3>
+          <p>Card description text.</p>
+        </div>
+      </div>
+      <div class="card animate animate-delay-2">
+        <div class="card-header"><span class="number">2</span></div>
+        <div class="card-body">
+          <h3>Card title</h3>
+          <p>Card description text.</p>
+        </div>
+      </div>
+      <div class="card animate animate-delay-3">
+        <div class="card-header"><span class="number">3</span></div>
+        <div class="card-body">
+          <h3>Card title</h3>
+          <p>Card description text.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: SPLIT LAYOUT ===================================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <div class="split animate animate-delay-1">
+      <div class="illustration-col">
+        <img src="IMAGE_PATH" alt="DESCRIPTION">
+      </div>
+      <div class="text-sections">
+        <div class="text-section">
+          <h3>Section heading</h3>
+          <p>Section body text.</p>
+        </div>
+        <div class="text-section">
+          <h3>Section heading</h3>
+          <p>Section body text.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: ICON GRID ======================================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <div class="icon-grid">
+      <div class="icon-block animate animate-delay-1">
+        <div class="block-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            SVG_ICON_PATHS
+          </svg>
+        </div>
+        <h4>Block title</h4>
+        <p>Block description.</p>
+      </div>
+    </div>
+    <div class="callout animate animate-delay-3">
+      <div class="callout-icon">i</div>
+      <p>Key takeaway.</p>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: ZIGZAG FLOW ====================================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <span class="badge animate">BADGE TEXT</span>
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="zigzag-flow animate animate-delay-2" style="grid-template-columns: repeat(N, 1fr);">
+      <div class="zigzag-step top">
+        <h4>Step title</h4>
+        <p>Step description</p>
+        <span class="step-tag" style="background: #1B2559; color: white;">Tag</span>
+      </div>
+      <div class="zigzag-step bottom">
+        <h4>Step title</h4>
+        <p>Step description</p>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: NUMBERED STEPS =================================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="split animate animate-delay-2">
+      <div class="numbered-steps">
+        <svg class="bracket" viewBox="0 0 40 320" xmlns="http://www.w3.org/2000/svg">
+          <path d="M30,10 Q20,10 20,25 L20,145 Q20,160 10,160 Q20,160 20,175 L20,295 Q20,310 30,310" fill="none" stroke="#D0DFFF" stroke-width="3"/>
+        </svg>
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div><h4>Step title</h4><p>Step description</p></div>
+        </div>
+      </div>
+      <div class="illustration-col boxed">
+        <img src="IMAGE_PATH" alt="DESCRIPTION">
+      </div>
+    </div>
+    <div class="callout animate animate-delay-3">
+      <div class="callout-icon">i</div>
+      <p>Key takeaway.</p>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: FLYWHEEL ========================================= -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <span class="badge animate">BADGE TEXT</span>
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="flywheel-layout animate animate-delay-2">
+      <div class="flywheel-col">
+        <div class="flywheel-item">
+          <div class="flywheel-num">1</div>
+          <h4>Item title</h4>
+          <p>Item description.</p>
+        </div>
+        <div class="flywheel-item">
+          <div class="flywheel-num">4</div>
+          <h4>Item title</h4>
+          <p>Item description.</p>
+        </div>
+      </div>
+      <div class="flywheel-center">
+        <svg class="flywheel-svg" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="130" cy="130" r="110" fill="none" stroke="#E8F0FE" stroke-width="40"/>
+          <path d="M130,20 A110,110 0 0,1 240,130" fill="none" stroke="#D0DFFF" stroke-width="40" stroke-linecap="round"/>
+          <path d="M240,130 A110,110 0 0,1 130,240" fill="none" stroke="#C5D8F7" stroke-width="40" stroke-linecap="round"/>
+          <path d="M130,240 A110,110 0 0,1 20,130" fill="none" stroke="#AECBEF" stroke-width="40" stroke-linecap="round"/>
+          <path d="M20,130 A110,110 0 0,1 130,20" fill="none" stroke="#98BDE7" stroke-width="40" stroke-linecap="round"/>
+          <circle cx="130" cy="130" r="50" fill="white"/>
+          <path d="M130,25 L138,38 L122,38 Z" fill="#8BAEE3"/>
+          <path d="M235,130 L222,138 L222,122 Z" fill="#8BAEE3"/>
+          <path d="M130,235 L122,222 L138,222 Z" fill="#8BAEE3"/>
+          <path d="M25,130 L38,122 L38,138 Z" fill="#8BAEE3"/>
+        </svg>
+      </div>
+      <div class="flywheel-col">
+        <div class="flywheel-item">
+          <div class="flywheel-num">2</div>
+          <h4>Item title</h4>
+          <p>Item description.</p>
+        </div>
+        <div class="flywheel-item">
+          <div class="flywheel-num">3</div>
+          <h4>Item title</h4>
+          <p>Item description.</p>
+        </div>
+      </div>
+    </div>
+    <div class="callout animate animate-delay-3">
+      <div class="callout-icon">i</div>
+      <p>Key takeaway.</p>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: ASYMMETRIC CARDS ================================= -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <div class="asymmetric-layout animate animate-delay-1">
+      <div class="main-card">
+        <h3>Main card title</h3>
+        <p><em>Italic lead text.</em></p>
+        <ul>
+          <li>Bullet point one.</li>
+          <li>Bullet point two.</li>
+        </ul>
+        <div class="callout" style="margin-top: 16px;">
+          <div class="callout-icon">i</div>
+          <div>
+            <p><strong>Example title</strong></p>
+            <p>Example description.</p>
+          </div>
+        </div>
+      </div>
+      <div class="side-cards">
+        <div class="side-card"><h4>Card title</h4><p>Card text.</p></div>
+        <div class="side-card"><h4>Card title</h4><p>Card text.</p></div>
+        <div class="side-card"><h4>Card title</h4><p>Card text.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- SLIDE: QUESTION CARDS =================================== -->
+<!--
+<section id="slide-N">
+  <div class="slide-inner">
+    <h2 class="animate">HEADING</h2>
+    <p class="animate animate-delay-1">SUBHEADING</p>
+    <div class="question-grid">
+      <div class="question-card animate animate-delay-1">
+        <div class="card-header-bar"><div class="circle-num">1</div></div>
+        <div class="card-body">
+          <h3>Question title</h3>
+          <p>Question detail.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- ============================================================
+     NAVIGATION (always include)
+     ============================================================ -->
+<nav class="nav-arrows">
+  <span class="page-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">1</span></span>
+  <button class="nav-btn" id="prevBtn" aria-label="Previous slide">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button class="nav-btn" id="nextBtn" aria-label="Next slide">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+  </button>
+</nav>
+
+<script>
+  const sections = document.querySelectorAll('section');
+  const totalSlides = sections.length;
+  const currentSlideEl = document.getElementById('currentSlide');
+  const totalSlidesEl = document.getElementById('totalSlides');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  let currentIndex = 0;
+
+  totalSlidesEl.textContent = totalSlides;
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    currentIndex = index;
+    sections[index].scrollIntoView({ behavior: 'smooth' });
+    updateNav();
+  }
+
+  function updateNav() {
+    currentSlideEl.textContent = currentIndex + 1;
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.disabled = currentIndex === totalSlides - 1;
+  }
+
+  prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+  nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goToSlide(currentIndex + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goToSlide(currentIndex - 1); }
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const index = Array.from(sections).indexOf(entry.target);
+        if (index !== -1) { currentIndex = index; updateNav(); }
+      }
+    });
+  }, { threshold: 0.5 });
+  sections.forEach(s => observer.observe(s));
+
+  const animateObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); animateObserver.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.animate').forEach(el => animateObserver.observe(el));
+
+  updateNav();
+</script>
+
+</body>
+</html>

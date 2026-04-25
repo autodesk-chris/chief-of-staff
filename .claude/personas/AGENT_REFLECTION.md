@@ -62,6 +62,21 @@ Gather all context automatically (no user input needed):
 6. **Read this week's 4Ps:** Work/4Ps/4ps_YYYY-Www.md
    - Extract: Weekly priorities for context
 
+### Step 1b: Check for unprocessed candidate interviews
+
+After gathering context, scan today's Granola meetings for candidate interviews:
+
+1. Look for meetings that appear to be interviews (candidate names, "interview" in title, short meetings with unknown attendees)
+2. Check `Work/People/Hiring/*/Shortlisted/` for matching `_interview_prep.md` files without a corresponding `_interview_outcome.md`
+3. If found, prompt the user at the end of the summary:
+
+```
+I noticed you interviewed [Name] today but the interview prep hasn't been updated with feedback yet.
+Want me to run `interview eval: [Name] for [Role]`?
+```
+
+This ensures interview feedback is captured while the conversation is fresh.
+
 ### Step 2: Generate Draft Summary
 
 Auto-generate structured summary from all sources:
