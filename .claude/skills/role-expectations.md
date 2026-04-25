@@ -15,7 +15,7 @@ Search for existing information about {{person}}:
 
 1. **121 folder**: `Work/People/121s/{{person}}/` - notepad, recent meeting notes
 2. **Merged notepad**: `Work/1-Notepad/Notepad.md` - search for mentions of {{person}} or their squad
-3. **Strategy-memory**: `Work/LLM_Context/strategy-memory/` - relevant OKRs, objectives, bets
+3. **Strategy-memory**: `/Users/smallc/AI/forma-agentic-memory-strategy/` - relevant OKRs, objectives, bets
 4. **Granola meetings**: Query for recent meetings with {{person}} about their area of focus
 
 Present a summary of what you found before proceeding.

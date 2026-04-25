@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional, List, Dict
 
 # Base path for strategy memory
-STRATEGY_MEMORY_PATH = Path(__file__).parent.parent / "Work" / "LLM_Context" / "strategy-memory"
+STRATEGY_MEMORY_PATH = Path("/Users/smallc/AI/forma-agentic-memory-strategy")
 
 
 def get_vault_path() -> Path:

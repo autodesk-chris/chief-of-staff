@@ -12,7 +12,7 @@ import re
 
 # Base paths
 PROJECT_ROOT = Path(__file__).parent.parent
-STRATEGY_MEMORY_PATH = PROJECT_ROOT / 'Work' / 'LLM_Context' / 'strategy-memory'
+STRATEGY_MEMORY_PATH = Path('/Users/smallc/AI/forma-agentic-memory-strategy')
 
 
 def classify_query(query_text):

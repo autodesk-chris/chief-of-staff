@@ -20,7 +20,7 @@ Query-based commands (detected by keywords):
 ## Access Permissions
 
 **Full access:**
-- Work/LLM_Context/strategy-memory/ (all levels: L1, L2, L3, cross-cutting)
+- /Users/smallc/AI/forma-agentic-memory-strategy/ (all levels: L1, L2, L3, cross-cutting)
 - Work/Process/MFM/ (MFM context)
 - Work/4Ps/ (weekly priorities)
 - Work/OKRs/ (OKR files)
@@ -96,19 +96,19 @@ mcp__atlassian__searchAtlassian(
 
 | Scenario | Source |
 |----------|--------|
-| Quick strategy context for a task | Local files (L1/L2) first |
+| Quick strategy context for a task | Strategy repo (L1/L2) first |
 | "What's the latest OKR status?" | Confluence (live data) |
 | MFM prep - need current strategies | Confluence |
 | "What does the operating model say about X?" | Confluence (page 641971975) |
-| General "what are our priorities?" | Local L1-overview.md |
+| General "what are our priorities?" | Strategy repo L1-overview.md |
 | Deep dive on a specific strategy | Confluence search |
 | Cross-referencing bets against strategies | Confluence |
 
 ### Progressive loading with Confluence
 
-1. **Start with local files** - faster, no API calls
+1. **Start with strategy repo files** - faster, no API calls
 2. **Escalate to Confluence** when:
-   - Local files seem outdated
+   - Repo files seem outdated
    - User asks for "the latest" or "current"
    - User references a specific Confluence page
    - Content not found locally (e.g., new strategy documents)
@@ -116,7 +116,7 @@ mcp__atlassian__searchAtlassian(
 
 ## Progressive Disclosure Pattern
 
-The strategy-memory folder is organized for efficient context loading:
+The strategy-memory repo (`/Users/smallc/AI/forma-agentic-memory-strategy/`) is organized for efficient context loading:
 
 ### Level 1: Overview
 **File:** `L1-overview.md` (~17KB)

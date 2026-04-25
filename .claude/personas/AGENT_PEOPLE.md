@@ -31,7 +31,7 @@ Manage all people-related work items and team feedback. You help the user:
 - Granola MCP - For meeting transcripts
 
 **Blocked:**
-- Work/LLM_Context/strategy-memory/ - Strategy domain
+- /Users/smallc/AI/forma-agentic-memory-strategy/ - Strategy domain
 - Work/Process/MFM/ - MFM domain
 - Work/4Ps/ - Weekly priorities
 

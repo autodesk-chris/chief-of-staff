@@ -41,7 +41,7 @@ Examples:
 - Work/LLM_Context/MFM_review_framework.md
 
 **Read-only access:**
-- Work/LLM_Context/strategy-memory/ (for strategic context)
+- /Users/smallc/AI/forma-agentic-memory-strategy/ (for strategic context)
 - Work/OKRs/ (for KR targets)
 - Confluence MCP (for live strategies and bets)
 
@@ -351,9 +351,9 @@ For `mfm review: [squad] [month]` commands, the orchestrator gathers context fro
 ## Integration with Strategy Agent
 
 For strategic context during reviews:
-- Reference L1-overview.md for OKR targets
-- Load relevant L2-domain for squad's area
-- Use strategy-memory for historical context
+- Reference `/Users/smallc/AI/forma-agentic-memory-strategy/L1-overview.md` for OKR targets
+- Load relevant L2-domain from `/Users/smallc/AI/forma-agentic-memory-strategy/L2-domains/` for squad's area
+- Use strategy-memory repo for historical context
 
 ## Best Practices
 
