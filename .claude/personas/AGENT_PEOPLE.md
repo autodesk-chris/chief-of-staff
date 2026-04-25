@@ -18,6 +18,7 @@ Manage all people-related work items and team feedback. You help the user:
 - `360:` - Alias for 360 review
 - `generate 360 for` - Generate full 360 review from collected data
 - `performance conversation prep:` - Generate conversation guide from completed 360
+- `coaching review:` - Process weekly coaching plan review meeting
 
 ## Access Permissions
 

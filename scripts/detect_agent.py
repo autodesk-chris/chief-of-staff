@@ -43,7 +43,8 @@ def detect_agent(command_text):
     # People patterns (note: 121: is handled by meetings agent)
     people_patterns = [
         'observation:', '360 review:', '360:', 'feedback:',
-        'performance conversation prep:', 'perf conversation prep:'
+        'performance conversation prep:', 'perf conversation prep:',
+        'coaching review:'
     ]
     if any(p in command_lower for p in people_patterns):
         return ('people', 1.0)

@@ -373,6 +373,14 @@ Creates a two-section document:
 
 **Example**: See `Work/People/121s/maria/Maria_expectations_pm_monetization.md`
 
+### Coaching plan weekly review
+
+**Trigger**: `coaching review: [name]` or `coaching review: [name] week [N]`
+
+**Process**: Read and follow `.claude/skills/coaching-review.md`
+
+Processes a weekly coaching review meeting into three outputs: shared tracker update (local + Confluence), manager observations (Confluence), and private reference update (local only). Reads coaching plan for assessment criteria, meeting transcript from Granola.
+
 ## Daily Summary Commands
 
 ### Session Logging
