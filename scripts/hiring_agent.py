@@ -55,6 +55,14 @@ def find_role_folder(role_name):
     return None, None
 
 
+def find_eval_guides(role_folder):
+    """Find evaluation guides, outlines, or briefs in a role folder."""
+    keywords = ['evaluation_guide', 'outline', 'brief']
+    return [f for f in role_folder.iterdir()
+            if f.is_file() and f.suffix.lower() in ['.md', '.pdf', '.docx']
+            and any(kw in f.stem.lower() for kw in keywords)]
+
+
 def find_cv(role_folder, candidate_name, include_shortlisted=True):
     """
     Find a CV by candidate name in the role folder.
@@ -67,14 +75,15 @@ def find_cv(role_folder, candidate_name, include_shortlisted=True):
     Returns:
         tuple: (cv_path, location) or (None, None) if not found
     """
-    candidate_lower = candidate_name.lower()
+    candidate_normalized = candidate_name.lower().replace(' ', '_').replace('-', '_')
 
     # Search CVs folder
     cvs_folder = role_folder / 'CVs'
     if cvs_folder.exists():
         for cv_file in cvs_folder.iterdir():
             if cv_file.is_file() and cv_file.suffix.lower() in ['.pdf', '.docx', '.doc']:
-                if candidate_lower in cv_file.stem.lower():
+                stem_normalized = cv_file.stem.lower().replace(' ', '_').replace('-', '_')
+                if candidate_normalized in stem_normalized:
                     return cv_file, 'CVs'
 
     # Search Shortlisted folder
@@ -83,7 +92,8 @@ def find_cv(role_folder, candidate_name, include_shortlisted=True):
         if shortlisted_folder.exists():
             for cv_file in shortlisted_folder.iterdir():
                 if cv_file.is_file() and cv_file.suffix.lower() in ['.pdf', '.docx', '.doc']:
-                    if candidate_lower in cv_file.stem.lower():
+                    stem_normalized = cv_file.stem.lower().replace(' ', '_').replace('-', '_')
+                    if candidate_normalized in stem_normalized:
                         return cv_file, 'Shortlisted'
 
     return None, None
@@ -96,20 +106,21 @@ def find_jd(role_folder):
     Returns:
         Path or None
     """
-    # Look for JD files (various naming conventions)
-    jd_patterns = ['*JD*', '*job*description*', '*Position*', '*Role*']
+    # Look for JD files (case-insensitive matching)
+    jd_keywords = ['jd', 'job description', 'job_description', 'position', 'role']
+    valid_extensions = ['.pdf', '.md', '.docx', '.doc']
 
-    for pattern in jd_patterns:
-        matches = list(role_folder.glob(pattern))
-        for match in matches:
-            if match.is_file() and match.suffix.lower() in ['.pdf', '.md', '.docx', '.doc']:
-                return match
+    for f in role_folder.iterdir():
+        if f.is_file() and f.suffix.lower() in valid_extensions:
+            name_lower = f.stem.lower()
+            if any(kw in name_lower for kw in jd_keywords):
+                return f
 
     # Also check for any PDF that might be a JD
-    pdfs = list(role_folder.glob('*.pdf'))
-    for pdf in pdfs:
-        if 'cv' not in pdf.name.lower() and 'resume' not in pdf.name.lower():
-            return pdf
+    for f in role_folder.iterdir():
+        if f.is_file() and f.suffix.lower() == '.pdf':
+            if 'cv' not in f.name.lower() and 'resume' not in f.name.lower():
+                return f
 
     return None
 
@@ -270,7 +281,7 @@ Available roles: {', '.join(available) if available else 'None found'}"""
 CVs should be placed in the CVs/ subfolder for screening."""
 
     # Check for evaluation guide
-    eval_guide = list(role_folder.glob('*evaluation_guide*'))
+    eval_guide = find_eval_guides(role_folder)
 
     cv_list = '\n'.join([f"  - {name}" for name, _, _ in unscreened])
 
@@ -317,7 +328,7 @@ Available CVs in {folder_name}:
 {cv_list if cvs else '  None found'}"""
 
     # Check for evaluation guide
-    eval_guide = list(role_folder.glob('*evaluation_guide*'))
+    eval_guide = find_eval_guides(role_folder)
     jd_path = find_jd(role_folder)
 
     return f"""✓ Ready to review CV: {candidate_name} for {folder_name}
@@ -394,7 +405,7 @@ Example: interview prep: Sarah Williamson for Community Manager"""
         return f"✗ CV not found for: '{candidate_name}'"
 
     # Check for existing materials
-    eval_guide = list(role_folder.glob('*evaluation_guide*'))
+    eval_guide = find_eval_guides(role_folder)
     screen_notes = list((role_folder / 'Shortlisted').glob(f'*{candidate_name.split()[0].lower()}*screen*')) if (role_folder / 'Shortlisted').exists() else []
 
     output_path = role_folder / 'Shortlisted' / f"{candidate_name.replace(' ', '_')}_interview_prep.md"
@@ -434,7 +445,7 @@ Example: interview eval: Tom Hamilton for Community Programme Manager"""
         return f"✗ Role folder not found: '{role_name}'"
 
     cv_path, location = find_cv(role_folder, candidate_name)
-    eval_guide = list(role_folder.glob('*evaluation_guide*'))
+    eval_guide = find_eval_guides(role_folder)
 
     output_path = role_folder / 'Shortlisted' / f"{candidate_name.replace(' ', '_')}_interview_notes.md"
 
