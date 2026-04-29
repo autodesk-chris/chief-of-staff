@@ -184,6 +184,19 @@ After the user confirms all three outputs:
    - Private reference updated locally
    Week [N] complete."
 
+### Step 9: Call reflection (automatic)
+
+After completing steps 1-8, automatically run a call reflection on the same transcript. This uses the call-reflection skill process:
+
+1. Read `Work/LLM_Context/Personal/growth_patterns.md` (patterns 3-5: over-explaining, giving answers, airtime)
+2. Read `Work/LLM_Context/Personal/call_reflections.md` (recent entries for trajectory)
+3. Analyse the transcript already loaded in step 2 - no need to re-fetch
+4. Present feedback: "Here's how you showed up on this call:" followed by the reflection format from the call-reflection skill
+5. Ask: "Save this to your reflections log?"
+6. If yes, append to `Work/LLM_Context/Personal/call_reflections.md`
+
+This step ensures coaching calls always get reflected on. See `.claude/skills/call-reflection.md` for full analysis criteria.
+
 ## Key principles
 
 ### Facts, not interpretation
@@ -217,8 +230,9 @@ The tracker is one document that grows. Each week builds on the previous. Action
 ## Related files
 
 - Memory references: Project memory `reference_[firstname]_coaching_confluence.md`
-- Coaching plan documents: `Work/People/121s/[person]/[coaching_plan].md`
-- Trackers: `Work/People/121s/[person]/Coaching_plan_tracker_[year].md`
-- Private references: `Work/People/121s/[person]/Coaching_plan_reference_PRIVATE.md`
+- Coaching plan documents: `Work/People/121s/[person]/Coaching plan/[coaching_plan].md`
+- Trackers: `Work/People/121s/[person]/Coaching plan/Coaching_plan_tracker_[year].md`
+- Private references: `Work/People/121s/[person]/Coaching plan/Coaching_plan_reference_PRIVATE.md`
+- Meeting prep notes: `Work/People/121s/[person]/Coaching plan/meeting_prep_week[N]_[date].md`
 - Meeting transcripts: Granola MCP
 - Confluence: Atlassian MCP (cloudId: `0e31f281-3568-4559-ae88-153abcdead38`)

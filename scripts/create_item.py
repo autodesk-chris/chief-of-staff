@@ -21,7 +21,10 @@ from utils import (
     parse_tags,
     format_tags_yaml,
     validate_date,
-    get_inbox_path
+    get_inbox_path,
+    get_vault_path,
+    extract_title_from_file,
+    similarity_ratio
 )
 
 # Item type definitions
@@ -171,6 +174,125 @@ def create_content(item_type, title, details, **kwargs):
 """
 
     return content
+
+
+def find_similar_active_items(title, item_type, threshold=0.5):
+    """
+    Find existing active tasks or actions with similar titles.
+
+    Args:
+        title: Title of the new item being created
+        item_type: Type of item being created ('task' or 'action')
+        threshold: Minimum similarity ratio (0-1) for matches
+
+    Returns:
+        List of dicts with keys: type, title, status, due_date, details, score, file_path
+    """
+    import re
+
+    if item_type not in ('task', 'action'):
+        return []
+
+    vault_path = get_vault_path()
+    inbox_path = vault_path / "Inbox"
+
+    # Search both Tasks and Actions regardless of what's being created
+    folders = {'Tasks': 'task', 'Actions': 'action'}
+    similar = []
+
+    for folder_name, folder_type in folders.items():
+        folder_path = inbox_path / folder_name
+        if not folder_path.exists():
+            continue
+
+        for file_path in folder_path.glob('*.md'):
+            if file_path.name.startswith(('todo_', 'today_', 'weekly_')):
+                continue
+
+            try:
+                content = file_path.read_text()
+            except Exception:
+                continue
+
+            # Parse frontmatter for status
+            fm = {}
+            fm_match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+            if fm_match:
+                for line in fm_match.group(1).split('\n'):
+                    if ':' in line:
+                        key, value = line.split(':', 1)
+                        fm[key.strip()] = value.strip()
+
+            status = fm.get('status', 'active')
+            if status in ('completed', 'archived'):
+                continue
+
+            file_title = extract_title_from_file(file_path)
+            if not file_title:
+                continue
+
+            score = similarity_ratio(title, file_title)
+
+            # Also check against filename
+            filename_base = file_path.stem.replace(f'{folder_type}_', '', 1).replace('_', ' ')
+            filename_score = similarity_ratio(title, filename_base)
+            best_score = max(score, filename_score)
+
+            if best_score >= threshold:
+                details_text = fm.get('details', '')
+                if not details_text:
+                    # Extract details from content body
+                    lines = content.split('\n')
+                    in_details = False
+                    detail_lines = []
+                    for line in lines:
+                        if line.strip().startswith('## Details'):
+                            in_details = True
+                            continue
+                        if in_details:
+                            if line.strip().startswith('## '):
+                                break
+                            if line.strip():
+                                detail_lines.append(line.strip())
+                    details_text = ' '.join(detail_lines)
+
+                # Truncate details for display
+                if len(details_text) > 120:
+                    details_text = details_text[:120] + '...'
+
+                similar.append({
+                    'type': folder_type,
+                    'title': file_title,
+                    'status': status,
+                    'due_date': fm.get('due-date'),
+                    'assignee': fm.get('assignee'),
+                    'details': details_text,
+                    'score': best_score,
+                    'file_path': str(file_path)
+                })
+
+    similar.sort(key=lambda x: x['score'], reverse=True)
+    return similar[:5]
+
+
+def format_similar_items_warning(similar_items):
+    """Format similar items into a warning string for output."""
+    if not similar_items:
+        return ""
+
+    lines = ["\n⚠️  Similar existing items found:"]
+    for item in similar_items:
+        match_pct = f"{item['score']:.0%}"
+        type_label = item['type'].capitalize()
+        status_label = item['status']
+        due = f" | due: {item['due_date']}" if item['due_date'] and item['due_date'] != 'null' else ""
+        assignee = f" | assignee: {item['assignee']}" if item.get('assignee') else ""
+        lines.append(f"  - [{match_pct} match] {type_label}: {item['title']} (status: {status_label}{due}{assignee})")
+        if item['details']:
+            lines.append(f"    Details: {item['details']}")
+
+    lines.append("  Consider updating the existing item instead of creating a new one.")
+    return '\n'.join(lines)
 
 
 def create_item(item_type, title, due_date=None, details="", tags=None, **kwargs):

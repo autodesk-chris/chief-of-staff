@@ -841,26 +841,10 @@ Use mcp__granola__query_granola_meetings to find the meeting."""
         else:  # process meeting:
             title = command_text[16:].strip()
 
-        # Return a signal for Claude to execute the automatic extraction workflow
-        return f"""MEETING_AUTO_EXTRACT:{title}
+        # Signal Claude to run the post-meeting skill
+        return f"""POST_MEETING_SKILL:{title}
 
-Claude should now automatically:
-1. Query Granola: mcp__granola__query_granola_meetings(query="{title}") or mcp__granola__list_meetings(time_range="this_week")
-2. Get meeting details: mcp__granola__get_meetings(meeting_ids=["<meeting_id>"])
-3. Get transcript if available: mcp__granola__get_meeting_transcript(meeting_id="<meeting_id>")
-4. Analyze the summary/transcript to extract:
-   - ACTIONS: [Person] to [task] by [date]
-   - DECISIONS: What was decided, rationale, participants
-   - TASKS FOR ME: Things I committed to doing
-   - OBSERVATIONS: Feedback about team members
-5. Create items using ./pos commands:
-   - ./pos "new action: [Person] to [task] due: [date]"
-   - ./pos "new decision: [decision] participants: [names]"
-   - ./pos "new task: [title] due: [date] details: [context]"
-   - ./pos "observation: [Person] - [feedback]"
-6. Finalize: ./pos "finalize meeting: {title} | actions: X | decisions: Y | tasks: Z"
-
-IMPORTANT: Execute this workflow automatically without asking for confirmation."""
+Claude should now read and follow the post-meeting skill at .claude/skills/post-meeting.md for meeting: {title}"""
 
     # Handle finalize meeting command (creates summary after extraction)
     if command_text.lower().startswith('finalize meeting:'):
@@ -989,6 +973,11 @@ Processed by Meetings Agent with auto-extraction
         if 'related_items' in parsed:
             kwargs['related_items'] = parsed['related_items']
 
+        # Check for similar existing items before creating
+        from create_item import find_similar_active_items, format_similar_items_warning
+        similar_items = find_similar_active_items(parsed['title'], parsed['type'])
+        similarity_warning = format_similar_items_warning(similar_items)
+
         file_path = create_item(
             item_type=parsed['type'],
             title=parsed['title'],
@@ -1001,7 +990,10 @@ Processed by Meetings Agent with auto-extraction
         # Auto-update today document
         today_path = update_todo_document()
 
-        return f"✓ Created {parsed['type']}: {file_path}\n✓ Updated to-do list: {today_path}"
+        result = f"✓ Created {parsed['type']}: {file_path}\n✓ Updated to-do list: {today_path}"
+        if similarity_warning:
+            result += similarity_warning
+        return result
 
     # Handle complete/archive commands (legacy)
     if command_text.startswith('complete ') or command_text.startswith('archive '):

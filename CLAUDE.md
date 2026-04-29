@@ -379,7 +379,32 @@ Creates a two-section document:
 
 **Process**: Read and follow `.claude/skills/coaching-review.md`
 
-Processes a weekly coaching review meeting into three outputs: shared tracker update (local + Confluence), manager observations (Confluence), and private reference update (local only). Reads coaching plan for assessment criteria, meeting transcript from Granola.
+Processes a weekly coaching review meeting into three outputs: shared tracker update (local + Confluence), manager observations (Confluence), and private reference update (local only). Reads coaching plan for assessment criteria, meeting transcript from Granola. Automatically runs a call reflection at the end (see below).
+
+### Call reflection
+
+**Trigger**: `reflect: [meeting or person]` or `call reflection: [person]` or `reflect on today's calls` or `reflect on this week's calls`
+
+**Process**: Read and follow `.claude/skills/call-reflection.md`
+
+Analyses Granola meeting transcripts against Chris's active personal patterns AND a broader best practice framework (20+ leadership communication practices across questioning, listening, feedback, coaching, framing, presence, and influence). Works on single calls or batch mode (today/this week/last week). When a framework practice appears 3+ times, suggests promoting it to active personal tracking. Also runs automatically at the end of every coaching-review.
+
+**Adding new patterns/practices:**
+- `add pattern: [description]` - adds to personal patterns (growth_patterns.md)
+- `add practice: [description]` - adds to best practice framework (communication_framework.md)
+
+**Related files:**
+- Active patterns: `Work/LLM_Context/Personal/growth_patterns.md` (patterns 3-5)
+- Best practice framework: `Work/LLM_Context/Personal/communication_framework.md`
+- Reflections log: `Work/LLM_Context/Personal/call_reflections.md`
+
+### Post-meeting summary
+
+**Trigger**: Natural language - "summarise my meeting with [person]", "review the [meeting]", "meeting notes for [person]", "what came out of my [meeting]", "post-meeting notes", or `post meeting: [title]`
+
+**Process**: Read and follow `.claude/skills/post-meeting.md`
+
+Finds the meeting in Granola, extracts key takeaways, actions, decisions, and observations, creates items in Julie, saves a structured summary with Slack-ready format. Saves 121s to `Work/People/` and other meetings to `Work/Meetings/`. Runs call reflection automatically for 121s if a transcript is available.
 
 ## Daily Summary Commands
 
