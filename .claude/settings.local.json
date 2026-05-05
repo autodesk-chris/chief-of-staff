@@ -59,7 +59,31 @@
       "Bash(claude plugin:*)",
       "mcp__atlassian__createConfluencePage",
       "Bash(find /Users/smallc/AI/Chief_of_staff/Work/LLM_Context -name *team* -o -name *org* -o -name *structure*)",
-      "Bash(echo \"Exit: $?\")"
+      "Bash(echo \"Exit: $?\")",
+      "Bash(gh search:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo:*)",
+      "mcp__plugin_analytics_mixpanel__Get-Projects",
+      "mcp__plugin_analytics_mixpanel__Run-Query",
+      "mcp__plugin_analytics_mixpanel__Get-Query-Schema",
+      "mcp__plugin_analytics_mixpanel__Get-Report",
+      "mcp__plugin_analytics_mixpanel__Get-Properties",
+      "mcp__atlassian__getConfluencePageInlineComments",
+      "mcp__atlassian__getConfluencePageFooterComments",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/smallc/AI/Chief_of_staff/**)",
+      "Bash(done)",
+      "mcp__atlassian__updateConfluencePage",
+      "Bash(pip3 install:*)",
+      "mcp__plugin_analytics_mixpanel__Get-Events",
+      "WebFetch(domain:laughing-adventure-mv6ep57.pages.github.io)",
+      "mcp__plugin_analytics_mixpanel__Get-Dashboard",
+      "mcp__plugin_analytics_mixpanel__Get-Property-Values",
+      "Bash(grep -r \"overlap\\\\|Overlap\\\\|OVERLAP\" /Users/smallc/.claude/plugins/cache/data-agent-general-analysis/analytics/1.4.3/ --include=*.md --include=*.json)",
+      "Bash(grep -r \"bookmark\\\\|Bookmark\\\\|Audience\\\\|audience\\\\|overlap\\\\|Overlap\" /Users/smallc/.claude/plugins/cache/data-agent-general-analysis/analytics/1.4.3/skills/ --include=*.md)",
+      "Bash(find /Users/smallc/AI/Chief_of_staff/reports -name *.html -type f)",
+      "Bash(git status:*)"
     ]
   }
 }

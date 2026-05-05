@@ -6,6 +6,37 @@ Patterns tracked are defined in `growth_patterns.md` (patterns 3-6).
 
 ---
 
+## 29 April 2026 - Simon coaching plan Wednesday check-in
+
+**Patterns observed:**
+
+**Giving answers (Pattern 5) - one instance:**
+- Tracking framework: "Identifying this is the topic... these are the people that we're targeting... and of those people, this is who did posts." Gave Simon a specific 3-column tracking method. Alternative: "How will you show that posts came from your influence, not organic activity?"
+
+**Over-explaining (Pattern 4) - one instance:**
+- "Fully successful" section near end of call ran long with multiple loops: coaching plan priority, team contribution, AI work, how to escalate, what fully successful means, asking for reflection, then adding more. Tighter version: state the principle once, ask him to reflect it back, correct what he missed.
+
+**Airtime (Pattern 6):** Noticeably better. Simon had longer uninterrupted turns walking through his plan. Ratio felt closer to 50/50, appropriate for a plan review.
+
+**What went well:**
+- "How are you going to use it?" - after Simon presented baseline data, didn't interpret it for him. Made him think about application.
+- "Is there any reason why you're not reaching out to them this week?" - challenge through a question (framework 3.3). Simon shifted his own timeline.
+- "Talk me through how you're applying AI" - open, non-leading.
+- Checking understanding: asked Simon to reflect back what "fully successful" means. Revealed he'd only captured half the message, creating a clean opening to add the team contribution piece.
+- Let Simon drive through his plan on screen share. Much better airtime balance.
+
+**Progress across three calls:**
+
+| Call | Giving answers | Over-explaining | Airtime | Key moment |
+|---|---|---|---|---|
+| Week 1 (Fri 24 Apr) | Significant - near-complete playbook | Not assessed | Not assessed | Self-identified pattern post-call |
+| Week 2 (Mon 28 Apr) | Moderate - AI tutorial, baseline | Hamster metaphor | Uneven | Creator agreement empathy question |
+| Week 2 (Tue 29 Apr) | Minor - tracking framework | "Fully successful" section | Much improved | "How are you going to use it?" + reflect-back |
+
+**Clear upward trajectory.** Main remaining edge: when you see a solution clearly and Simon doesn't have one, resist generating it. "How will you show your impact?" would have got him to the same tracking framework - or something better.
+
+---
+
 ## 28 April 2026 - Simon coaching plan Monday check-in
 
 **Patterns observed:**

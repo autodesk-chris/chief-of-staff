@@ -52,6 +52,7 @@ Julie uses a hierarchical agent system where specialized agents handle different
 | **Reflection** | Daily summaries, session logging | `daily summary`, `session:` |
 | **Meetings** | Meeting prep, post-meeting processing | `prep meeting:`, `121:`, `post meeting:` |
 | **MFM** | Monthly Focus Meeting reviews | `mfm review:`, `mfm summary:` |
+| **Hiring** | CV screening, interview evaluation | `review CV:`, `screen CVs:`, `interview eval:` |
 
 ## Installation
 
@@ -148,6 +149,25 @@ Use `./pos` to interact with your Personal OS:
 ./pos "post mfm: first strike Jan"
 ```
 
+### Hiring workflows
+
+```bash
+# Set up role evaluation criteria from JD
+./pos "setup role: Growth Eng Manager"
+
+# Screen all CVs for a role
+./pos "screen CVs: Growth Eng Manager"
+
+# Screen single CV
+./pos "review CV: Sumit Patil for Growth Eng Manager"
+
+# Shortlist and generate interview prep
+./pos "shortlist: Sumit Patil for Growth Eng Manager"
+
+# Evaluate after interview (uses Granola transcript)
+./pos "interview eval: Sumit Patil for Growth Eng Manager"
+```
+
 ### Daily workflow
 
 ```bash
@@ -179,6 +199,7 @@ Chief_of_staff/
 │   ├── notepad_processor.py  # Notepad processing
 │   ├── strategy_query_helper.py    # Progressive strategy loading
 │   ├── mfm_agent.py          # MFM review workflows
+│   ├── hiring_agent.py       # CV screening and interview evaluation
 │   └── utils.py              # Shared utilities
 ├── .claude/
 │   └── personas/             # Agent persona definitions
@@ -187,7 +208,8 @@ Chief_of_staff/
 │       ├── AGENT_STRATEGY.md
 │       ├── AGENT_REFLECTION.md
 │       ├── AGENT_MEETINGS.md
-│       └── AGENT_MFM.md
+│       ├── AGENT_MFM.md
+│       └── AGENT_HIRING.md
 └── Work/                     # Obsidian vault
     ├── Inbox/
     │   ├── Tasks/            # Task files
@@ -277,6 +299,7 @@ Milestone 4 in progress - Multi-domain Orchestration
 - Milestone 1: Tasks Agent + Memory + Notepad
 - Milestone 2: Reflection Agent + Meetings Agent
 - Milestone 3: People Agent + Strategy Agent + MFM Agent
+- Hiring Agent: CV screening, interview prep and evaluation
 
 **In progress:**
 - Cross-domain orchestration
