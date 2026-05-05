@@ -50,9 +50,24 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 | **MFM** | `mfm review:`, `mfm summary:`, `run [month] monthly focus meeting for [squad]` | Monthly Focus Meeting reviews (Confluence input) and summaries |
 | **Hiring** | `setup role:`, `screen CVs:`, `shortlist:`, `interview prep:`, `interview eval:` | CV screening, interview evaluation, candidate assessment |
 
+### Natural language routing
+
+**Always route through Julie first.** When a user's natural language request maps to an existing agent command or skill, use that command/skill rather than doing the work manually. If unsure which command fits, ask.
+
+Common mappings:
+- "prepare for my 1:1 with X" / "I have a check-in with X" = `./pos "121: X"`
+- "prep for [meeting]" = `./pos "prep meeting: [meeting]"`
+- "process my meeting with X" / "summarise my meeting" = `./pos "post meeting: X"` or read `.claude/skills/post-meeting.md`
+- "review coaching for X" / "process the coaching call" = read `.claude/skills/coaching-review.md`
+- "I have feedback about X" = `./pos "observation: X - [feedback]"`
+- "what should I work on today" = `./pos "/todo"`
+
+The Meetings agent automatically detects coaching plan participants and hands off to the coaching-prep skill when appropriate.
+
 ### Key locations
 
 - **Agent personas:** `.claude/personas/AGENT_*.md`
+- **Skills:** `.claude/skills/*.md`
 - **Command routing:** `scripts/detect_agent.py`
 - **Memory system:** claude-mem MCP with project partitioning
 - **Obsidian vault:** `Work/`
@@ -373,6 +388,18 @@ Creates a two-section document:
 
 **Example**: See `Work/People/121s/maria/Maria_expectations_pm_monetization.md`
 
+### Coaching plan check-in prep
+
+**Trigger**: `coaching prep: [name]` or `coaching prep: [name] week [N]`
+
+**Also triggers automatically** when `121: [name]` is used for someone on an active coaching plan (detected via memory reference file).
+
+**Natural language**: "prepare for my check-in with [name]", "I have a coaching meeting with [name]", "prep for [name] Monday/Friday"
+
+**Process**: Read and follow `.claude/skills/coaching-prep.md`
+
+Gathers evidence from Slack (coaching channel + broader activity), Confluence (execution plan), Granola (recent meetings), and local files (tracker, private reference). Assesses against coaching plan behaviour areas. Produces a structured prep document with evidence table, key signals, call approach, and probe questions. Saves to the coaching plan folder.
+
 ### Coaching plan weekly review
 
 **Trigger**: `coaching review: [name]` or `coaching review: [name] week [N]`
@@ -380,6 +407,8 @@ Creates a two-section document:
 **Process**: Read and follow `.claude/skills/coaching-review.md`
 
 Processes a weekly coaching review meeting into three outputs: shared tracker update (local + Confluence), manager observations (Confluence), and private reference update (local only). Reads coaching plan for assessment criteria, meeting transcript from Granola. Automatically runs a call reflection at the end (see below).
+
+**Coaching workflow:** prep (before call) and review (after call) are paired. The typical flow is: `coaching prep: [name]` before the meeting, then `coaching review: [name]` after.
 
 ### Call reflection
 
