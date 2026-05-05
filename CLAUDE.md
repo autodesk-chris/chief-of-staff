@@ -57,17 +57,14 @@ Julie is a hierarchical agent architecture where specialized agents handle diffe
 Common mappings:
 - "prepare for my 1:1 with X" / "I have a check-in with X" = `./pos "121: X"`
 - "prep for [meeting]" = `./pos "prep meeting: [meeting]"`
-- "process my meeting with X" / "summarise my meeting" = `./pos "post meeting: X"` or read `.claude/skills/post-meeting.md`
-- "review coaching for X" / "process the coaching call" = read `.claude/skills/coaching-review.md`
 - "I have feedback about X" = `./pos "observation: X - [feedback]"`
-- "what should I work on today" = `./pos "/todo"`
 
-The Meetings agent automatically detects coaching plan participants and hands off to the coaching-prep skill when appropriate.
+All other workflows (post-meeting, coaching prep/review, call reflection, session logging, daily summary, 4Ps, todo, notepad processing, role expectations, strategy review, presentations) are auto-discovered via skill descriptions in `.claude/skills/*/SKILL.md`.
 
 ### Key locations
 
 - **Agent personas:** `.claude/personas/AGENT_*.md`
-- **Skills:** `.claude/skills/*.md`
+- **Skills:** `.claude/skills/*/SKILL.md`
 - **Command routing:** `scripts/detect_agent.py`
 - **Memory system:** claude-mem MCP with project partitioning
 - **Obsidian vault:** `Work/`
@@ -181,174 +178,38 @@ When the user asks to mark something as complete, blocked, in progress, etc., **
 - `completed` - Finished
 - `archived` - No longer relevant
 
-**Examples:**
-```bash
-./pos "update: Follow up with Gail status: completed"
-./pos "update: Review monetisation status: blocked note: Waiting for budget approval"
-./pos "update: Draft offsite presentation status: in-progress note: Starting research"
-```
-
 **User workflow translation:**
 - User says: "mark follow-up gail task as complete"
 - You run: `./pos "update: Follow up with Gail status: completed"`
 - User says: "update the offsite budget"
-- You ask: "What status would you like to set? (active, in-progress, blocked, waiting, on-hold, completed, archived)"
-- User responds: "blocked, waiting for finance"
-- You run: `./pos "update: offsite budget status: blocked note: Waiting for finance"`
-
-**How it works:**
-- Fuzzy matching finds items automatically - no need to search first
-- Works across all item types (tasks, ideas, features, actions)
-- Auto-updates today document after status change
-- Handles files with or without existing status fields
-
-**When user doesn't specify status:**
-- The command will error with: "Status is required. Please specify: status: [...]"
-- Ask the user: "What status would you like to set?" and provide the options
-- Then run the command with their chosen status
+- You ask: "What status would you like to set?" and provide the options
 
 **Don't do this:**
-- ❌ Search for files with Glob/Grep before updating
-- ❌ Read files to confirm existence
-- ❌ Look for exact filenames
-- ✅ Just run the update command - it handles everything
+- Don't search for files with Glob/Grep before updating
+- Don't read files to confirm existence
+- Just run the update command - fuzzy matching handles everything
 
 ### Archiving Completed Items
 
-To prevent inbox folders from accumulating hundreds of completed items, use the archive command periodically.
-
-**Command:**
 ```bash
 ./pos "archive completed"
 ```
 
-**What it does:**
-- Finds all items with status `completed` and a `completed-date` older than 7 days
-- Moves them to `Work/Archive/{Type}s/YYYY-MM/` folders (organized by completion month)
-- Returns a summary of what was archived
-
-**Archive folder structure:**
-```
-Work/Archive/
-├── Tasks/
-│   ├── 2026-01/
-│   ├── 2026-02/
-│   └── 2026-03/
-├── Ideas/
-├── Features/
-├── Actions/
-└── Reminders/
-```
-
-**Notes:**
-- Items completed in the last 7 days stay in the inbox for easy reference
-- Only items with a `completed-date` field are archived (automatically added when marking complete)
-- Archived files preserve their original names and content
-- Run periodically (weekly/monthly) to keep inbox folders clean
+Finds items with status `completed` and `completed-date` older than 7 days, moves them to `Work/Archive/{Type}s/YYYY-MM/`. Run periodically to keep inbox clean.
 
 ### Task Creation Best Practices
 
 When creating tasks from user input, extract short, meaningful titles:
 
-**Title extraction:**
 - Keep titles short and succinct (3-8 words maximum)
-- Extract core action + primary subject
 - Format: [Verb] + [Subject] + [Optional context]
 - Move detailed context, background, and specifics to the details field
-
-**Examples:**
-
-*Input:* "new task: I need to prepare the quarterly business review presentation for the executive team including slides on revenue, customer metrics, and product roadmap"
-- **Title:** "Prepare quarterly business review presentation"
-- **Details:** "For executive team. Include slides on revenue, customer metrics, and product roadmap."
-
-*Input:* "new task: Follow up with Sarah about the API integration issue she mentioned in the standup this morning where the authentication tokens are expiring too quickly and causing customer complaints"
-- **Title:** "Follow up with Sarah on API authentication"
-- **Details:** "Authentication tokens expiring too quickly, causing customer complaints. Mentioned in standup this morning."
-
-*Input:* "new task: Review and provide feedback on the new hiring process documentation that HR sent over, focusing on whether it aligns with our team's needs for the engineering roles we're planning to hire for in Q2"
-- **Title:** "Review hiring process documentation"
-- **Details:** "From HR. Focus on alignment with team needs for Q2 engineering roles."
-
-**Principles:**
-- **Actionable:** Title starts with verb when possible
-- **Scannable:** Easy to read in task lists
-- **Specific enough:** Clear what the task is about
-- **Context preserved:** Everything else goes in details field
-- **Due dates and tags:** Extract separately and preserve
-
-**Date extraction:**
-- Look for dates mentioned in the task text (e.g., "next Friday", "January 15th", "by end of month")
-- Extract and convert to YYYY-MM-DD format for the due date field
-- If date is ambiguous or unclear, ask the user to confirm
-- Remove date references from details field after extracting to avoid duplication
+- Extract dates and convert to YYYY-MM-DD for the due date field
 
 **Example:**
-*Input:* "new task: Send proposal to client by next Wednesday and make sure to include the pricing breakdown"
-- **Title:** "Send proposal to client"
-- **Due:** [Calculate next Wednesday in YYYY-MM-DD format]
-- **Details:** "Include pricing breakdown"
-
-## Notepad Processing
-
-**Purpose:** Frictionless capture → structured processing → organized storage
-
-**Three-stage workflow:**
-
-1. **Capture** (ongoing)
-   - Write anything to Work/1-Notepad/Notepad.md
-   - No structure needed, no categorization needed
-   - Just brain dump - mix of actionable and strategic thinking
-   - Central notepad is for fast, frictionless capture
-
-2. **Process** (when ready)
-   - Run: `./pos "process notepad"`
-   - Script splits notepad into sections
-   - Classifies each section as actionable or strategic
-   - Checks memory for duplicate tasks
-   - **Shows classification results and asks for confirmation**
-   - Creates tasks/actions/reminders/features/decisions from actionables
-   - Routes strategic thinking to domain-specific notepads
-   - Archives processed content with timestamp
-   - Clears central notepad
-
-3. **Digest** (in context - future phases)
-   - Review domain notepads when working in that area
-   - Strategy work → Work/Notes/Strategy/notepad.md
-   - People work → Work/People/notepad.md
-   - Meeting prep → Work/Meetings/Prep/notepad.md
-   - Ideas → Work/Inbox/Ideas/notepad.md
-   - Domain agents will have "digest" commands to process their notepads
-
-**Classification logic:**
-
-**Actionable** (creates items):
-- Tasks: Clear action with deliverable ("Review...", "Prepare...", "Schedule...")
-- Actions: Work assigned to someone ("[Person] needs to...")
-- Reminders: Things not to forget ("Remember to...", "Don't forget...")
-- Features: Julie improvements ("I want Julie to...")
-- Decisions: Decisions made ("Decided to...", "Decision:")
-
-**Strategic** (routes to domain notepads):
-- Strategy: OKRs, product strategy, high-level planning
-- People: Team observations, 121 topics, feedback thoughts
-- Meetings: Meeting prep ideas, discussion topics
-- Ideas: Incomplete exploratory thoughts
-
-**Key principles:**
-- Conservative extraction (better to route to strategic than create wrong item)
-- User confirmation before creating items
-- Memory integration for duplicate detection
-- Preserve original notepad in Archive/ with timestamp
-- Central notepad cleared and ready for new capture
-
-**Domain notepads:**
-Each domain agent will later have a "digest [domain]" command to process their notepad into final documents/items (future phases).
-
-**Files:**
-- Central notepad: Work/1-Notepad/Notepad.md
-- Archive: Work/1-Notepad/Archive/notepad_YYYY-MM-DD_HHMM.md
-- Domain notepads: Work/Notes/Strategy/, Work/People/, Work/Meetings/Prep/, Work/Inbox/Ideas/
+*Input:* "new task: Follow up with Sarah about the API integration issue she mentioned in standup"
+- **Title:** "Follow up with Sarah on API authentication"
+- **Details:** "Authentication tokens expiring too quickly, causing customer complaints. Mentioned in standup this morning."
 
 ## Team Feedback Commands
 
@@ -358,8 +219,7 @@ Each domain agent will later have a "digest [domain]" command to process their n
 - **Required format**: `Name - observation text` (name before dash is required)
 - **Files stored in**: `Work/People/Observations/`
 - **Filename format**: `observation_[name]_[date].md`
-- **Example**: `observation: Sarah Johnson - Great presentation details: Excellent communication tags: leadership`
-- If name format is incorrect, the command will error and you should ask the user conversationally for the proper format
+- If name format is incorrect, ask the user conversationally for the proper format
 
 ### 360 Review Commands
 
@@ -369,240 +229,9 @@ Each domain agent will later have a "digest [domain]" command to process their n
 
 **360 Review Generation (synthesis task):**
 - **Trigger**: "360 [FirstName]", "review [Name]", or "generate 360 for [Name]"
-- **Process**:
-  1. Read `Work/People/360_reviews/360_review_workflow.md` for detailed instructions
-  2. Immediately list files in person's folder and shared reference folder (no permission needed)
-  3. Show document checklist to user
-  4. After user confirmation, proceed with synthesis
-- This is a multi-step synthesis task - be proactive and automated in file discovery
-
-### Role Expectations Documents
-
-**Trigger**: `/role-expectations [name]` or "create role expectations for [name]"
-
-**Process**: Read and follow `.claude/skills/role-expectations.md`
-
-Creates a two-section document:
-1. **The destination** (executive summary) - outcome-focused vision
-2. **Detailed expectations** - responsibilities with What/Key activities/Expectations format
-
-**Example**: See `Work/People/121s/maria/Maria_expectations_pm_monetization.md`
-
-### Coaching plan check-in prep
-
-**Trigger**: `coaching prep: [name]` or `coaching prep: [name] week [N]`
-
-**Also triggers automatically** when `121: [name]` is used for someone on an active coaching plan (detected via memory reference file).
-
-**Natural language**: "prepare for my check-in with [name]", "I have a coaching meeting with [name]", "prep for [name] Monday/Friday"
-
-**Process**: Read and follow `.claude/skills/coaching-prep.md`
-
-Gathers evidence from Slack (coaching channel + broader activity), Confluence (execution plan), Granola (recent meetings), and local files (tracker, private reference). Assesses against coaching plan behaviour areas. Produces a structured prep document with evidence table, key signals, call approach, and probe questions. Saves to the coaching plan folder.
-
-### Coaching plan weekly review
-
-**Trigger**: `coaching review: [name]` or `coaching review: [name] week [N]`
-
-**Process**: Read and follow `.claude/skills/coaching-review.md`
-
-Processes a weekly coaching review meeting into three outputs: shared tracker update (local + Confluence), manager observations (Confluence), and private reference update (local only). Reads coaching plan for assessment criteria, meeting transcript from Granola. Automatically runs a call reflection at the end (see below).
-
-**Coaching workflow:** prep (before call) and review (after call) are paired. The typical flow is: `coaching prep: [name]` before the meeting, then `coaching review: [name]` after.
-
-### Call reflection
-
-**Trigger**: `reflect: [meeting or person]` or `call reflection: [person]` or `reflect on today's calls` or `reflect on this week's calls`
-
-**Process**: Read and follow `.claude/skills/call-reflection.md`
-
-Analyses Granola meeting transcripts against Chris's active personal patterns AND a broader best practice framework (20+ leadership communication practices across questioning, listening, feedback, coaching, framing, presence, and influence). Works on single calls or batch mode (today/this week/last week). When a framework practice appears 3+ times, suggests promoting it to active personal tracking. Also runs automatically at the end of every coaching-review.
-
-**Adding new patterns/practices:**
-- `add pattern: [description]` - adds to personal patterns (growth_patterns.md)
-- `add practice: [description]` - adds to best practice framework (communication_framework.md)
-
-**Related files:**
-- Active patterns: `Work/LLM_Context/Personal/growth_patterns.md` (patterns 3-5)
-- Best practice framework: `Work/LLM_Context/Personal/communication_framework.md`
-- Reflections log: `Work/LLM_Context/Personal/call_reflections.md`
-
-### Post-meeting summary
-
-**Trigger**: Natural language - "summarise my meeting with [person]", "review the [meeting]", "meeting notes for [person]", "what came out of my [meeting]", "post-meeting notes", or `post meeting: [title]`
-
-**Process**: Read and follow `.claude/skills/post-meeting.md`
-
-Finds the meeting in Granola, extracts key takeaways, actions, decisions, and observations, creates items in Julie, saves a structured summary with Slack-ready format. Saves 121s to `Work/People/` and other meetings to `Work/Meetings/`. Runs call reflection automatically for 121s if a transcript is available.
-
-## Daily Summary Commands
-
-### Session Logging
-
-**Purpose:** Log Claude work sessions throughout the day for automatic inclusion in daily summary
-
-**Automated workflow (recommended):**
-
-When the user types **"session"** in the Claude conversation (not in terminal), you should:
-
-1. **Automatically review the entire conversation**
-2. **Generate a structured summary** with:
-   - 1-2 sentence overview at the top
-   - Bullet points covering key topics, decisions, and outputs (as many as needed for clarity)
-   - Enough detail for someone else to understand what was worked on
-3. **Immediately run** `./pos "session: [generated summary]"` via Bash tool
-4. **Confirm** the session was logged
-5. **Review for personal growth signals:** Read `Work/LLM_Context/Personal/growth_patterns.md` and review the conversation for:
-   - Moments matching known patterns (e.g., sharing before aligning, communication struggles)
-   - New signals worth reflecting on (e.g., asking for help framing a message, reworking communications, expressing frustration about interactions)
-   - If anything is spotted, flag it concisely: *"Growth note: I noticed [specific observation]. Want to add this to your growth log?"*
-   - If Chris confirms, append to the growth patterns file
-   - If nothing relevant, say nothing - no noise
-
-**Summary format guidelines:**
-- Start with brief overview sentence
-- Use bullet points for details
-- Include: topics discussed, decisions made, outputs created, problems solved
-- Write for an external reader, not just the user
-- Be concise but complete
-
-**Example automated summary:**
-```
-Discussed session logging workflow in the Chief of Staff system and clarified how the daily summary commands work. Decided to implement an automated conversation review feature.
-
-- Clarified difference between 'project summary' and daily summary interview commands
-- Explained session logging creates one daily file with all sessions timestamped
-- Explored batch logging options - user wanted automated conversation review
-- Agreed on approach: user types 'session', Claude auto-generates summary and logs via Bash
-```
-
-**Manual command (if needed):**
-```bash
-./pos "session: [what you worked on]"
-./pos "/session [summary]"
-```
-
-**Storage:** `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
-
-**Format:** Timestamped entries appended to daily log file (one file per day, multiple sessions per file)
-
-### Daily Summary Interview
-
-**Purpose:** End-of-day interview conducted by Claude to capture summary of daily work for weekly 4Ps writing
-
-**Trigger:** When user says "daily summary", "create daily summary", or similar
-
-**When to use:** At end of work day (takes 3-5 minutes)
-
-**Automated workflow:**
-
-1. **Automatically gather context** (no permission needed):
-   - Read this week's 4Ps from `Work/Weekly_4Ps/` (priorities and plans)
-   - Read to-do list from `Work/Inbox/Today/todo_YYYY-MM-DD.md` (completed/in-progress tasks)
-   - Read Claude session logs from `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
-   - Read any observations created today from `Work/People/Observations/`
-
-2. **Conduct interview IN the conversation**:
-   - Use gathered context to inform questions
-   - Ask 5-6 questions to supplement file contents:
-     - What meetings did you have today, and what were the key takeaways?
-     - What progress did you make on this week's plans?
-     - What key decisions were made?
-     - Any important Slack discussions or messages?
-     - Any surprises or unexpected changes?
-     - Anything else important to capture?
-   - Let user answer each question in the conversation
-
-3. **Review for personal growth signals:**
-   - Read `Work/LLM_Context/Personal/growth_patterns.md`
-   - Review meeting notes, Slack context, and user answers for moments matching known patterns or new growth signals
-   - If anything is spotted, flag it before finalizing the summary
-   - If confirmed, append to the growth patterns file
-
-4. **Collate and summarize**:
-   - Combine file contents + user answers
-   - Generate structured bullet-point summary
-   - Include meetings, decisions, progress, Claude sessions, completed tasks
-
-4. **Save summary**:
-   - Write to `Work/Daily_Logs/daily_summary_YYYY-MM-DD.md`
-   - Confirm to user that summary was saved
-
-**Key principle:** Files provide baseline context, interview fills in gaps (meetings, Slack discussions, decisions not captured elsewhere).
-
-**Output format:**
-- Bullet-point format
-- Enough detail for team member to understand
-- Key decisions highlighted
-- Meetings summarized with takeaways
-- Claude work sessions automatically included
-- Links to related observations
-- Progress on weekly plans noted
-
-**Best practice workflow:**
-1. Throughout day: Type "session" in Claude conversations to auto-log work
-2. End of day: Type "daily summary" to conduct interview and generate summary
-3. End of week: Use daily summaries to write 4Ps
-
-### 4Ps writing guidance
-
-**Week boundaries:**
-- **Progress** covers the previous calendar week (Monday to Friday) only.
-- **Plans** covers the current/upcoming calendar week (Monday to Friday).
-- **Problems** are current regardless of week.
-- **Priorities** are ongoing and usually don't change week to week.
-
-**Audience:** The 4Ps are read by Chris's organisation - squad leads, their reports, and cross-functional partners. See `Work/LLM_Context/Squads/Squads_overview.md` for team context. Write as a leadership update for this audience, not as a personal task tracker.
-
-**Style rules:**
-1. **Priorities:** 2-3 high-level strategic themes, not a detailed list of categories.
-2. **Progress:** Group related activities into narrative bullets. Don't list every meeting or task separately - synthesise into what was achieved. One bullet per initiative or theme, not per event.
-3. **Plans:** Describe initiatives and outcomes, not individual tasks. If it wouldn't make sense to a leadership audience, it's too granular (e.g. "Complete Naptha documentation" is too granular; "Reset product teams and kick off engineering hiring" is the right level).
-4. **Problems:** Frame as strategic questions or decisions needed, not just status updates on blockers. Make the ask clear.
-5. **Exclude:** Individual performance situations, comp details, and HR-sensitive matters.
-6. **Include a "Leadership discussions" section** briefly summarising key topics from the leadership Slack channel (#priv-forma-design-leadership-fy27) for the week.
-7. **Tone:** Confident peer update. Direct, concise, outcome-focused.
-
-**File naming:**
-- Session logs: `Work/Daily_Logs/claude_sessions_YYYY-MM-DD.md`
-- Daily summaries: `Work/Daily_Logs/daily_summary_YYYY-MM-DD.md`
-- To-do lists: `Work/Inbox/Today/todo_YYYY-MM-DD.md`
-
-### Today To-do List
-
-**Purpose:** Generate today's to-do list with an intelligently condensed yesterday overview
-
-**Trigger:** When user says "todo", "show todo", or similar
-
-**Automated workflow:**
-
-1. **Generate to-do list**: Run `./pos "/todo"` via Bash tool
-2. **Read the generated file**: `Work/Inbox/Today/todo_YYYY-MM-DD.md`
-3. **Extract yesterday overview section**: Get content between "## Yesterday's overview" and "## Overdue Tasks" (or next section)
-4. **Summarize using LLM**: Process the yesterday overview to:
-   - Keep meeting names (bold headers) but condense to 1-2 sentences focusing on outputs/decisions/actions
-   - Condense other sections (decisions, actions, completed) to key highlights only
-   - Aim for ~5-10 lines total for yesterday overview
-   - Preserve the most actionable information
-5. **Update the file**: Replace the yesterday overview section with the condensed version
-6. **Display to user**: Show the updated to-do list
-
-**Summarization prompt guidelines:**
-- Focus on outputs, decisions, and action items
-- Remove verbose details that don't affect today's work
-- Keep what the user needs to remember or act on
-- Each meeting should be 1-2 sentences maximum
-- Preserve formatting (bold headers, bullet points)
-
-**Why this approach:**
-- Detailed summaries remain in `Work/Daily_Logs/daily_summary_YYYY-MM-DD.md` files for 4Ps writing
-- To-do view stays concise and scannable
-- No API costs (uses current Claude conversation)
-- User gets context without information overload
-
-**Example condensation:**
-Before: 3 bullet points about budget meeting details
-After: "Decided to allocate 70k across Community, Inbound, and Conferences, with focus on Community given resource constraints."
+- **Process**: Read `Work/People/360_reviews/360_review_workflow.md` for detailed instructions
+- Immediately list files in person's folder and shared reference folder (no permission needed)
+- Show document checklist to user, then proceed with synthesis after confirmation
 
 ## MFM Reviews
 
@@ -630,40 +259,15 @@ mcp__atlassian__getConfluencePage(cloudId="0e31f281-3568-4559-ae88-153abcdead38"
 mcp__atlassian__searchAtlassian(query="Forma Design [topic]")
 ```
 
-## Complex Workflow Pattern
-
-This project uses a **router pattern** for complex, specialized workflows:
-
-**Example: 360 Review Generation**
-- CLAUDE.md: Lightweight trigger recognition (4 lines)
-- 360_review_workflow.md: Detailed step-by-step process (loaded on demand)
-- reference_docs.md: Assessment criteria and frameworks
-
-**When to use this pattern:**
-- Workflow is complex (5+ steps)
-- Used infrequently (<20% of conversations)
-- Requires multiple reference documents
-- Benefits from detailed documentation
-
-**Benefits:**
-- Keeps CLAUDE.md lean and focused
-- Context loaded only when needed
-- Optimizes performance for common tasks
-
 ## Automation Expectations
 
 For this project, be **proactive and automated**:
 
 **Do automatically (no permission needed):**
-- ✅ File discovery: List files in Work/People folders
-- ✅ Document reading: Read required files
-- ✅ Command execution: Execute ./pos commands
-- ✅ Git status: Check repository state
-
-**Don't ask permission for:**
-- Directory listings in project folders
-- Reading markdown/CSV files
-- Basic file operations
+- File discovery: List files in Work/People folders
+- Document reading: Read required files
+- Command execution: Execute ./pos commands
+- Git status: Check repository state
 
 **Do confirm before:**
 - Major synthesis work (360 reviews)
@@ -671,45 +275,11 @@ For this project, be **proactive and automated**:
 - Git commits and pushes
 - Destructive operations
 
-**Balance:** Automate discovery and reading, but confirm before major synthesis or file creation.
-
 ## Validation Pattern for Multi-Input Tasks
 
 For tasks requiring 5+ input documents (like 360 reviews):
 
-**Process:**
 1. **Discover** - Automatically find and list all inputs
 2. **Present** - Show checklist of what was found
 3. **Confirm** - Get explicit approval before proceeding
 4. **Execute** - Proceed with synthesis/analysis
-
-**Why this works:**
-- Quality control (catch missing inputs early)
-- Transparency (user sees what's being used)
-- Confidence (no surprises)
-- Efficiency (no micromanaging the discovery phase)
-
-## Lessons from 360 Review Implementation
-
-**Context efficiency matters:**
-The 360 review workflow is detailed (~300 lines) but only used occasionally. Keeping it in a separate file prevents cluttering context for common tasks like creating tasks/ideas/observations.
-
-**Architecture that worked:**
-- CLAUDE.md: 4 lines pointing to workflow
-- 360_review_workflow.md: Process only (HOW to do it)
-- performance_assessment_guide.md: Criteria and frameworks (WHAT to evaluate)
-- One_Orbit_behaviours.md: Behavioral definitions (referenced, not copied)
-
-**Key insight:**
-Optimize CLAUDE.md for the 80% use case, not the 20% edge cases. Most conversations are about tasks, ideas, and observations - not 360 reviews.
-
-## Testing Checklist
-
-Before marking any stage complete:
-- [ ] Test with normal inputs
-- [ ] Test with special characters in titles
-- [ ] Test with missing optional fields
-- [ ] Test with very long descriptions
-- [ ] Verify file is created in correct location
-- [ ] Verify frontmatter is properly formatted
-- [ ] Verify content matches expected format

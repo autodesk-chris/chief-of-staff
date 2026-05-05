@@ -49,14 +49,14 @@ From title and context, determine:
 - **Team** - Retrospectives, team discussions
 - **Other** - General meetings
 
-**Coaching plan detection:** When a `121: [Name]` command is received, check whether a coaching memory reference exists for this person (search project memory for `reference_[firstname]_coaching_confluence`). If found, this person is on an active coaching plan. **Hand off to the coaching-prep skill** (`.claude/skills/coaching-prep.md`) instead of running the generic 121 prep workflow. The coaching-prep skill has a specialised evidence-gathering and assessment process designed for coaching check-ins.
+**Coaching plan detection:** When a `121: [Name]` command is received, check whether a coaching memory reference exists for this person (search project memory for `reference_[firstname]_coaching_confluence`). If found, this person is on an active coaching plan. **Hand off to the coaching-prep skill** (`.claude/skills/coaching-prep/SKILL.md`) instead of running the generic 121 prep workflow. The coaching-prep skill has a specialised evidence-gathering and assessment process designed for coaching check-ins.
 
 ### Step 2: Gather Context
 
 Based on meeting type, query relevant sources:
 
 **For coaching check-ins:**
-- Defer entirely to `.claude/skills/coaching-prep.md` - do not use the generic 121 workflow
+- Defer entirely to `.claude/skills/coaching-prep/SKILL.md` - do not use the generic 121 workflow
 
 **For 1-on-1s:**
 - Memory: Previous 1-on-1 notes with this person

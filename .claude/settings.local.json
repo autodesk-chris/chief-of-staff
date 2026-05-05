@@ -83,7 +83,28 @@
       "Bash(grep -r \"overlap\\\\|Overlap\\\\|OVERLAP\" /Users/smallc/.claude/plugins/cache/data-agent-general-analysis/analytics/1.4.3/ --include=*.md --include=*.json)",
       "Bash(grep -r \"bookmark\\\\|Bookmark\\\\|Audience\\\\|audience\\\\|overlap\\\\|Overlap\" /Users/smallc/.claude/plugins/cache/data-agent-general-analysis/analytics/1.4.3/skills/ --include=*.md)",
       "Bash(find /Users/smallc/AI/Chief_of_staff/reports -name *.html -type f)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(chmod:*)",
+      "Bash(/Users/smallc/AI/Chief_of_staff/.claude/hooks/check-em-dashes.sh)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(echo \"EXIT:$?\")",
+      "Skill(update-config)",
+      "Bash(jq:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/check-em-dashes.sh",
+            "timeout": 10,
+            "statusMessage": "Checking for em dashes..."
+          }
+        ]
+      }
     ]
   }
 }

@@ -1,3 +1,13 @@
+---
+name: post-meeting
+description: >
+  Process a meeting after it happens - find in Granola, extract key takeaways,
+  actions, decisions, and observations, create items in Julie, save a structured
+  summary with Slack-ready format. Use when "summarise my meeting with [person]",
+  "post meeting: [title]", "meeting notes for [person]", "what came out of my
+  meeting". NOT for meeting prep (use the Meetings agent).
+---
+
 # Post-meeting summary
 
 Process a meeting after it happens. Finds the meeting in Granola, extracts key takeaways, actions, decisions, and observations, creates items in Julie, saves a structured summary, and generates a Slack-ready version for sharing.

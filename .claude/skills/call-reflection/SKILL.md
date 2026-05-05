@@ -1,3 +1,13 @@
+---
+name: call-reflection
+description: >
+  Analyse meeting transcripts against personal communication patterns and a
+  broader best practice framework. Provides honest feedback on how you showed up.
+  Use when "reflect: [person]", "call reflection: [person]", "reflect on today's
+  calls", "reflect on this week's calls". Single call or batch mode. Also runs
+  automatically after coaching-review.
+---
+
 # Call reflection
 
 Analyse Granola meeting transcripts against Chris's known communication patterns and a broader best practice framework. Provides honest feedback on how he showed up. Tracks improvement over time. Can run on a single call or batch-reflect on all calls from a period.
@@ -161,4 +171,4 @@ This ensures coaching calls always get reflected on without Chris having to reme
 - Active patterns: `Work/LLM_Context/Personal/growth_patterns.md`
 - Best practice framework: `Work/LLM_Context/Personal/communication_framework.md`
 - Reflections log: `Work/LLM_Context/Personal/call_reflections.md`
-- Coaching review skill: `.claude/skills/coaching-review.md`
+- Coaching review skill: `.claude/skills/coaching-review/SKILL.md`

@@ -1,3 +1,12 @@
+---
+name: role-expectations
+description: >
+  Create a role expectations document for a team member or squad lead. Two
+  sections: executive summary (the destination) and detailed expectations with
+  What/Key activities/Expectations format. Use when "role expectations for
+  [name]", "/role-expectations [name]", or "create expectations for [name]".
+---
+
 # Role Expectations Document Generator
 
 Create a role expectations document for a team member or squad lead.

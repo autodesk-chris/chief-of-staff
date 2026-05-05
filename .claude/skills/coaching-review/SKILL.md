@@ -1,3 +1,13 @@
+---
+name: coaching-review
+description: >
+  Process a weekly coaching review meeting into three outputs: shared tracker
+  update, manager observations for the day-to-day manager, and private reference
+  update. Reads coaching plan for assessment criteria and meeting transcript from
+  Granola. Use when "coaching review: [name]" or after a coaching call.
+  NOT for pre-call prep (use coaching-prep).
+---
+
 # Coaching plan weekly review
 
 Process a weekly coaching review meeting and produce three outputs: a shared tracker update, manager observations for the day-to-day manager, and a private reference update. Reads the coaching plan document for assessment criteria and the meeting transcript from Granola.
@@ -195,7 +205,7 @@ After completing steps 1-8, automatically run a call reflection on the same tran
 5. Ask: "Save this to your reflections log?"
 6. If yes, append to `Work/LLM_Context/Personal/call_reflections.md`
 
-This step ensures coaching calls always get reflected on. See `.claude/skills/call-reflection.md` for full analysis criteria.
+This step ensures coaching calls always get reflected on. See `.claude/skills/call-reflection/SKILL.md` for full analysis criteria.
 
 ## Key principles
 

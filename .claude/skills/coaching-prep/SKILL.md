@@ -1,3 +1,14 @@
+---
+name: coaching-prep
+description: >
+  Prepare for a coaching plan check-in by gathering evidence from Slack,
+  Confluence, Granola, and local files. Assesses against coaching plan behaviour
+  areas and produces a structured prep document. Use when "coaching prep: [name]",
+  "prepare for my check-in with [name]", "I have a coaching meeting with [name]".
+  Also triggers automatically for 121: [name] when person is on a coaching plan.
+  NOT for post-call processing (use coaching-review).
+---
+
 # Coaching plan check-in prep
 
 Prepare for a coaching plan check-in by gathering evidence from all sources, assessing against behaviour areas, and producing a structured prep document. This is the pre-call counterpart to `coaching-review.md` (post-call).
@@ -191,5 +202,5 @@ When flagging signals, connect to the pattern across weeks. "This is the third t
 - Coaching plan documents: `Work/People/121s/[person]/Coaching plan/[coaching_plan].md`
 - Trackers: `Work/People/121s/[person]/Coaching plan/Coaching_plan_tracker_[year].md`
 - Private references: `Work/People/121s/[person]/Coaching plan/Coaching_plan_reference_PRIVATE.md`
-- Coaching review skill (post-call): `.claude/skills/coaching-review.md`
+- Coaching review skill (post-call): `.claude/skills/coaching-review/SKILL.md`
 - Confluence: Atlassian MCP (cloudId from memory reference)

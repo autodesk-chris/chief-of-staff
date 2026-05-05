@@ -1,3 +1,12 @@
+---
+name: review-strategy
+description: >
+  Review a strategy document against a best practice framework. Evaluates quality
+  regardless of format, identifies gaps, optionally cross-references data and
+  drafts feedback. Use when "review strategy: [path]", "strategy review: [path]",
+  or "give me feedback on this strategy". NOT for writing strategies from scratch.
+---
+
 # Review strategy skill
 
 ## Purpose
