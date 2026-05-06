@@ -202,14 +202,30 @@ Chief_of_staff/
 │   ├── hiring_agent.py       # CV screening and interview evaluation
 │   └── utils.py              # Shared utilities
 ├── .claude/
-│   └── personas/             # Agent persona definitions
-│       ├── AGENT_TASKS.md
-│       ├── AGENT_PEOPLE.md
-│       ├── AGENT_STRATEGY.md
-│       ├── AGENT_REFLECTION.md
-│       ├── AGENT_MEETINGS.md
-│       ├── AGENT_MFM.md
-│       └── AGENT_HIRING.md
+│   ├── hooks/                # Deterministic enforcement hooks
+│   │   └── check-em-dashes.sh
+│   ├── personas/             # Agent persona definitions
+│   │   ├── AGENT_TASKS.md
+│   │   ├── AGENT_PEOPLE.md
+│   │   ├── AGENT_STRATEGY.md
+│   │   ├── AGENT_REFLECTION.md
+│   │   ├── AGENT_MEETINGS.md
+│   │   ├── AGENT_MFM.md
+│   │   └── AGENT_HIRING.md
+│   └── skills/               # Auto-discovered skills (YAML frontmatter)
+│       ├── coaching-prep/    # Pre-call coaching evidence gathering
+│       ├── coaching-review/  # Post-call coaching tracker updates
+│       ├── call-reflection/  # Communication pattern analysis
+│       ├── post-meeting/     # Meeting summary and action extraction
+│       ├── session-logging/  # Work session logging
+│       ├── daily-summary/    # End-of-day interview
+│       ├── todo/             # Daily to-do with condensed overview
+│       ├── 4ps-writing/      # Weekly 4Ps drafting
+│       ├── notepad-processing/ # Notepad classification and routing
+│       ├── role-expectations/  # Role expectations documents
+│       ├── review-strategy/  # Strategy document review
+│       ├── presentation/     # HTML presentation (v1)
+│       └── presentation-v2/  # HTML presentation (v2, branding)
 └── Work/                     # Obsidian vault
     ├── Inbox/
     │   ├── Tasks/            # Task files
@@ -293,17 +309,12 @@ Each agent has a persona file in `.claude/personas/` that defines:
 
 ## Current status
 
-Milestone 4 in progress - Multi-domain Orchestration
-
 **Complete:**
-- Milestone 1: Tasks Agent + Memory + Notepad
-- Milestone 2: Reflection Agent + Meetings Agent
-- Milestone 3: People Agent + Strategy Agent + MFM Agent
-- Hiring Agent: CV screening, interview prep and evaluation
+- 7 specialized agents (Tasks, People, Strategy, Reflection, Meetings, MFM, Hiring)
+- 13 auto-discovered skills with YAML frontmatter descriptions
+- Coaching plan workflow (prep + review paired skills)
+- Call reflection with personal growth pattern tracking
+- Em dash enforcement hook (deterministic style guard)
+- CLAUDE.md trimmed to lean routing document (285 lines)
 
-**In progress:**
-- Cross-domain orchestration
-- 121 prep context gathering
-- Multi-agent coordination
-
-See `project_summary.md` for detailed implementation status.
+**Architecture:** Skills use Claude Code's auto-discovery via `.claude/skills/*/SKILL.md` with YAML frontmatter. Agents use persona files in `.claude/personas/`. Hooks enforce style rules deterministically.
