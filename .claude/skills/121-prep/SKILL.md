@@ -32,6 +32,13 @@ Prepare for a 1-on-1 meeting with a direct report or colleague. Gathers context 
 
 Run all of these without asking permission:
 
+**People directory (do this first):**
+- Read `Work/LLM_Context/Contacts/people.md` and look up the person
+- Extract their **search terms**, squad, domain, and key relationships
+- Use these search terms (not just their name) for all Granola and Slack queries below
+- This catches conversations about associated companies, tools, and initiatives (e.g. "Trig" for Mark Ryan, "FSM" for Even Olstad)
+- If the person isn't in the file, ask the user for any associated companies/initiatives to search for, and offer to add them to the contacts file afterward
+
 **Observations:**
 - Read all files in `Work/People/Observations/` matching the person's name
 - Focus on last 90 days, but include older ones if they show relevant patterns

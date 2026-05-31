@@ -53,6 +53,8 @@ From title and context, determine:
 
 ### Step 2: Gather Context
 
+**For all meeting types, start by reading** `Work/LLM_Context/Contacts/people.md` to look up attendees and retrieve their **search terms**. Use all search terms (not just names) when querying Slack and Granola. This ensures you find conversations about associated companies, initiatives, and tools (e.g. searching for "Trig" when prepping for Mark Ryan). If a person isn't in the contacts file, ask the user for associated companies/initiatives and offer to add them afterward.
+
 Based on meeting type, query relevant sources:
 
 **For coaching check-ins:**
@@ -64,7 +66,7 @@ Based on meeting type, query relevant sources:
 **For Strategy meetings:**
 - Strategy memory: Related OKRs, bets, strategies
 - Decisions: Previous strategic decisions
-- Granola: Strategic discussions from past meetings
+- Granola: Strategic discussions from past meetings (use search terms from contacts file)
 
 **For Budget meetings:**
 - Tasks: Budget-related tasks
