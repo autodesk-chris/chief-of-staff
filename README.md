@@ -130,8 +130,9 @@ Use `./pos` to interact with your Personal OS:
 # Prepare for meeting
 ./pos "prep meeting: Q1 Planning"
 
-# Prepare for 1:1 (suggests topics from Slack DMs, observations, actions - you select)
+# Prepare for 1:1 (deep research on focal topics, suggests additional topics - you select)
 ./pos "121: Sarah"
+./pos "121: Even - focus on capacity study delivery"  # inline focal topic
 
 # Process meeting notes
 ./pos "post meeting: Q1 Planning"
@@ -213,7 +214,7 @@ Chief_of_staff/
 │   │   ├── AGENT_MFM.md
 │   │   └── AGENT_HIRING.md
 │   └── skills/               # Auto-discovered skills (YAML frontmatter)
-│       ├── 121-prep/         # 1:1 prep with topic suggestion and Slack DM check
+│       ├── 121-prep/         # 1:1 prep with deep research, inline topics, outcome-driven structure
 │       ├── coaching-prep/    # Pre-call coaching evidence gathering
 │       ├── coaching-review/  # Post-call coaching tracker updates
 │       ├── call-reflection/  # Communication pattern analysis
@@ -316,7 +317,7 @@ Each agent has a persona file in `.claude/personas/` that defines:
 
 **Complete:**
 - 7 specialized agents (Tasks, People, Strategy, Reflection, Meetings, MFM, Hiring)
-- 14 auto-discovered skills with YAML frontmatter descriptions
+- 15 auto-discovered skills with YAML frontmatter descriptions
 - Coaching plan workflow (prep + review paired skills)
 - Call reflection with personal growth pattern tracking
 - Em dash enforcement hook (deterministic style guard)
