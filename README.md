@@ -241,6 +241,7 @@ Chief_of_staff/
     ├── Process/
     │   └── MFM/              # MFM pre-reads and summaries
     ├── LLM_Context/
+    │   ├── Contacts/         # People directory (squad rosters, search terms)
     │   ├── strategy-memory/  # L1/L2/L3 strategy hierarchy
     │   └── MFM_review_framework.md
     ├── 1-Notepad/            # Frictionless capture
@@ -318,6 +319,7 @@ Each agent has a persona file in `.claude/personas/` that defines:
 **Complete:**
 - 7 specialized agents (Tasks, People, Strategy, Reflection, Meetings, MFM, Hiring)
 - 15 auto-discovered skills with YAML frontmatter descriptions
+- People directory with search-enriched meeting prep (searches by associated companies/tools, not just names)
 - Coaching plan workflow (prep + review paired skills)
 - Call reflection with personal growth pattern tracking
 - Em dash enforcement hook (deterministic style guard)
