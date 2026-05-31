@@ -50,7 +50,7 @@ Julie uses a hierarchical agent system where specialized agents handle different
 | **People** | Observations, 360 reviews, team feedback | `observation:`, `360:`, `feedback:` |
 | **Strategy** | OKR analysis, strategic insights | Query-based (uses L1→L2→L3 progressive disclosure) |
 | **Reflection** | Daily summaries, session logging | `daily summary`, `session:` |
-| **Meetings** | Meeting prep, post-meeting processing | `prep meeting:`, `121:`, `post meeting:` |
+| **Meetings** | Meeting prep (routes 121s to skill), post-meeting processing | `prep meeting:`, `121:`, `post meeting:` |
 | **MFM** | Monthly Focus Meeting reviews | `mfm review:`, `mfm summary:` |
 | **Hiring** | CV screening, interview evaluation | `review CV:`, `screen CVs:`, `interview eval:` |
 
@@ -130,7 +130,7 @@ Use `./pos` to interact with your Personal OS:
 # Prepare for meeting
 ./pos "prep meeting: Q1 Planning"
 
-# Prepare for 1:1 (pulls context from observations, past meetings, etc.)
+# Prepare for 1:1 (suggests topics from Slack DMs, observations, actions - you select)
 ./pos "121: Sarah"
 
 # Process meeting notes
@@ -213,6 +213,7 @@ Chief_of_staff/
 │   │   ├── AGENT_MFM.md
 │   │   └── AGENT_HIRING.md
 │   └── skills/               # Auto-discovered skills (YAML frontmatter)
+│       ├── 121-prep/         # 1:1 prep with topic suggestion and Slack DM check
 │       ├── coaching-prep/    # Pre-call coaching evidence gathering
 │       ├── coaching-review/  # Post-call coaching tracker updates
 │       ├── call-reflection/  # Communication pattern analysis
@@ -276,12 +277,16 @@ Focus on revenue metrics and team performance.
 | `completed` | Finished |
 | `archived` | No longer relevant |
 
-## Memory system
+## Memory systems
 
-Julie uses claude-mem for semantic memory with project-based partitioning:
-- Stores observations, decisions, and context
-- Enables duplicate detection during notepad processing
-- Supports cross-session knowledge retrieval
+Four memory layers work together:
+
+| Layer | Location | Loaded | Best for |
+|-------|----------|--------|----------|
+| **CLAUDE.md** | Project root | Always | Operating instructions, command reference |
+| **Auto-memory** | `.claude/projects/.../memory/` | Always (index) | User patterns, preferences, recurring references |
+| **claude-mem** | External MCP database | Index at session start | Work history, past research, decisions |
+| **LLM_Context** | `Work/LLM_Context/` | On demand | Domain knowledge (strategies, frameworks, playbooks) |
 
 ## Development
 
@@ -311,7 +316,7 @@ Each agent has a persona file in `.claude/personas/` that defines:
 
 **Complete:**
 - 7 specialized agents (Tasks, People, Strategy, Reflection, Meetings, MFM, Hiring)
-- 13 auto-discovered skills with YAML frontmatter descriptions
+- 14 auto-discovered skills with YAML frontmatter descriptions
 - Coaching plan workflow (prep + review paired skills)
 - Call reflection with personal growth pattern tracking
 - Em dash enforcement hook (deterministic style guard)
