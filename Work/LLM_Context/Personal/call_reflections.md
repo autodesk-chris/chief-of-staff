@@ -6,6 +6,133 @@ Patterns tracked are defined in `growth_patterns.md` (patterns 3-6).
 
 ---
 
+## 9 May 2026 - Simon week 3 Friday check-in
+
+**Patterns observed:**
+
+**Over-explaining (Pattern 4) - one instance, moderate:**
+- Content quality clarification looped through ~4 angles: organic posts don't count, event mentions don't count, it should be about how people use Forma, outcomes they're getting, halfway framing, execution shift. Shorter: "Organic posts and event mentions don't count. The metric is posts you directly influenced about outcome-based design. With that lens, where are you against the week 3 target?"
+
+**Giving answers (Pattern 5) - well-managed:**
+- No significant instances. Content quality description ("how people are using Forma, how people use Forma to drive outcomes") is setting the bar, not the method. Appropriate.
+- Clean resist: when Simon raised time pressure ("everybody's struggling with too little time"), Chris redirected with "How can you address that?" rather than offering solutions.
+
+**Airtime (Pattern 6) - improved (~45/55 Chris/Simon):**
+- Simon led first half with extended turns. Chris's longest segment was the content quality clarification. Recovery from ~60/40 on Monday.
+
+**Framework observations:**
+- Framework 1.3 (Follow-up depth): Strong. "What makes you feel like you're on target?" exposed that Simon counted organic posts as his own. Excellent probe.
+- Framework 3.3 (Challenge through questions): "Do you think that's what we're trying to achieve?" - let Simon discover the quality gap himself.
+- Framework 5.3 (Explicit expectations): Weaker close - "get updates a little earlier" and "drive execution" are vague. No numbered actions with dates. Worth watching.
+- Framework 3.4 (Balancing positive and developmental): Outreach progress (20 messages, 5 responses, expanded search criteria) wasn't specifically acknowledged. Call was predominantly corrective. Second time this has been flagged - monitoring.
+
+**What went well:**
+- "What makes you feel like you're on target?" - standout moment, forced Simon to show working
+- "Do you think that's what we're trying to achieve?" - let Simon arrive at quality issue himself
+- "How can you address that?" - clean Pattern 5 resist on time pressure
+- Let Simon lead the opening with open prompt
+- Shared Mairead's positive signal ("more urgency") - good balance point
+
+**Progress across five calls:**
+
+| Call | Giving answers | Over-explaining | Airtime | Key moment |
+|---|---|---|---|---|
+| Week 1 (Fri 24 Apr) | Significant - near-complete playbook | Not assessed | Not assessed | Self-identified pattern post-call |
+| Week 2 (Mon 28 Apr) | Moderate - AI tutorial, baseline | Hamster metaphor | Uneven | Creator agreement empathy question |
+| Week 2 (Tue 29 Apr) | Minor - tracking framework | "Fully successful" section | Much improved | "How are you going to use it?" + reflect-back |
+| Week 3 (Mon 5 May) | Minimal - resisted direct ask | Two multi-loop explanations | Regressed (~60/40) | Refused to brainstorm when asked |
+| Week 3 (Fri 9 May) | Well-managed - no instances | One moderate loop (content quality) | Improved (~45/55) | "What makes you feel on target?" |
+
+Pattern 5 consistently well-managed across two consecutive calls - significant shift from week 1. Pattern 4 getting shorter (one loop vs two). Pattern 6 recovered from Monday's regression.
+
+**One thing to try next time:** Acknowledge before you challenge. "20 outreach messages and 5 responses - that's a real shift from Monday. Now let's look at what counts toward the target." Naming what's working makes the challenge land harder.
+
+---
+
+## 9 May 2026 - Simon coaching plan week 3 Friday check-in
+
+**Patterns observed:**
+
+**Giving answers (Pattern 5) - clean:**
+No significant instances. Asked "what have you been doing to drive that as compared to just community?" which forced Simon to articulate his own contribution rather than defining it for him. When Simon presented organic posts as his metric, challenged with "do you think that's what we're trying to achieve?" rather than telling him outright.
+
+**Over-explaining (Pattern 4) - one instance, minor:**
+The section explaining what the metric should be ("how people are using Forma, how people use Forma to drive outcomes, what outcomes are they getting... own the voice around outcome-based design") ran through 3-4 loops. Core message landed on the first pass. Tighter version: "The metric is about posts you directly influenced that show how people use Forma for outcome-based design. Event mentions and organic activity don't count." One sentence, then see if he has questions.
+
+**Airtime (Pattern 6) - improved (~50/50):**
+Simon had longer stretches talking through his outreach, approach, and self-assessment. Chris intervened with questions rather than lectures. The mid-call challenge on content quality was the longest Chris segment but was necessary and well-contained. Better than the week 3 Monday call.
+
+**Framework observations:**
+- Framework 3.3 (Challenge through questions): "What makes you feel like you're on target?" and "What do you think the outcome is?" - both clean, forced Simon to self-assess
+- Framework 4.3 (Resisting the rescue): Simon didn't explicitly ask for help this time, and Chris didn't offer solutions when the content quality gap was clear
+- Framework 5.2 (One point at a time): Better. Content quality challenge delivered as one clear point, then moved to next topic.
+
+**What went well:**
+- "How do you feel about how progress has gone?" - open, let him lead self-assessment
+- "What makes you feel like you're on target?" - probed rather than accepting
+- "What have you been doing to drive that?" - clean separation of influence from observation
+- "Do you think that's what we're trying to achieve?" - let him discover the gap himself
+- "How can you address that?" when Simon raised competing demands - coaching question, not a solution
+- Closing was concise: flagged pre-reads, moved on
+
+**Progress across five calls:**
+
+| Call | Giving answers | Over-explaining | Airtime | Key moment |
+|---|---|---|---|---|
+| Week 1 (Fri 24 Apr) | Significant - near-complete playbook | Not assessed | Not assessed | Self-identified pattern post-call |
+| Week 2 (Mon 28 Apr) | Moderate - AI tutorial, baseline | Hamster metaphor | Uneven | Creator agreement empathy question |
+| Week 2 (Tue 29 Apr) | Minor - tracking framework | "Fully successful" section | Much improved | "How are you going to use it?" + reflect-back |
+| Week 3 (Mon 5 May) | Minimal - resisted direct ask | Two multi-loop explanations | Regressed (~60/40) | Refused to brainstorm when asked |
+| Week 3 (Fri 9 May) | Clean - no instances | One minor loop on metrics | Improved (~50/50) | "What makes you feel on target?" probe |
+
+Pattern 5 (giving answers) now consistently managed - four calls in a row with no significant instances. Pattern 4 (over-explaining) reducing in frequency and length. Pattern 6 (airtime) recovered from Monday's regression.
+
+**One thing to try next time:** You're strong on the probing questions now. Next edge: when Simon accepts your challenge ("I totally agree, I understand the approach"), test whether he actually does by asking "So what specifically will you do differently this week?" Agreement isn't the same as understanding.
+
+---
+
+## 5 May 2026 - Simon coaching plan week 3
+
+**Patterns observed:**
+
+**Giving answers (Pattern 5) - minimal, well-managed:**
+No significant instances. When Simon explicitly asked Chris to brainstorm ("it would be very helpful if you think out loud together with me"), Chris resisted cleanly: "I can't be doing that. And Mairead can't be doing that. You've got to find the ways to come up with those ideas yourself." Strongest example yet of holding the line. One minor edge: described what proactivity looks like in practice (reviewing posts, contacting creators directly) - borderline between setting the bar and setting the method, but appropriate in context.
+
+**Over-explaining (Pattern 4) - two instances:**
+- "What proactivity means / what we're assessing" ran through 4-5 loops from different angles (rolling up sleeves, building relationships, content engine, Insiders vs core work, comfort zones, what success looks like). Core message was clear; delivery was 4x longer than needed. Shorter: state it once, check if he's heard it.
+- "I'm raising this to support you" took three passes: (a) so you're not surprised, (b) alternative is I say nothing, (c) importance of proactivity. One pass would suffice.
+
+**Airtime (Pattern 6) - regressed (~60/40 Chris):**
+Several extended monologues, particularly mid-call. Longest uninterrupted segment covered: don't rely on programme, core assessment, rolling up sleeves, comfort zones, and what success looks like - all in one turn. Previous call was closer to 50/50. Regression partly context-driven (Simon's pushback required framing) but some was repeat explanation.
+
+**Framework observations:**
+- Framework 4.3 (Resisting the rescue): Strong positive. Clearest example across all four calls of declining to generate solutions when explicitly asked.
+- Framework 2.4 (Acknowledging before redirecting): "I hear what you're saying" before redirecting to expectations. Done well.
+- Framework 5.2 (One point at a time): Mid-call section stacked 5+ points without checking understanding between them. Breaking into "Here's my concern. How do you see it?" would be tighter.
+
+**What went well:**
+- Held the line when directly asked to brainstorm - fundamental shift from week 1
+- "Is there any reason you're not just engaging with people through LinkedIn?" - clean challenge through question (framework 3.3)
+- "Do you have any alternatives that you're thinking about?" - probed for Simon's thinking
+- "Do you think you're on track to get close?" - named the elephant directly
+- Corrected "new job description" framing clearly and concisely
+- Introduced pre-read format as a practical improvement
+
+**Progress across four calls:**
+
+| Call | Giving answers | Over-explaining | Airtime | Key moment |
+|---|---|---|---|---|
+| Week 1 (Fri 24 Apr) | Significant - near-complete playbook | Not assessed | Not assessed | Self-identified pattern post-call |
+| Week 2 (Mon 28 Apr) | Moderate - AI tutorial, baseline | Hamster metaphor | Uneven | Creator agreement empathy question |
+| Week 2 (Tue 29 Apr) | Minor - tracking framework | "Fully successful" section | Much improved | "How are you going to use it?" + reflect-back |
+| Week 3 (Mon 5 May) | Minimal - resisted direct ask | Two multi-loop explanations | Regressed (~60/40) | Refused to brainstorm when asked |
+
+Pattern 5 (giving answers) clearly improving - from significant to holding firm under pressure. Pattern 4 (over-explaining) stable but not improving - triggered by pushback or message not landing. Pattern 6 (airtime) regressed, likely driven by Pattern 4.
+
+**One thing to try next time:** When you feel the urge to re-explain after pushback, try: "I've said what I think. What's your takeaway from that?" Forces processing rather than more airtime.
+
+---
+
 ## 29 April 2026 - Simon coaching plan Wednesday check-in
 
 **Patterns observed:**

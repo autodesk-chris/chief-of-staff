@@ -28,7 +28,7 @@ Agents should actively look for two things:
 - Come across as defensive (without intending to)
 - Not be as empathetic as intended
 
-**Example:** (to be captured as instances occur)
+**Example (positive):** Drafting upward feedback to Carl about the missing outcome-based design spine in his AI strategy pages (14 May 2026). Initial AI draft was too managed - softened language, "when you talk about this in person" framing, performative offer to help. Chris rewrote it to be more direct: stated the observation plainly, framed it as reflecting something the leadership group already discusses, and trusted Carl to receive it without ego protection. The rewrite landed better because it was honest without being presumptuous. Good example of finding the right tone for upward feedback.
 
 **What good looks like:** In multi-viewpoint discussions, take a beat to consider how the message reads from the other person's perspective. Lead with acknowledgement before making your point.
 
@@ -64,6 +64,8 @@ Agents should actively look for two things:
 **Examples:**
 - Simon week 2 call (28 April 2026): Extended "busy hamster" metaphor explaining outcomes vs tasks. A shorter version - "What happens if you're busy all week but the numbers don't move?" - would force the same insight.
 - Simon week 1 call (24 April 2026): Explained how to interpret run-rate metrics over 1.5 months, when a question like "How would you measure whether we're on track at week 3?" would test understanding.
+- SA MFM (11 May 2026): Extended explanations on how to think about KRs, diagnostics, and the "enable don't do" principle. Multiple teaching passages that could have been shorter prompts.
+- Even 121 (28 May 2026): Budget/expenses explanation ran long after Even said "yep, that makes sense" - continued for several more exchanges explaining quarterly process, how Alvin asks questions, how to format line items. Administrative/process discussions trigger the same pattern as coaching.
 
 **What good looks like:** Make the point in one sentence. If the other person doesn't get it, they'll ask. Shorter prompts force more thinking.
 
@@ -71,6 +73,7 @@ Agents should actively look for two things:
 - 1:1s where someone isn't getting the concept
 - Explaining frameworks or mental models
 - Coaching conversations
+- Administrative/process explanations (budget, tooling, how-to)
 
 ---
 
@@ -93,6 +96,15 @@ Agents should actively look for two things:
 - Someone directly asks "what would you do?" or "do you have ideas?"
 - Coaching calls where the temptation is to fast-track their thinking
 - When you can see the answer clearly and they can't (yet)
+- MFM reviews where the squad is working through prioritisation
+
+**Recent example - SA MFM (11 May 2026):**
+- Provided specific KR suggestions ("25% of users come back regularly"), the three focus areas, and diagnostic approach rather than asking the team to propose their own. Anders and team were working through it but Chris fast-tracked with answers.
+
+**Positive example - Even 121 (28 May 2026):**
+- Capacity studies challenge was well-handled. Set the bar ("all four components live by end of June") then explicitly asked Even to work out the trade-offs: "What enables you to do that? What choices would you have to make? What compromises would you have to consider?" Resisted prescribing the method even when Even started exploring options. Also good: "Don't over scope it - what do you really want to learn from this version? Assume you were going to throw away all of this work." Set the bar, not the method.
+- Good counter-moment: pushed Anders on BD access learning ("have you contacted all your accounts?") - challenging without solving.
+- Self-awareness showing: "what I say is fine nine times out of ten, it's not 'you should do this' because I actually don't know."
 
 **Why it matters:**
 - You can't assess independence if you give the answers
@@ -125,6 +137,32 @@ After generating the session summary, review the full conversation for:
 
 ### Daily summary
 Review meeting notes and Slack context for pattern matches or new signals. Flag any relevant moments the same way.
+
+---
+
+## Pattern 7: The detail trap
+
+**What happens:** Genuinely strong in execution thinking and UX/UI intuition. When engaging at the detail level, intent is to stimulate different thinking and improve outcomes. But the combination of seniority and confidence means ideas often land as soft directives - people defer rather than challenge back, either because they agree or because disagreement feels costly. The result is that teams execute Chris's ideas rather than developing their own, even when that wasn't the intention.
+
+**Source:** Self-identified pattern, reinforced by Pattern 3 feedback from Carl and Pattern 5 coaching work with Simon. Same muscle, different context - Patterns 4/5 are about coaching direct reports, this one applies to any collaboration - cross-functional, peers, partners, and working groups where Chris is the most senior or most confident voice in the room.
+
+**What good looks like:** When entering the detail, be intentional about how:
+- Signal intent explicitly: "I'm thinking out loud, push back on this"
+- Ask before offering: "Do you want me to share how I'd approach this, or do you want to work it through yourself?"
+- Watch for agreement without understanding - "You're nodding, but tell me what you'd do differently" is better than assuming alignment
+- After sharing an idea, actively invite the counter: "What's wrong with that approach?"
+- When wireframing or sketching to communicate, name it: "This is how I'm picturing it, not what I'm asking you to build"
+
+**Trigger situations:**
+- Working with execution partners (e.g., Richard Bao on UX, engineers on architecture)
+- Cross-functional design discussions where Chris has opinions
+- Any time you're sketching or wireframing to communicate an idea
+- When you notice someone agreeing quickly without adding their own perspective
+- Any collaboration where Chris is the most senior person in the room
+
+**Related to:** Pattern 3 (doubling down), Pattern 4 (over-explaining), Pattern 5 (giving answers). All are variants of the same instinct - sharing too much of your own thinking when the goal is to draw out theirs.
+
+---
 
 ### Active help (real-time during sessions)
 - **Slack drafting:** If helping draft a Slack message in a contentious thread, proactively check tone against Pattern 2.

@@ -139,6 +139,39 @@ Each practice has observable signals that can be detected in a transcript.
 
 ---
 
+## 8. Written strategic feedback (peers and cross-functional)
+
+### 8.1 Lead with genuine acknowledgement
+**Best practice:** Before any critique, name what's specifically strong about the work - not generic praise, but evidence you've actually read and understood it. This earns the right to challenge.
+**Signals in written output:** Does the feedback open with a specific observation about what works ("the within-channel retention analysis gives us an evidence base we didn't have before") or with a generic compliment ("good work")?
+**Why it matters:** People who've iterated multiple drafts need to know their effort landed before they can hear what needs to change.
+
+### 8.2 Frame asks as opportunities, not corrections
+**Best practice:** "I think there's an opportunity to..." or "I wonder if..." rather than "You need to..." or "This should be...". Especially important when the person doesn't report to you. The goal is to open a door, not issue an instruction.
+**Signals in written output:** Count directive language ("you should", "this needs to") vs invitational language ("I wonder if", "there's an opportunity to", "I think this could"). The balance should lean heavily invitational for peer feedback.
+
+### 8.3 Use metaphors to make structural feedback land
+**Best practice:** Abstract structural feedback ("your strategy lacks specificity") is hard to act on. A concrete metaphor ("you describe the cuisine but don't name the dishes") makes the same point memorable and actionable. The best metaphors give the person a framework they can apply themselves.
+**Signals in written output:** Is structural feedback accompanied by a metaphor or analogy that the reader can use as a thinking tool going forward?
+
+### 8.4 Position as supporter, not authority
+**Best practice:** When giving feedback to someone who doesn't report to you, close with an offer to help rather than an expectation to comply. "Happy to walk through this together" not "Let me know when this is updated." You're a thinking partner, not an approver.
+**Signals in written output:** Does the closing offer collaboration or request compliance? Is the overall tone that of a peer who wants to help, or a senior who expects action?
+
+### 8.5 Calibrate directness to the relationship
+**Best practice:** Directness is a function of trust and reporting line. With direct reports, you can be more blunt. With peers or cross-functional partners, lead with empathy and frame feedback as shared problem-solving. Consider how many drafts they've already done and what constraints they're working within.
+**Signals in written output:** Has the tone been consciously adjusted for the audience? Does the feedback acknowledge constraints the person faces (e.g. being a team of one, coordinating without authority, time pressure)?
+
+### 8.6 Point to models, don't prescribe
+**Best practice:** Rather than rewriting their work, point to examples that demonstrate what you're asking for. "Daniel's document does this well - the structure works" is more empowering than a detailed rewrite. Let them learn from the model and apply it their way.
+**Signals in written output:** When suggesting improvements, does the feedback reference a concrete example the person can study, or does it provide a prescriptive rewrite?
+
+### 8.7 Separate the TLDR from the detail
+**Best practice:** For substantial written feedback, provide a short summary (3-4 lines) that captures the key messages, then offer the detail separately (thread, comment, document). Respects the reader's time and lets them choose how deep to go.
+**Signals in written output:** Is there a clear summary that stands alone, with detail available but not forced on the reader?
+
+---
+
 ## How this framework is used
 
 ### During call reflections
