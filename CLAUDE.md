@@ -281,6 +281,14 @@ Four memory layers are available, each serving a different purpose:
 - "Forget that" / "Stop remembering X" - removes from auto-memory
 - "Did we already look into X?" / "What did we find last time?" - searches claude-mem
 
+## Analytics context
+
+Before any analytics work (direct queries or invoking analytics skills), read `Work/LLM_Context/Analytics/site_design_events.md` for verified event names, query patterns, and corrections. Include relevant context (especially corrections like deprecated event names) when delegating to analytics skills. Key points:
+- Page name `"DesignMode"` is deprecated - use `"Site Design"`
+- Use `Loaded a Page` with `name` filter for MAU, not `product` property
+- Use `site_design_analysis_run` for analysis events, not `Activation: Triggered Analysis` (dead) or `Any Forma Analysis` (black box)
+- Full research log at `Work/Notes/Data/data_understanding_site_design_analytics.md`
+
 ## Automation Expectations
 
 For this project, be **proactive and automated**:
