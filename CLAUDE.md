@@ -259,6 +259,28 @@ mcp__atlassian__getConfluencePage(cloudId="0e31f281-3568-4559-ae88-153abcdead38"
 mcp__atlassian__searchAtlassian(query="Forma Design [topic]")
 ```
 
+## Memory systems
+
+Four memory layers are available, each serving a different purpose:
+
+| Layer | Location | Loaded | Maintained by | Best for |
+|-------|----------|--------|---------------|----------|
+| **CLAUDE.md** | Project root + parent dirs | Always | User | Stable operating instructions, project structure, command reference |
+| **Auto-memory** | `.claude/projects/.../memory/` | MEMORY.md always; topic files on demand | Claude | Patterns about user (writing style, preferences, relationship context, recurring references) |
+| **claude-mem** | External MCP database | Index at session start; details via search | Claude (automatic) | Work history - past research, decisions, discoveries. Searchable and timestamped |
+| **LLM_Context** | `Work/LLM_Context/` | Only when task points there | User | Domain knowledge too large for memory files (strategies, frameworks, playbooks, team structures) |
+
+**When to store where:**
+- "How to work" instructions go in **CLAUDE.md**
+- Stable patterns about the user go in **auto-memory** (tell Claude "remember this")
+- Large reference documents go in **LLM_Context** (and reference them from CLAUDE.md if they should be found automatically)
+- Work journal entries accumulate automatically in **claude-mem**
+
+**User commands:**
+- "Remember that I always want X" - saves to auto-memory
+- "Forget that" / "Stop remembering X" - removes from auto-memory
+- "Did we already look into X?" / "What did we find last time?" - searches claude-mem
+
 ## Automation Expectations
 
 For this project, be **proactive and automated**:
