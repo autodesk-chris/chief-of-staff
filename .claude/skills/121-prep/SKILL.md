@@ -2,9 +2,10 @@
 name: 121-prep
 description: >
   Prepare for a 1-on-1 meeting by gathering context from observations, actions,
-  Granola, Slack DMs, and previous 121 notes. Suggests topics for user selection,
-  then generates a structured prep document. Use when "121: [name]", "121 prep: [name]",
-  "prep my 121 with [name]", "prepare for my 1:1 with [name]".
+  Granola, Slack DMs, and previous 121 notes. Accepts inline focal topics and
+  does deep research on them. Suggests additional topics for user selection,
+  then generates a focused, outcome-driven prep document. Use when "121: [name]",
+  "121 prep: [name]", "prep my 121 with [name]", "prepare for my 1:1 with [name]".
   NOT for coaching check-ins (use coaching-prep). NOT for post-meeting (use post-meeting).
 ---
 
@@ -23,6 +24,7 @@ Prepare for a 1-on-1 meeting with a direct report or colleague. Gathers context 
 ## Arguments
 
 - **person**: Name of the person (required)
+- **inline context**: The user may supply focal topics, desired outcomes, or specific research directions in their original message (e.g. "121: Even - focus on capacity study backlog"). Parse these and treat them as pre-selected priority topics that skip the suggestion step. They still appear in the agenda but don't need user confirmation.
 
 ## Process
 
@@ -90,6 +92,41 @@ Which topics do you want to include? You can also add your own or reorder.
 - Reorder or group topics
 - Say "all" or "go with those"
 
+After topic selection, ask one follow-up:
+
+> "Any specific deliverables or commitments you want [Name] to walk away with? (e.g. produce a document, prototype, timeline, decision by a date)"
+
+If the user provides these, embed them in the "action items to land" section and shape the conversation flow questions to drive toward these commitments. If the user says no or skips, proceed without.
+
+**Skip this prompt if:** the user already specified deliverables in their inline context.
+
+### Step 2c: Deep research on focal topics
+
+For the 1-2 main discussion topics (user-supplied inline topics, or the top-priority selected topics), do targeted research beyond the generic context gathered in Step 1.
+
+**Confluence:**
+- Search for the person's strategy documents, experiment pages, MFM pre-reads
+- Search for related strategies by other people on the same topic (for comparison or context)
+- Pull specific data: metrics, experiment results, timeline commitments
+
+**Slack channels:**
+- Search relevant team/squad channels for recent discussion threads on the topic
+- Look for debates, blockers, or decisions that provide conversation ammunition
+
+**Strategy language:**
+- Note the person's own frameworks, terminology, and strategic framing from their documents
+- Use their language back at them in the conversation flow - it's more effective coaching to connect to how they already think about the problem
+
+**What to extract:**
+- Specific data points that support or challenge the person's current approach
+- Comparable approaches by others (e.g. a peer who solved the same problem differently)
+- Timeline gaps between stated plans and actual delivery
+- The person's own stated diagnosis vs their actual resource allocation
+
+**Do NOT:**
+- Turn this into an exhaustive research report - extract only what's needed to make the conversation sharp
+- Duplicate the person's strategy back at them - focus on gaps, tensions, and acceleration opportunities
+
 ### Step 3: Generate prep document
 
 Using only the selected topics, generate the prep document.
@@ -123,8 +160,10 @@ Using only the selected topics, generate the prep document.
 
 ### Conversation flow
 [2-4 numbered questions that drive toward the outcome. Push toward decisions and commitments, not exploration.]
-- Anticipate likely pushback and prepare counters
-- Include specific data points or examples to reference
+- Anticipate likely pushback and prepare counters inline (indented under the question)
+- Include specific data points from deep research (metrics, timelines, comparable approaches)
+- Where possible, use the person's own strategy language and frameworks to frame questions - connects to how they already think about the problem
+- If a comparable approach exists (e.g. a peer solved this differently), reference it as a concrete alternative, not a judgment
 
 ---
 
@@ -138,13 +177,18 @@ Using only the selected topics, generate the prep document.
 
 [Only if there's an active development pattern worth continuing. Keep to 3-4 lines max. Connect observations to show trajectory, not just individual incidents.]
 
+## Admin / quick checks
+
+- [ ] [Scheduling confirmations, reminders, quick status checks]
+- [ ] [Items that need 30 seconds, not a discussion]
+
 ## Action items to land
 
 - [ ] [Specific commitment you want from this meeting]
-- [ ] [Another commitment]
+- [ ] [Specific deliverable with a review date]
 
 ---
-Sources: [list Granola meetings, observations, Slack DMs used]
+Sources: [list Granola meetings, observations, Slack DMs, Confluence pages used]
 ```
 
 **Style rules (from user preferences):**
