@@ -80,14 +80,17 @@ Use this format:
 
 ---
 **Slack-ready summary:**
-Quick recap from [Meeting Title]:
+Takeaways
 * [Key takeaway 1]
 * [Key takeaway 2]
 * [Key takeaway 3]
 
 Actions:
-* [Person] - [Action] (by [timing])
-* [Person] - [Action] (by [timing])
+* [Person 1]
+    * [Action] (by [timing])
+    * [Action] (by [timing])
+* [Person 2]
+    * [Action] (by [timing])
 
 ---
 Processed by Meetings Agent
@@ -106,7 +109,7 @@ For each extracted item, create via `./pos`:
 
 ### Step 6: Present the output
 
-1. Show the full summary to the user in the conversation
+1. Show the Slack-ready summary format in the conversation (Takeaways + Actions grouped by person) - this is the primary output the user sees in the terminal
 2. Confirm the file was saved and where
 3. List items created (actions, tasks, decisions, observations)
 4. Offer: "Want me to send the Slack summary to [person/channel]?"

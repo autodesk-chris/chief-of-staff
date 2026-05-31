@@ -56,7 +56,15 @@ Work/People/notepad.md
 
 # Recovery codes and credentials
 *recovery-codes*
+*Recovery codes*
 *credentials*
+Work/Chris/
+
+# Temp / scratch files
+*.base
+
+# Submodules with local-only state
+Slack_mcp/slack-mcp-server
 
 # ============================================
 # BINARY FILES (not tracked - only .md files)

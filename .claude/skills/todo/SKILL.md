@@ -17,6 +17,10 @@ When user says "todo", "show todo", "what should I work on today", or similar.
 
 ## Process
 
+### Step 0: Determine today's day of week
+
+Run `date "+%A %Y-%m-%d"` via Bash to get the actual current day and date. Do NOT guess the day of week from meeting data or other context. Use this confirmed day throughout the to-do presentation.
+
 ### Step 1: Generate to-do list
 
 Run `./pos "/todo"` via Bash tool.

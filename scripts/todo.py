@@ -557,6 +557,26 @@ def generate_todo():
     # Get reminders
     reminders = get_items_from_folder(inbox_path / "Reminders")
 
+    # Identify pinned tasks: pinned=true, not completed, and due date <= today
+    pinned_tasks = []
+    pinned_paths = set()
+    for task in tasks:
+        fm = task['frontmatter']
+        if str(fm.get('pinned', '')).lower() != 'true':
+            continue
+        if fm.get('status', 'active') in ['completed', 'archived']:
+            continue
+        due_date_str = fm.get('due-date')
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                if due_date > today:
+                    continue
+            except ValueError:
+                pass
+        pinned_tasks.append(task)
+        pinned_paths.add(task['file_path'])
+
     # Filter reminders (due today or upcoming, and overdue; include items completed today)
     reminders_today = []
     reminders_upcoming = []
@@ -608,7 +628,8 @@ def generate_todo():
             try:
                 due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
                 if due_date < today:
-                    overdue_tasks.append(task)
+                    if task['file_path'] not in pinned_paths:
+                        overdue_tasks.append(task)
             except ValueError:
                 pass
 
@@ -625,6 +646,8 @@ def generate_todo():
             try:
                 due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
                 if due_date == today:
+                    if task['file_path'] in pinned_paths:
+                        continue
                     if status in ['completed', 'archived']:
                         tasks_due_today_completed.append(task)
                     else:
@@ -652,7 +675,8 @@ def generate_todo():
             try:
                 due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
                 if today < due_date <= week_end:
-                    tasks_due_this_week.append(task)
+                    if task['file_path'] not in pinned_paths:
+                        tasks_due_this_week.append(task)
             except ValueError:
                 pass
 
@@ -673,6 +697,13 @@ def generate_todo():
     content = f"""# Daily to-do - {today_day_name} {today.strftime('%Y-%m-%d')}
 
 """
+
+    # Pinned tasks at the top
+    if pinned_tasks:
+        content += "## Pinned\n\n"
+        for task in pinned_tasks:
+            content += _format_item_line(task, " ") + "\n"
+        content += "\n"
 
     # Monday: auto-create 4Ps task and show reminder
     if today.weekday() == 0:
