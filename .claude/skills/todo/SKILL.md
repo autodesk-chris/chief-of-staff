@@ -37,9 +37,27 @@ Summarise the yesterday overview:
 - Aim for ~5-10 lines total for yesterday overview
 - Preserve the most actionable information
 
-### Step 3: Update and display
+### Step 3: Add pinned section
 
-Replace the yesterday overview section in the file with the condensed version. Display the updated to-do list to the user.
+Read `Work/.state/email_triage.json` to get the last triage run timestamp and counts. Prepend a **Pinned** section at the very top of the to-do list (before yesterday overview and tasks) with format:
+
+```
+## Pinned
+- **Review email triage output**: last run {last_run timestamp formatted as "today HH:MM" or "yesterday HH:MM"}. {moved_action_required} items in Action required folder. Check and clear.
+```
+
+If the state file is missing or `last_run` is null, show:
+
+```
+## Pinned
+- **Email triage not yet run today**: run "triage inbox" manually or wait for the 9am scheduled run.
+```
+
+If `last_run` is more than 36 hours ago, append a flag: "(stale, scheduled run may have failed; check log at Work/.state/email_triage.log)".
+
+### Step 4: Update and display
+
+Replace the yesterday overview section in the file with the condensed version. Display the updated to-do list to the user with the Pinned section at the top.
 
 ## Summarisation guidelines
 

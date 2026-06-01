@@ -1,6 +1,6 @@
 ---
 name: email-triage
-description: Triage unread inbox into priority tiers (VIP, Important, CC, Noise) and route low-priority emails into dedicated folders. Surfaces action-required items into a dedicated folder so the rest of the inbox stays scannable. Uses people.md as the source of truth for inner-circle senders, treats Carl Christensen, Amy Bunszel, and Patrick Aragon as VIPs, reads Concur/Gamma/Egencia/Workday emails for approval, action, or receipt signals, and surfaces ambiguous senders for direction. Use when "triage inbox", "triage email", "process inbox", "clean inbox", or "email triage". NOT for sending or drafting email (use m365 tools directly).
+description: Triage unread inbox into priority tiers (VIP, Important, CC, Noise) and route low-priority emails into dedicated folders. Surfaces action-required items into a dedicated folder so the rest of the inbox stays scannable. Uses people.md as the source of truth for inner-circle senders, treats Carl Christensen, Amy Bunszel, and Patrick Aragon as VIPs, reads Concur/Gamma/Egencia/Workday emails for approval, action, or receipt signals, and surfaces ambiguous senders for direction. Supports an auto mode for scheduled (cron) runs that skips the move confirmation. Use when "triage inbox", "triage email", "process inbox", "clean inbox", "email triage", or with "auto" suffix for unattended runs. NOT for sending or drafting email (use m365 tools directly).
 ---
 
 # Email triage
@@ -48,6 +48,17 @@ Any Tier 1 or Tier 2 email where action is required is routed to `Action require
 - Confluence / SharePoint / Office notifications with a direct @mention or action signal in body (see Collaboration platforms rule)
 
 Tier 4 and Tier 5 emails are NOT routed to Action Required even if they contain these phrases. Folder destinations for those tiers take priority for cleanup.
+
+## Auto mode (unattended runs)
+
+When the trigger phrase includes "auto" (e.g. "triage inbox auto", "auto triage", "email triage auto") or the skill is invoked from a scheduled job, the skill runs without confirmation prompts:
+
+- Still presents the full digest in chat (for audit log / on-screen review)
+- Moves Tier 4, Tier 5, Receipts, Learning, and Action Required emails immediately without asking "proceed with moves?"
+- Items in "Where to file?" section stay in inbox and are surfaced in the digest. They are NEVER auto-moved.
+- State file updates as normal after the run
+
+Auto mode is intended for scheduled runs (e.g. 6am cron) when no one is available to confirm. For interactive use, prefer the standard mode with the digest + confirmation step.
 
 ## Body-read rules
 
@@ -147,7 +158,7 @@ If a sender doesn't match a known pattern, or a body check is inconclusive, **su
 6. **Body reads**: for Concur, Gamma, Egencia, Workday, Confluence, SharePoint, and Microsoft Office notification senders, call `read_email` and apply body / subject checks.
 7. **Apply Action Required override** for Tier 1 and Tier 2 emails with action signals.
 8. **Present digest** grouped by section (see output format).
-9. **Confirm before moving**: ask "move Action required, Tier 4, Tier 5, Receipts, Learning now? (y / n / specify keeps)".
+9. **Confirm before moving** (skipped in auto mode): ask "move Action required, Tier 4, Tier 5, Receipts, Learning now? (y / n / specify keeps)". In auto mode, present the digest then proceed directly to moves without asking.
 10. **Move emails** using `update_email` with `moveToFolder` set to the target folder ID.
 11. **Update state**: save current UTC timestamp to `Work/.state/email_triage.json` (only after a successful run).
 
