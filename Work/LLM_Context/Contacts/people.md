@@ -100,16 +100,30 @@ This file is a local cache for meeting prep search enrichment. Refresh from Conf
 | Name | Company | Relationship | Search terms |
 |---|---|---|---|
 | Mark Ryan | Trig | User engagement platform partner (lifecycle emails) | Mark Ryan, Trig, trig.ai, lifecycle, re-engagement |
+| Kevin Collins | Ecofold | External contact | Kevin Collins, Ecofold |
+
+---
+
+## Autodesk stakeholders (non-Forma-Design)
+
+Internal Autodesk stakeholders outside the Forma Design org. Treated as Tier 2 in email triage.
+
+| Name | Role | Search terms |
+|---|---|---|
+| Ken Nussbaum | Head of Forma Design Sales (Autodesk internal stakeholder) | Ken Nussbaum, Forma Design Sales |
+| James Wedding | Leader of Forma Sales team (reports to Ken Nussbaum) | James Wedding, Forma Sales |
+| Richard Bao | Important Autodesk stakeholder | Richard Bao |
 
 ---
 
 ## Leadership and cross-cutting
 
-| Name | Role | Search terms |
-|---|---|---|
-| Chris Small | Director, Product Adoption & Growth | Chris Small, Growth, adoption |
-| Carl Christensen | VP / Senior Director | Carl, Forma Design leadership |
-| Amy Bunsee | VP Product | Amy Bunsee, product strategy |
-| Simen Hellem | Data/Analytics | Simen Hellem, Mixpanel, analytics, data |
-| Fredrik | Engineering | Fredrik |
-| Zach Kron | US Market Fit strategy owner | Zach Kron, US market, market fit |
+| Name             | Role                                | Search terms                            |
+| ---------------- | ----------------------------------- | --------------------------------------- |
+| Chris Small      | Director, Product Adoption & Growth | Chris Small, Growth, adoption           |
+| Carl Christensen | VP                                  | Carl, Forma Design leadership           |
+| Amy Bunszel      | SVP AEC                             | Amy Bunsee, product strategy            |
+| Simen Hellem     | Data/Analytics                      | Simen Hellem, Mixpanel, analytics, data |
+| Zach Kron        | US Market Fit strategy owner        | Zach Kron, US market, market fit        |
+| Patrick Aragon   | Chief of Staff to Amy Bunszel       | Patrick Aragon, Amy CoS                 |
+| Julie Sylvain    | Chief of Staff to Carl Christensen  | Julie Sylvain, Carl CoS                 |
