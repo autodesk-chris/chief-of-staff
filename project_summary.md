@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-01 (Session 16)
-**Current Phase:** Phase 3.3 - Email Triage Skill
-**Overall Status:** Full hierarchical agent system with Slack, Confluence, and now M365 email triage integration
+**Last Updated:** 2026-06-01 (Session 17)
+**Current Phase:** Phase 3.4 - Thread Review Skill
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, and voice-aware Slack thread review
 
 ---
 
@@ -24,7 +24,8 @@
 - ✅ **Phase 3.0:** Slack Report + Task Auto-Creation (Complete)
 - ✅ **Phase 3.1:** Full Slack Integration Suite (Complete)
 - ✅ **Phase 3.2:** Slack Commitment Scanning + Confluence Integration (Complete)
-- ✅ **Phase 3.3:** Email Triage Skill with M365 Integration (Complete) ← **This Session**
+- ✅ **Phase 3.3:** Email Triage Skill with M365 Integration (Complete)
+- ✅ **Phase 3.4:** Thread Review Skill with Slack Draft Push (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -577,9 +578,31 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - **Outlook folders required** as child folders of Inbox: `Action required`, `Triage-cc`, `Triage - noise`, `Triage - receipts and travel`, `Triage - learning`
 - **Commit:** `5144abd Add email-triage skill with tier-based routing and action-required folder`
 
+### Session 17: Phase 3.4 Complete (2026-06-01) ← **Current**
+- **New skill `thread-review`** built on the Slack MCP to analyse a single Slack thread end-to-end and draft a voice-aware response.
+- **Trigger:** `review thread: [URL]` (plus natural language fallbacks: "what should I do with this thread", "next steps for this thread")
+- **Process:**
+  1. Parse Slack URL, fetch full thread via `slack_read_thread`
+  2. Establish participant set - members (posters, direct @-addresses, DM recipients) vs narrative references
+  3. Load five voice/style memory files explicitly (writing style, leadership signature, feedback style, strategic working style, commissioner vs consultant)
+  4. Decode reactions/emojis as first-class signal (standard + custom workspace emojis, weighted by sender seniority)
+  5. Map thread (topic, trajectory, positions, state, loose threads)
+  6. Recommend ONE next move with one-or-two-sentence rationale
+  7. Draft response - succinct default, voice-aware, two-filter alignment rule (member AND unresolved POV)
+  8. Present four-section output (Topic / Positions / Recommended next move / Draft response)
+  9. Offer to push as Slack draft (y / edit / n)
+- **Two-filter alignment rule:** a person is only tagged for alignment if (a) they are a member of THIS thread and (b) they have an unresolved POV that needs addressing. Carl signing off via reactions → don't re-tag. Line referenced in narrative context → don't tag despite strong views.
+- **Membership heuristic:** narrative @-mentions ("there was a discussion between @X and @Y") do NOT qualify; direct-address @-mentions ("@X, what do you think?") do qualify.
+- **Mandatory disclaimer footer** on every drafted response: `_Drafted with Claude. If the tone misses, that's the robot. Read for intent._`
+- **Slack draft push** uses `mcp__slack__slack_send_message_draft` with `thread_ts` set - creates a real attached draft in Slack's "Drafts & Sent" without sending. Handles `draft_already_exists` by surfacing not overwriting.
+- **Live test:** ran against the FSM (First Strike Moment) alignment thread in `#priv-forma-design-leadership-fy27`. Correctly decoded Carl's `100`+`agree` reactions as deliberate sign-off, correctly excluded Line (narrative reference), correctly tagged Hans and Khushal for alignment. Draft pushed successfully.
+- **Files:**
+  - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
+- **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
+
 ---
 
-## Development Status Summary (Session 16)
+## Development Status Summary (Session 17)
 
 ### Fully Working
 - ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /todo, archive completed, process notepad, actions list, decisions list, new_daily
@@ -597,6 +620,11 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - `leadership update` synthesizes leadership channels + meetings into shareable update
 - `/todo` includes Slack actions section; daily summary uses slack report as context
 - Strategy + MFM agents have live Confluence access for OKRs, strategies, bets, operating model
+
+### Key Enhancement (Session 17)
+- `review thread: [URL]` analyses any Slack thread, decodes emoji/reaction signal, and drafts a voice-aware response with optional one-step push to Slack drafts
+- Two-filter alignment rule (member + unresolved POV) prevents tagging non-participants or already-aligned members
+- Mandatory Claude disclaimer footer on every drafted response
 
 ### Partially Working / Known Issues
 - None currently
