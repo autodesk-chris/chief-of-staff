@@ -153,6 +153,8 @@ Example application (FSM thread):
 - Member with an unsigned POV → tag
 - Non-member referenced in narrative → never tag, regardless of views
 
+**Always open the draft with a brief acknowledgement of the latest substantive message in the thread.** One short sentence is enough - "Thanks for the detailed response. Here are my reflections..." or "Thanks for taking me through your thinking..." or similar. This sets context and softens the entry into the response. Without it, the draft jumps straight into content and can read as dismissive. See `feedback_acknowledge_before_responding` memory.
+
 **Default to curiosity before counter-position.** When the draft is responding to a position someone has stated in the thread - especially one Chris doesn't fully agree with - the first move should be a question that surfaces their reasoning ("why do you feel...?", "help me understand...", "can you give me more context on this point?"), not a counter-argument. Pair with an empowerment move where appropriate ("happy to defer if...", "happy to be a contributor if..."). Counter-positions belong in follow-up messages once the reasoning is on the table. See `feedback_curiosity_before_position` memory.
 
 **Default: succinct.** Match the thread's depth - short threads get short replies, dense threads can carry layered reasoning, but lean short. Add rationalisation only when the topic's complexity genuinely warrants it (e.g. the position is non-obvious, the audience is skeptical, or precedent is being set).
