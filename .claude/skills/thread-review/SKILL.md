@@ -1,46 +1,68 @@
 ---
 name: thread-review
 description: >
-  Review a Slack thread and recommend a next move. Reads the full thread,
-  decodes reactions/emojis as signal, summarises the topic and each
-  participant's position, recommends one concrete next action, and drafts a
-  succinct response in Chris's voice. Always offers to push the draft into
-  Slack as a real draft (never auto-sends). Use when "review thread: [URL]",
-  "thread review: [URL]", "what should I do with this thread", or when given
-  a Slack thread URL and asked for next steps. NOT for sweeping multiple
+  Review a Slack thread, DM, or group DM and recommend a next move. Reads the
+  full conversation, decodes reactions/emojis as signal, summarises the topic
+  and each participant's position, recommends one concrete next action, and
+  drafts a succinct response in Chris's voice. Always offers to push the draft
+  into Slack as a real draft (never auto-sends). Use when "review thread:
+  [URL]", "review conversation: [URL]", "thread review: [URL]", "what should I
+  do with this thread/conversation", or when given a Slack thread, DM, or
+  group DM URL and asked for next steps. NOT for sweeping public/private
   channels (use scan slack / slack report).
 ---
 
 # Thread review
 
-Review a single Slack thread end-to-end. Produces four outputs: topic summary, per-participant positions, recommended next move, and a draft response written in Chris's voice. Always offers to push the draft into Slack as a real attached draft (never sends without explicit approval).
+Review a single Slack thread, DM, or group DM end-to-end. Produces four outputs: topic summary, per-participant positions, recommended next move, and a draft response written in Chris's voice. Always offers to push the draft into Slack as a real attached draft (never sends without explicit approval).
 
 ## Trigger phrases
 
 Primary:
 - `review thread: [URL]`
+- `review conversation: [URL]`
 
 Natural language fallbacks:
-- "what should I do with this thread: [URL]"
-- "next steps for this thread: [URL]"
-- "review this thread [URL]"
-- Any message that pastes a Slack thread URL and asks for analysis or next steps
+- "what should I do with this thread/conversation: [URL]"
+- "next steps for this thread/conversation: [URL]"
+- "review this thread/conversation [URL]"
+- Any message that pastes a Slack thread, DM, or group DM URL and asks for analysis or next steps
 
 ## Process
 
-### Step 1: Parse the URL and fetch the thread
+### Step 1: Parse the URL and fetch the conversation
 
-A Slack thread URL looks like:
-`https://[workspace].slack.com/archives/[CHANNEL_ID]/p[TIMESTAMP_NO_DOT]`
+The skill operates in **two modes** depending on URL shape:
 
+**Mode A - Thread mode** (URL contains `/p[TIMESTAMP]`):
+```
+https://[workspace].slack.com/archives/[CHANNEL_ID]/p[TIMESTAMP_NO_DOT]
+```
 Extract:
 - `channel_id` - the part after `/archives/`
 - `message_ts` - the part after `p`, with a `.` inserted before the last 6 digits (e.g. `p1779816169638059` → `1779816169.638059`)
 
-Fetch the thread:
+Fetch via:
 ```
 mcp__slack__slack_read_thread(channel_id="...", message_ts="...")
 ```
+
+**Mode B - Conversation mode** (URL has no `/p[TIMESTAMP]`, just `/archives/[ID]`):
+
+Fetch ~30-50 recent messages via:
+```
+mcp__slack__slack_read_channel(channel_id="...", limit=50)
+```
+
+Then **inspect the response to determine destination type**:
+- If `channel_info.is_dm` is true, or the response identifies it as "Group DM" → **DM or Group DM**: proceed with conversation review (this is the intended use case for conversation mode)
+- If it's a **public or private channel** (named channel with members, not a DM) → **refuse and redirect**: tell the user this skill doesn't sweep channels, recommend `scan slack` for commitment extraction or `slack report` for activity sweeps. Channel sweeps need different framing (commitments, activity) than this skill produces (positions, alignment, draft).
+
+**Expand in-conversation threads:**
+
+In DMs and group DMs, participants often start sub-threads on individual messages. When fetching in conversation mode, scan the response for any message marked with "Thread: N replies" (or similar indicator). For each, fetch the thread via `slack_read_thread(channel_id, message_ts)` and weave the replies into the position mapping in Step 5.
+
+In thread mode (Mode A), there is no equivalent step - the thread is already the unit of review.
 
 ### Step 2: Establish the participant set
 
@@ -92,7 +114,7 @@ Reactions are first-class signal, not noise. For every message in the thread, in
 - **Absence matters**: if a key participant didn't react to a summary or position post, flag it as unresolved alignment, not assumed alignment.
 - **Don't strip emoji-only replies** - they often carry the actual decision signal in leadership threads.
 
-### Step 5: Map the thread
+### Step 5: Map the conversation
 
 Build a mental model of:
 - **Topic**: what is being discussed and why it matters
@@ -101,6 +123,8 @@ Build a mental model of:
 - **Positions**: per participant, what they've argued, where they shifted, what they last said
 - **State**: open debate / converged / stalled / awaiting action / dead
 - **Loose threads**: questions raised but not answered, asks not yet responded to
+
+In **conversation mode**, the position mapping spans the parent messages and any expanded in-conversation threads (per Step 1). Treat sub-threads as part of the conversation, not as separate topics - their content informs the participant's overall position.
 
 ### Step 6: Recommend a next move
 
@@ -198,20 +222,22 @@ If the thread is significant (leadership-level decision, strategic discussion, c
 
 ## Guidelines
 
-- **Read the full thread before drafting** - never draft from the opener alone
+- **Detect URL mode first** - thread URLs have `/p[ts]`, conversation URLs don't; refuse and redirect for public/private channels without a thread anchor
+- **Read the full thread or conversation before drafting** - never draft from the opener alone; in conversation mode, expand any in-conversation sub-threads
 - **Establish membership before mapping positions** - the participant filter determines who can legitimately be tagged for alignment
-- **Two filters for alignment asks** - tag only if (a) member of the thread AND (b) has an unresolved POV that needs addressing
+- **Two filters for alignment asks** - tag only if (a) member of the thread/conversation AND (b) has an unresolved POV that needs addressing
 - **Decode emojis explicitly** - if a senior person used `100` + `agree`, name it in the positions section
 - **One recommendation, not three** - the value is in the call, not the menu
 - **Succinct draft is the default** - rationalise only when complexity warrants
 - **Always append the Claude disclaimer footer** - non-negotiable on every drafted response
 - **Never auto-send** - always show the draft, always require explicit `y` to push as a draft, and even then it's just a draft (user sends from Slack)
 - **Flag what you couldn't load** - if any voice memory file was missing, say so in a footer
-- **Match thread tone** - if the thread is casual, the draft should be casual; if it's a formal leadership decision, the draft should be tighter
+- **Match conversation tone** - if it's casual, the draft should be casual; if it's a formal leadership decision, the draft should be tighter
 
 ## What this skill is NOT for
 
 - Sweeping multiple channels for activity (use `scan slack` / `slack report`)
+- Reviewing a public or private channel via its URL (refuse and redirect - see Step 1 Mode B)
 - 4Ps post threads specifically (use `4ps roundup`)
 - DMs in the context of preparing for a 1:1 (use `121-prep`)
 - Sending messages directly without a thread context (use `m365` / `slack` tools directly)
