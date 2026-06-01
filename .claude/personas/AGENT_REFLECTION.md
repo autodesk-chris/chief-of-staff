@@ -265,12 +265,14 @@ mcp__slack__slack_read_channel(
 Identify:
 - **New threads** started in the last 48 hours
 - **Updated threads** that had new replies in the last 48 hours
-- Skip trivial messages (emoji-only reactions, bot notifications)
+- Skip bot notifications and automated noise
+- **Do NOT skip emoji-only reactions or replies** - reactions are signal, especially in leadership channels (see emoji decoding below)
 
 For each significant thread:
 - Summarize the topic in 1-2 sentences
 - Note number of participants and replies
 - Flag if user is mentioned or involved
+- **Decode reactions on the parent and key replies**: a `100` + `agree` from a senior person on a position post is sign-off; absence of expected reactions from key participants is unresolved alignment. Custom workspace emojis (e.g. `:agree:`) carry their literal meaning - the name is the signal.
 
 #### Step 4: Scan for commitments (beyond mentions)
 
