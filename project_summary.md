@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-03-19 (Session 15)
-**Current Phase:** Phase 3.2 - Slack + Confluence Integration Complete
-**Overall Status:** Full hierarchical agent system with comprehensive Slack and Confluence integration
+**Last Updated:** 2026-06-01 (Session 16)
+**Current Phase:** Phase 3.3 - Email Triage Skill
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, and now M365 email triage integration
 
 ---
 
@@ -23,7 +23,8 @@
 - ✅ **Phase 2.9:** List Commands + Meeting Auto-Extraction (Complete)
 - ✅ **Phase 3.0:** Slack Report + Task Auto-Creation (Complete)
 - ✅ **Phase 3.1:** Full Slack Integration Suite (Complete)
-- ✅ **Phase 3.2:** Slack Commitment Scanning + Confluence Integration (Complete) ← **This Session**
+- ✅ **Phase 3.2:** Slack Commitment Scanning + Confluence Integration (Complete)
+- ✅ **Phase 3.3:** Email Triage Skill with M365 Integration (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -547,9 +548,38 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `detect_agent.py` - routing for scan slack / slack tasks
   - `CLAUDE.md` - Confluence section + scan slack command
 
+### Session 16: Phase 3.3 Complete (2026-06-01) ← **Current**
+- **New skill `email-triage`** built on the M365 MCP to classify the unread inbox into priority tiers and route low-priority and action-required mail into dedicated Outlook folders.
+- **Tier model:**
+  - Tier 1 (VIP): Carl Christensen, Amy Bunszel, Patrick Aragon always; Julie Sylvain when direct
+  - Tier 2 (Important): people.md senders, direct-to-you, or Concur approval signals
+  - Tier 4: CC-only and sender not in people.md → `Triage-cc`
+  - Tier 5: Noise pattern → `Triage - noise`
+- **Action Required override:** Tier 1/2 emails with action signals route to `Action required` folder so the inbox stays scannable until cleaned up
+- **Body-read rules** for senders that need inspection:
+  - Concur (`*@concursolutions.com`): approval signals → action required; charge-submission reminders (`EmailReminderService`) always to noise
+  - Gamma/Egencia: receipt signals → `Triage - receipts and travel`; ambiguous → surface "Where to file?"
+  - Workday (`*@myworkday.com`): "ACTION REQUIRED" in subject → action required
+  - Confluence / SharePoint / Office docs notifications: @mention or action signal in body → action required
+  - Autodesk Learning Central → `Triage - learning`
+- **Uncertainty rule:** sender doesn't match a pattern or body check is inconclusive → surface in "Where to file?" rather than guess
+- **State tracking:** `Work/.state/email_triage.json` persists last-run timestamp so each run picks up only new mail
+- **People directory expanded** with 6 contacts:
+  - External: Kevin Collins (Ecofold)
+  - Leadership: Patrick Aragon (Amy's Chief of Staff), Julie Sylvain (Carl's Chief of Staff)
+  - New "Autodesk stakeholders (non-Forma-Design)" section: Ken Nussbaum (Head of Forma Design Sales), James Wedding (Forma Sales Lead), Richard Bao
+- **Live test:** processed 6 unread emails. 2 → `Action required` (Workday contract decision, Confluence @mentions), 3 → `Triage - noise`, 1 stayed in inbox (Forma Design CMS meeting invite), 0 ambiguous.
+- **Files:**
+  - `.claude/skills/email-triage/SKILL.md` (new, ~190 lines)
+  - `Work/LLM_Context/Contacts/people.md` (+21 lines)
+  - `Work/.state/email_triage.json` (new state file)
+- **Triggers:** "triage inbox", "triage email", "process inbox", "clean inbox", "email triage"
+- **Outlook folders required** as child folders of Inbox: `Action required`, `Triage-cc`, `Triage - noise`, `Triage - receipts and travel`, `Triage - learning`
+- **Commit:** `5144abd Add email-triage skill with tier-based routing and action-required folder`
+
 ---
 
-## Development Status Summary (Session 15)
+## Development Status Summary (Session 16)
 
 ### Fully Working
 - ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /todo, archive completed, process notepad, actions list, decisions list, new_daily
