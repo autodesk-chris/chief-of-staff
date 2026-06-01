@@ -210,7 +210,14 @@ Always offer. Ask:
 - **edit** → accept inline edits in the terminal, re-show the updated draft, ask again.
 - **n** → leave it as terminal-only. User copy-pastes if they want.
 
-**Handle `draft_already_exists`**: if the API returns this error, do not retry or overwrite. Surface to the user:
+**Verify the draft was actually created.** The Slack draft API can return a generic success message ("Draft message is created") *without* actually creating a draft when one already exists for the channel - particularly for group DMs (mpdm). Always inspect the API response for a `draft_id` field:
+
+- If `draft_id` is present → draft was genuinely created. Return the channel link to the user.
+- If `draft_id` is missing despite the success message → a prior draft is silently blocking the new one. Surface this to the user:
+
+> The API returned success but no `draft_id` - that usually means an existing draft is silently blocking the new one. Open Slack, check Drafts & Sent for this conversation, resolve any existing draft (send, edit, or delete), then ask me to push again.
+
+**Handle explicit `draft_already_exists` error**: if the API returns this error code directly, do not retry or overwrite. Surface to the user:
 
 > You already have a draft in this channel. Resolve it in Slack first (send, edit, or delete), then re-run.
 
