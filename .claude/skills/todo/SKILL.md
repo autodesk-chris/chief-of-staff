@@ -21,6 +21,16 @@ When user says "todo", "show todo", "what should I work on today", or similar.
 
 Run `date "+%A %Y-%m-%d"` via Bash to get the actual current day and date. Do NOT guess the day of week from meeting data or other context. Use this confirmed day throughout the to-do presentation.
 
+### Step 0.5: Weekly Planner sync check
+
+Check if Microsoft Planner tasks need syncing. Read `Work/.state/planner_sync.json`:
+
+- If the file is missing, run the `planner-sync` skill before continuing.
+- If `last_run` is more than 6 days ago, run the `planner-sync` skill before continuing.
+- Otherwise, skip.
+
+This pulls tasks assigned to Chris in Planner that are due in the next 2 weeks so they appear in the to-do list. Skill handles dedupe via `planner-id` frontmatter.
+
 ### Step 1: Generate to-do list
 
 Run `./pos "/todo"` via Bash tool.

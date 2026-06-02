@@ -98,14 +98,39 @@ Processed by Meetings Agent
 
 ### Step 5: Create items in Julie
 
-For each extracted item, create via `./pos`:
+**Always confirm with Chris before creating any items.** Do not auto-create tasks, actions, decisions, or observations from meeting extracts.
 
-- **Actions assigned to others:** `./pos "new action: [action title] assignee: [Person] details: [context from meeting] due: [date]"`
-- **Tasks for Chris:** `./pos "new task: [task title] details: [context from meeting] due: [date]"`
-- **Decisions:** `./pos "new decision: [decision] participants: [names] rationale: [why]"`
-- **Observations:** `./pos "observation: [Person] - [feedback text]"`
+Process:
 
-**Before creating items:** Check if the user has already created these items earlier in the conversation. Don't duplicate.
+1. Build the candidate list from the extracted items. Show it as a numbered list grouped by type:
+
+   ```
+   Proposed items to create from this meeting:
+
+   Tasks for Chris:
+     1. [title] (due: [date])
+     2. ...
+
+   Actions for others:
+     3. [Person]: [title] (due: [date])
+     4. ...
+
+   Decisions:
+     5. [decision]
+
+   Observations:
+     6. [Person]: [feedback]
+   ```
+
+2. Ask: "Which would you like me to create? Type numbers (e.g. '1, 3, 5'), 'all', or 'none'. You can also reply with edits like '1: change due date to Friday'."
+
+3. After Chris confirms, create the selected items via `./pos`:
+   - **Actions assigned to others:** `./pos "new action: [action title] assignee: [Person] details: [context from meeting] due: [date]"`
+   - **Tasks for Chris:** `./pos "new task: [task title] details: [context from meeting] due: [date]"`
+   - **Decisions:** `./pos "new decision: [decision] participants: [names] rationale: [why]"`
+   - **Observations:** `./pos "observation: [Person] - [feedback text]"`
+
+4. Before creating any item, check if Chris already created it earlier in the conversation. Skip duplicates without re-asking.
 
 ### Step 6: Present the output
 
