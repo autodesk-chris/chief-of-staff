@@ -1,6 +1,6 @@
 ---
 name: email-triage
-description: Triage unread inbox into priority tiers (VIP, Important, CC, Noise) and route low-priority emails into dedicated folders. Surfaces action-required items into a dedicated folder so the rest of the inbox stays scannable. Uses people.md as the source of truth for inner-circle senders, treats Carl Christensen, Amy Bunszel, and Patrick Aragon as VIPs, reads Concur/Gamma/Egencia/Workday emails for approval, action, or receipt signals, and surfaces ambiguous senders for direction. Supports an auto mode for scheduled (cron) runs that skips the move confirmation. Use when "triage inbox", "triage email", "process inbox", "clean inbox", "email triage", or with "auto" suffix for unattended runs. NOT for sending or drafting email (use m365 tools directly).
+description: Triage unread inbox into priority tiers (VIP, Important, CC, Noise) and route low-priority emails into dedicated folders. Surfaces action-required items into a dedicated folder so the rest of the inbox stays scannable. Uses people.md as the source of truth for inner-circle senders, treats names in the Leadership section of people.md as VIPs (currently Carl Christensen, Amy Bunszel, Patrick Aragon, Julie Sylvain, Andrew Anagnost), reads Concur/Gamma/Egencia/Workday/Help_Wolken emails for approval, action, or receipt signals, and surfaces ambiguous senders for direction. Supports an auto mode for scheduled (cron) runs that skips the move confirmation. Use when "triage inbox", "triage email", "process inbox", "clean inbox", "email triage", or with "auto" suffix for unattended runs. NOT for sending or drafting email (use m365 tools directly).
 ---
 
 # Email triage
@@ -12,17 +12,36 @@ Classify unread inbox into priority tiers, surface what matters, route low-prior
 - **People directory:** `Work/LLM_Context/Contacts/people.md`. Source of truth for Tier 2 names. Re-read every run; do not hardcode.
 - **State file:** `Work/.state/email_triage.json`. Last-run timestamp.
 - **Outlook folders (must already exist as child folders of Inbox):**
+  - `Inbox/VIP` (Tier 1 emails, unless Action Required override applies)
   - `Inbox/Action required` (Tier 1 or 2 items where action is required)
   - `Inbox/Triage-cc`
   - `Inbox/Triage - noise`
   - `Inbox/Triage - receipts and travel`
   - `Inbox/Triage - learning`
 
+## Subject-based universal overrides
+
+These rules apply **before** the tier model and override sender-based routing. A VIP email matching one of these still gets the override destination.
+
+### Force to noise (even from VIP/priority senders)
+
+Match by subject:
+- Begins with `Accepted:`, `Declined:`, `Tentative:`, `Canceled:`, or `Cancelled:` (meeting response confirmations)
+
+Meeting acceptances are pure clutter regardless of sender. Move to `Triage - noise`.
+
+### Force to stay in inbox (override VIP routing)
+
+Match by subject:
+- Contains "Pedaling into the weekend" (recurring informal email from Amy that should be visible in inbox, not buried in VIP folder)
+
+Add more entries here as recurring informal/weekly emails from VIPs are identified.
+
 ## Tier model
 
 | Tier | Definition | Default destination |
 |---|---|---|
-| 1 (VIP) | Carl Christensen, Amy Bunszel, Patrick Aragon (always); Julie Sylvain when in To: field | Stay in inbox (unless Action Required override applies) |
+| 1 (VIP) | All names in `## Leadership` section of people.md (excluding Chris Small); Julie Sylvain demoted to Tier 2 unless in To: field | `VIP` folder (unless Action Required override applies) |
 | 2 (Important) | (a) Sender in people.md, OR (b) you are in To: field (direct), OR (c) Concur with approval/action signal, OR (d) Julie Sylvain when CC'd | Stay in inbox (unless Action Required override applies) |
 | 4 (CC-only) | You are in CC, sender not in people.md, not a noise pattern | `Triage-cc` after confirmation |
 | 5 (Noise) | Matches a noise pattern (see below) | `Triage - noise` after confirmation |
@@ -54,7 +73,7 @@ Tier 4 and Tier 5 emails are NOT routed to Action Required even if they contain 
 When the trigger phrase includes "auto" (e.g. "triage inbox auto", "auto triage", "email triage auto") or the skill is invoked from a scheduled job, the skill runs without confirmation prompts:
 
 - Still presents the full digest in chat (for audit log / on-screen review)
-- Moves Tier 4, Tier 5, Receipts, Learning, and Action Required emails immediately without asking "proceed with moves?"
+- Moves VIP, Tier 4, Tier 5, Receipts, Learning, and Action Required emails immediately without asking "proceed with moves?"
 - Items in "Where to file?" section stay in inbox and are surfaced in the digest. They are NEVER auto-moved.
 - State file updates as normal after the run
 
@@ -68,9 +87,11 @@ For these senders, call `read_email` to inspect body or recipients before classi
 
 Covers `AutoNotification@concursolutions.com`, `EmailReminderService@concursolutions.com`, and any other concursolutions.com sender.
 
+**Balances Due exception (always Action Required)**: Concur emails with subject containing "Balances Due to Autodesk" OR "Immediate Action Required: Balances" route to **`Action required`** regardless of other rules. These are real outstanding payment obligations, not recurring nags.
+
 **Always-Noise exclusion**: Concur reminders about submitting *your own* charges go to `Triage - noise` even if the subject contains "ACTION REQUIRED". These are recurring nags, not real action items. Match on either:
-- Sender = `EmailReminderService@concursolutions.com`, OR
-- Subject or body contains "charges" combined with "submit" / "to be submitted" / "need to submit" / "need to be submitted"
+- Sender = `EmailReminderService@concursolutions.com` AND subject does NOT contain "Balances Due", OR
+- Subject or body contains "charges" combined with "submit" / "to be submitted" / "need to submit" / "need to be submitted" AND does NOT contain "Balances Due"
 
 **Otherwise**, check body or subject for **approval signals** (someone else needs your approval):
 - "requires your approval"
@@ -97,11 +118,30 @@ Result:
 - Signal found: route to **`Triage - receipts and travel`**
 - Not found: **surface in "Where to file?" section**. Do not auto-move.
 
+### Any sender: payment confirmation in subject
+
+If the subject contains "payment confirmation", "payment received", "your receipt", "your invoice", or "order confirmation", route to **`Triage - receipts and travel`** regardless of sender (no body read needed).
+
 ### Workday (`*@myworkday.com`)
 
 Check subject for "ACTION REQUIRED" (case-insensitive):
 - Present: route to **`Action required`** (Tier 2)
 - Absent: route to **`Triage - noise`** (kudos, surveys, training reminders, FYI alerts)
+
+### Help_Wolken / Autodesk help desk (`Help_*@autodesk.com`)
+
+Covers `Help_SN_PRD@autodesk.com` and any `Help_*@autodesk.com` sender (Autodesk internal help/ticket system).
+
+Always **read the body** to check for approval requests or pending actions. Look for:
+- "approval required" / "requires your approval" / "pending your approval"
+- "action required" / "your action is needed"
+- "nomination" + "awaiting"
+- "please approve" / "approve this request"
+- Subject containing "Awaiting Your Approval"
+
+Result:
+- Approval/action signal found: route to **`Action required`** (Tier 2)
+- Not found: **stay in inbox** (do NOT route to noise; user wants visibility on help desk tickets)
 
 ### Collaboration platforms (Confluence, SharePoint, Office docs, OneDrive)
 
@@ -143,6 +183,9 @@ Match by sender or subject:
 - Slack digests: `noreply@slack.com`, subjects "Daily summary" / "What you missed"
 - Recruitment platform alerts: SmartRecruiters, Greenhouse, LinkedIn Recruiter
 - Marketing / mass mail: `List-Unsubscribe` header present, sender not in people.md
+- Generic automated sender prefixes: `info@*`, `support@*`, `notifications@*`, `notification@*`, `noreply@*`, `no-reply@*`, `donotreply@*`. Excludes Help_Wolken (`Help_*@autodesk.com`), which has its own rule above and stays in inbox.
+- Miro updates: `daily@updates.miro.com`, `*@updates.miro.com`, `The Miro Team`
+- Conference registration / event marketing: subject contains "registration is open", "register now", "ITF 2026", "tuesday tidbits", "register today", "save your seat", "join us at" (combined with sender NOT in people.md). If uncertain, leave in inbox rather than auto-move.
 
 ## Uncertainty rule
 
@@ -151,14 +194,14 @@ If a sender doesn't match a known pattern, or a body check is inconclusive, **su
 ## Workflow
 
 1. **Load state**: read last-run timestamp from `Work/.state/email_triage.json`. Default to 24h ago if missing or empty.
-2. **Resolve folder IDs**: call `list_child_folders` with `parentFolderId = inbox` to get IDs for `Action required`, `Triage-cc`, `Triage - noise`, `Triage - receipts and travel`, `Triage - learning`. If any are missing, stop and ask the user to create them as sub-folders of Inbox.
+2. **Resolve folder IDs**: call `list_child_folders` with `parentFolderId = inbox` to get IDs for `VIP`, `Action required`, `Triage-cc`, `Triage - noise`, `Triage - receipts and travel`, `Triage - learning`. If any are missing, stop and ask the user to create them as sub-folders of Inbox.
 3. **Pull unread**: `list_emails` with `after = last_run`, `unreadOnly = true`, `top = 100`. Paginate if more.
-4. **Parse people directory**: extract names from all squad tables (User Engagement, First Strike, Strategic Accounts, Marketing), External contacts, Autodesk stakeholders, and Leadership sections of `people.md`.
+4. **Parse people directory**: extract names from all squad tables (User Engagement, First Strike, Strategic Accounts, Marketing), External contacts, Autodesk stakeholders, and Leadership sections of `people.md`. Build the VIP set from `## Leadership` (excluding Chris Small); build the Tier 2 set from the other sections.
 5. **First-pass classify** each email by sender / recipient rules.
 6. **Body reads**: for Concur, Gamma, Egencia, Workday, Confluence, SharePoint, and Microsoft Office notification senders, call `read_email` and apply body / subject checks.
 7. **Apply Action Required override** for Tier 1 and Tier 2 emails with action signals.
 8. **Present digest** grouped by section (see output format).
-9. **Confirm before moving** (skipped in auto mode): ask "move Action required, Tier 4, Tier 5, Receipts, Learning now? (y / n / specify keeps)". In auto mode, present the digest then proceed directly to moves without asking.
+9. **Confirm before moving** (skipped in auto mode): ask "move VIP, Action required, Tier 4, Tier 5, Receipts, Learning now? (y / n / specify keeps)". In auto mode, present the digest then proceed directly to moves without asking.
 10. **Move emails** using `update_email` with `moveToFolder` set to the target folder ID.
 11. **Update state**: save current UTC timestamp to `Work/.state/email_triage.json` (only after a successful run).
 
@@ -187,6 +230,7 @@ Total processed: {n}
   - Suggest: Action required | Receipts | Noise | Keep in inbox?
 
 ## To move ({total n})
+- To `VIP` ({n}): {sender}: {subject}, ...
 - To `Action required` ({n}): {sender}: {subject}, ...
 - To `Triage-cc` ({n}): {sender}: {subject} (x{count}), ...
 - To `Triage - noise` ({n}): Confluence: {n} | Concur (no action): {n} | Workday (no action): {n} | Slack digest: {n} | ...
@@ -206,7 +250,7 @@ For Tier 1-2 items, suggest one of:
 
 ## Safety rules
 
-- Never auto-move Tier 1 or 2 emails except into `Action required` (per the override rule).
+- Never auto-move Tier 2 emails except into `Action required` (per the override rule). Tier 1 emails route to `VIP` (or to `Action required` if the override applies).
 - If a Tier 4/5 candidate looks important on closer look (customer name, contract keyword, legal/PR/security/breach mention), bump to Tier 2 and flag for attention.
 - Always present the digest and confirm before moving.
 - Update the state timestamp only after a successful run, never on partial failure.
