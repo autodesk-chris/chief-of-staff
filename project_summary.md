@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-01 (Session 17)
-**Current Phase:** Phase 3.4 - Thread Review Skill
-**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, and voice-aware Slack thread review
+**Last Updated:** 2026-06-03 (Session 18)
+**Current Phase:** Phase 3.5 - Todo Today's Options + VIP Source Unification
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, and an interactive daily focus menu for /todo
 
 ---
 
@@ -25,7 +25,8 @@
 - ✅ **Phase 3.1:** Full Slack Integration Suite (Complete)
 - ✅ **Phase 3.2:** Slack Commitment Scanning + Confluence Integration (Complete)
 - ✅ **Phase 3.3:** Email Triage Skill with M365 Integration (Complete)
-- ✅ **Phase 3.4:** Thread Review Skill with Slack Draft Push (Complete) ← **This Session**
+- ✅ **Phase 3.4:** Thread Review Skill with Slack Draft Push (Complete)
+- ✅ **Phase 3.5:** Todo Today's Options + VIP Source Unification (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -600,9 +601,27 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
+### Session 18: Phase 3.5 Complete (2026-06-03) ← **Current**
+- **Todo skill upgrade:** added Steps 5-6 to `/todo` for an interactive "Today's options" menu that surfaces what Chris should focus on today vs leave for later
+- **Five sources gathered:**
+  1. This week's 4Ps priorities (latest file in `Work/Inbox/4Ps/[Month]/`, fallback to prior week if not yet written)
+  2. Today's meetings via m365 calendar with "prep needed" flag for VIP 1:1s, MFM, leadership sync
+  3. Slack DMs from VIPs (last 5 days, unanswered by Chris)
+  4. Slack @mentions in shared channels for VIPs + direct reports (last 5 days, unreplied)
+  5. Tasks from `./pos /todo` output (overdue, due today, due in <=3 days)
+- **Bucketed numbered menu** displayed in terminal; user picks by number (or `all` / `none`). Selected items written as `## Focus today` section in the todo file, inserted immediately after Pinned. Each item gets a source tag, e.g. `[4Ps]`, `[Meeting prep]`, `[Carl]`, `[Task]`
+- **VIP source unification:** email-triage no longer hardcodes the 4 VIPs. Both skills now parse `## Leadership` from `Work/LLM_Context/Contacts/people.md` as the single source of truth. Add or remove a name in Leadership once, both skills track it. Patrick's always-Tier-1 and Julie's conditional-Tier-1 nuances preserved
+- **Direct reports model:** people.md role field now uses `, direct report` suffix to mark Chris's directs (Joseph Price, Even Olstad, Anders Wester, Mairead Morgan). Parsed dynamically by the todo skill - no separate file
+- **Cost note:** new /todo flow adds ~9 Slack scans + 1 calendar pull + 1 4Ps read per run (~30-60s slower). Acceptable given daily ritual frequency. Tier 2 (wider squad) explicitly excluded from the Slack scan to keep the cost bounded
+- **Files:**
+  - `.claude/skills/todo/SKILL.md` (Steps 5-6 added, frontmatter description updated)
+  - `.claude/skills/email-triage/SKILL.md` (Tier 1 row, workflow step 4, frontmatter description)
+  - `Work/LLM_Context/Contacts/people.md` (direct-report markers; Leadership table positioned as VIP source)
+- **Commit:** `954a4d4 todo + email-triage: add Today's options menu, unify VIP source via people.md Leadership`
+
 ---
 
-## Development Status Summary (Session 17)
+## Development Status Summary (Session 18)
 
 ### Fully Working
 - ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /todo, archive completed, process notepad, actions list, decisions list, new_daily
@@ -625,6 +644,12 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - `review thread: [URL]` analyses any Slack thread, decodes emoji/reaction signal, and drafts a voice-aware response with optional one-step push to Slack drafts
 - Two-filter alignment rule (member + unresolved POV) prevents tagging non-participants or already-aligned members
 - Mandatory Claude disclaimer footer on every drafted response
+
+### Key Enhancement (Session 18)
+- `/todo` now surfaces a bucketed numbered menu of "Today's options" pulled from this week's 4Ps priorities, today's meetings, VIP/direct-report Slack signals (last 5 days), and tasks due today/overdue/next 3 days
+- User selects items by number; selections written as `## Focus today` section in the todo file after Pinned
+- VIP membership unified: email-triage + todo both parse `## Leadership` in people.md instead of hardcoding names. Single source of truth
+- Direct reports modelled in-line on people.md role field (`, direct report` suffix) - no separate directs file to maintain
 
 ### Partially Working / Known Issues
 - None currently
