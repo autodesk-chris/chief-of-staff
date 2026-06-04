@@ -316,7 +316,8 @@ def sync_manual_completions_to_source(manually_completed_titles):
                 item_type=item_type,
                 title=file_title,
                 new_status='completed',
-                status_note='Marked complete in today document'
+                status_note='Marked complete in today document',
+                file_path=file_path
             )
             updated_count += 1
             print(f"✓ Synced manual completion: {item_type} '{file_title}'")
@@ -434,6 +435,10 @@ def get_items_from_folder(folder_path):
         frontmatter = parse_frontmatter(content)
         title = get_file_title(content)
 
+        # Skip completed and archived items - they shouldn't appear in the to-do list
+        if frontmatter.get('status') in ('completed', 'archived'):
+            continue
+
         # Get file creation/modification time
         created_time = datetime.fromtimestamp(file_path.stat().st_birthtime)
         modified_time = datetime.fromtimestamp(file_path.stat().st_mtime)
@@ -528,6 +533,28 @@ def generate_todo():
     # Sync manual completions from existing today document (if it exists)
     today_folder = inbox_path / "Today"
     today_path = today_folder / f"todo_{today.strftime('%Y-%m-%d')}.md"
+
+    # Sync manual completions from the most recent prior todo on disk before generating today's.
+    # Covers the common case where boxes are ticked end-of-day and /todo is next run a day or more later.
+    prior_todos = sorted(
+        (p for p in today_folder.glob("todo_*.md") if p.name != today_path.name),
+        reverse=True,
+    )
+    if prior_todos:
+        prior_path = prior_todos[0]
+        prior_completed = parse_manual_completions(prior_path)
+        if prior_completed:
+            print(f"\n📝 Syncing {len(prior_completed)} manual completion(s) from {prior_path.name}...")
+            updated = sync_manual_completions_to_source(prior_completed)
+            if updated > 0:
+                print(f"✓ Synced {updated} item(s) from {prior_path.name}\n")
+
+        prior_deletions = parse_manual_deletions(prior_path)
+        if prior_deletions:
+            print(f"\n🗑 Processing {len(prior_deletions)} deletion(s) from {prior_path.name}...")
+            deleted = sync_manual_deletions(prior_deletions)
+            if deleted > 0:
+                print(f"✓ Deleted {deleted} external action(s)\n")
 
     if today_path.exists():
         manually_completed = parse_manual_completions(today_path)

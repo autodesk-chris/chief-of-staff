@@ -256,10 +256,6 @@ def find_similar_active_items(title, item_type, threshold=0.5):
                                 detail_lines.append(line.strip())
                     details_text = ' '.join(detail_lines)
 
-                # Truncate details for display
-                if len(details_text) > 120:
-                    details_text = details_text[:120] + '...'
-
                 similar.append({
                     'type': folder_type,
                     'title': file_title,
@@ -288,6 +284,7 @@ def format_similar_items_warning(similar_items):
         due = f" | due: {item['due_date']}" if item['due_date'] and item['due_date'] != 'null' else ""
         assignee = f" | assignee: {item['assignee']}" if item.get('assignee') else ""
         lines.append(f"  - [{match_pct} match] {type_label}: {item['title']} (status: {status_label}{due}{assignee})")
+        lines.append(f"    File: file://{item['file_path']}")
         if item['details']:
             lines.append(f"    Details: {item['details']}")
 
@@ -353,15 +350,17 @@ def create_item(item_type, title, due_date=None, details="", tags=None, **kwargs
     return file_path
 
 
-def update_item_status(item_type, title, new_status, status_note=None):
+def update_item_status(item_type, title, new_status, status_note=None, file_path=None):
     """
     Update the status of an existing task, idea, feature, or action.
 
     Args:
         item_type: Type of item ('task', 'idea', 'feature', or 'action')
-        title: Title of the item (used to find the file)
+        title: Title of the item (used to find the file when file_path not provided)
         new_status: New status ('active', 'in-progress', 'blocked', 'waiting', 'on-hold', 'completed', 'archived')
         status_note: Optional note about the status change
+        file_path: Optional explicit Path to the item file. When provided, used directly
+                   instead of reconstructing from title (titles don't always round-trip to filenames).
 
     Returns:
         Path to the updated file
@@ -378,13 +377,12 @@ def update_item_status(item_type, title, new_status, status_note=None):
     if new_status not in valid_statuses:
         raise ValueError(f"Invalid status: {new_status}. Must be one of: {', '.join(valid_statuses)}.")
 
-    # Get the appropriate folder
-    inbox_path = get_inbox_path(item_type)
-
-    # Create the expected filename
-    safe_title = sanitize_filename(title)
-    filename = f"{item_type}_{safe_title}.md"
-    file_path = inbox_path / filename
+    if file_path is None:
+        # Fall back to reconstructing the path from the title
+        inbox_path = get_inbox_path(item_type)
+        safe_title = sanitize_filename(title)
+        filename = f"{item_type}_{safe_title}.md"
+        file_path = inbox_path / filename
 
     # Check if file exists
     if not file_path.exists():

@@ -27,8 +27,9 @@ These rules apply **before** the tier model and override sender-based routing. A
 
 Match by subject:
 - Begins with `Accepted:`, `Declined:`, `Tentative:`, `Canceled:`, or `Cancelled:` (meeting response confirmations)
+- Begins with `Updated invitation:` (Outlook auto-notification when an organiser updates a meeting already on your calendar - the calendar entry itself updates independently, so the email is pure noise)
 
-Meeting acceptances are pure clutter regardless of sender. Move to `Triage - noise`.
+Meeting acceptances and invitation updates are pure clutter regardless of sender. Move to `Triage - noise`.
 
 ### Force to stay in inbox (override VIP routing)
 
