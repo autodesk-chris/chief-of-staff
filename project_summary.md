@@ -601,7 +601,25 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 18: Phase 3.5 Complete (2026-06-03) ← **Current**
+### Session 19: Phase 3.6 Complete (2026-06-04) ← **Current**
+- **Todo completion-sync fix:** ticking `[x]` in any todo file now propagates to the underlying task file on the next `/todo` run, regardless of when the run happens
+- **Three coordinated changes in `scripts/todo.py` + `scripts/create_item.py`:**
+  1. `generate_todo()` now scans the **most recent prior todo on disk** (not just today's file) for `[x]` items before generating the new list. Covers the common case where boxes are ticked at end of day and `/todo` is next run the following morning
+  2. `get_items_from_folder()` filters out items where `status` is `completed` or `archived` so the new list is clean - completed items drop out instead of sitting at the top with a check mark
+  3. `update_item_status()` accepts an explicit `file_path` parameter. Previously rebuilt the filename from the title, which fails when title and filename don't round-trip (e.g. `task_Glint_next_steps.md` holds "Reminder: Follow up Julie re Glint resource"). The sync now passes the path that fuzzy-match already found
+- **Net flow:** tick `[x]` → next `/todo` runs sync against prior file → source task files updated to `status: completed` → generator skips them → fresh list, no ghosts. Yesterday's todo file remains untouched as a historical snapshot
+- **No cron/auto refresh:** confirmed via `crontab -l`, no `LaunchAgents`, no `scheduled_tasks` config. `/todo` is purely user-triggered, so the sync-then-filter flow is the entire loop. No manual/auto modes needed
+- **Email-triage rule addition:** `Updated invitation:` subject prefix added to the Force-to-noise universal overrides. Outlook organiser-update notifications are redundant with the calendar entry itself, so they auto-route to noise alongside `Accepted:`/`Declined:`/`Tentative:`/`Cancelled:`
+- **Similar-items warning expansion:** `create_item.py` warning now shows the full `file://` path of the matched item and the full details text (no 120-char truncation). User can verify the match before deciding whether to create a new item or update the existing one
+- **Files:**
+  - `scripts/todo.py` (prior-todo sync block, completed/archived filter, file_path passthrough)
+  - `scripts/create_item.py` (file_path param on update_item_status, full path + full details in warning)
+  - `.claude/skills/email-triage/SKILL.md` (Updated invitation: rule)
+- **Commit:** `a8bf95b todo: sync ticked items from prior todo, hide completed items, expand similar-items warning`
+
+---
+
+### Session 18: Phase 3.5 Complete (2026-06-03)
 - **Todo skill upgrade:** added Steps 5-6 to `/todo` for an interactive "Today's options" menu that surfaces what Chris should focus on today vs leave for later
 - **Five sources gathered:**
   1. This week's 4Ps priorities (latest file in `Work/Inbox/4Ps/[Month]/`, fallback to prior week if not yet written)
@@ -621,7 +639,7 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 
 ---
 
-## Development Status Summary (Session 18)
+## Development Status Summary (Session 19)
 
 ### Fully Working
 - ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /todo, archive completed, process notepad, actions list, decisions list, new_daily
@@ -650,6 +668,12 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - User selects items by number; selections written as `## Focus today` section in the todo file after Pinned
 - VIP membership unified: email-triage + todo both parse `## Leadership` in people.md instead of hardcoding names. Single source of truth
 - Direct reports modelled in-line on people.md role field (`, direct report` suffix) - no separate directs file to maintain
+
+### Key Enhancement (Session 19)
+- Ticking `[x]` in any todo file now syncs to the underlying task on the next `/todo` run: prior-day file is scanned, source frontmatter is updated to `status: completed`, and completed items are filtered out of the new list
+- `update_item_status()` now accepts an explicit `file_path` so the sync uses the fuzzy-matched path rather than rebuilding the filename from the title (titles don't always round-trip to filenames)
+- Email-triage adds `Updated invitation:` to Force-to-noise universal overrides; Outlook organiser-update notifications auto-route to noise
+- `create_item.py` similar-items warning shows the full `file://` path and full untruncated details so the user can verify the match before deciding whether to create or update
 
 ### Partially Working / Known Issues
 - None currently
