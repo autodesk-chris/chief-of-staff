@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-03 (Session 18)
-**Current Phase:** Phase 3.5 - Todo Today's Options + VIP Source Unification
-**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, and an interactive daily focus menu for /todo
+**Last Updated:** 2026-06-05 (Session 20)
+**Current Phase:** Phase 3.7 - Standing Meetings Mapping + Primary-Lens Meeting Prep
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo, and a standing-meetings reference mapping that drives meeting prep from the meeting's known purpose, channel, and cadence
 
 ---
 
@@ -26,7 +26,9 @@
 - ✅ **Phase 3.2:** Slack Commitment Scanning + Confluence Integration (Complete)
 - ✅ **Phase 3.3:** Email Triage Skill with M365 Integration (Complete)
 - ✅ **Phase 3.4:** Thread Review Skill with Slack Draft Push (Complete)
-- ✅ **Phase 3.5:** Todo Today's Options + VIP Source Unification (Complete) ← **This Session**
+- ✅ **Phase 3.5:** Todo Today's Options + VIP Source Unification (Complete)
+- ✅ **Phase 3.6:** Todo Completion-Sync + Similar-Items Warning (Complete)
+- ✅ **Phase 3.7:** Standing Meetings Mapping + Primary-Lens Meeting Prep (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -601,7 +603,27 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 19: Phase 3.6 Complete (2026-06-04) ← **Current**
+### Session 20: Phase 3.7 Complete (2026-06-05) ← **Current**
+- **Standing meetings reference mapping:** new `Work/LLM_Context/Admin/standing_meetings.md` lookup file keyed by meeting title, with fields for aliases, cadence, owner, Slack channel, core attendees, purpose, recurring topics, prep style, and prior prep location
+- **AGENT_MEETINGS.md primary-lens rule:** when `prep meeting:` runs and the title fuzzy-matches a mapping entry, the entry becomes the PRIMARY source for context-gathering, not a supplement. The entry's `Purpose`, `Recurring topics`, and `Prep style` scope every downstream Granola/Slack/decisions query. Generic sweeps only happen when no entry matches
+- **Cadence-driven soft lookback:** the entry's `Cadence` drives the channel/DM/Granola review window (weekly = ~7 days, biweekly = ~14, monthly = ~30). Soft anchor, not a hard rule - extends if a thread spans further
+- **Seeded with People Allocation Weekly Sync** as entry #1 (channel C0A7E7PFJ6M, weekly Thursdays 13:00 CET, owned by Julie Sylvain)
+- **Full prep→meeting→post-meeting cycle exercised** on People Allocation sync (2026-06-04): prep generated through the new lens correctly narrowed to Q3 consultant funding (Julie's actual agenda), post-meeting summary built from Granola transcript, 4 tasks + 3 decisions created (Filip Hagen renewed Q3, Autodesk Assistant deferred to Q4, Tamira XF support routed via next funding conversation)
+- **Growth pattern:** appended Pattern 3 positive example to `growth_patterns.md` - accepted Julie's pushback on the hiring-acceleration framing (real bottleneck is candidate processing via Memo Services, not sourcing) without re-pitching. Classic Pattern 3 inverse
+- **Files:**
+  - `Work/LLM_Context/Admin/standing_meetings.md` (new)
+  - `.claude/personas/AGENT_MEETINGS.md` (primary-lens block under Step 2 of Pre-Meeting Workflow)
+  - `Work/LLM_Context/Personal/growth_patterns.md` (Pattern 3 positive example)
+  - `Work/Meetings/Prep/2026-06-04_People_Allocation_Weekly_Sync_prep.md`
+  - `Work/Meetings/2026-06-04_People_Allocation_Weekly_Sync.md`
+  - 3 decision files in `Work/Decisions/`
+- **Commits:**
+  - `e899a79` (standing-meetings infra, bundled with MFM skills refactor)
+  - `5f409f2 Q3 consultant decisions and Pattern 3 positive example from People Allocation sync`
+
+---
+
+### Session 19: Phase 3.6 Complete (2026-06-04)
 - **Todo completion-sync fix:** ticking `[x]` in any todo file now propagates to the underlying task file on the next `/todo` run, regardless of when the run happens
 - **Three coordinated changes in `scripts/todo.py` + `scripts/create_item.py`:**
   1. `generate_todo()` now scans the **most recent prior todo on disk** (not just today's file) for `[x]` items before generating the new list. Covers the common case where boxes are ticked at end of day and `/todo` is next run the following morning
@@ -639,7 +661,7 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 
 ---
 
-## Development Status Summary (Session 19)
+## Development Status Summary (Session 20)
 
 ### Fully Working
 - ✅ **Tasks Agent:** new task, new idea, new reminder, new decision, update, change due date, /todo, archive completed, process notepad, actions list, decisions list, new_daily
@@ -674,6 +696,12 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
 - `update_item_status()` now accepts an explicit `file_path` so the sync uses the fuzzy-matched path rather than rebuilding the filename from the title (titles don't always round-trip to filenames)
 - Email-triage adds `Updated invitation:` to Force-to-noise universal overrides; Outlook organiser-update notifications auto-route to noise
 - `create_item.py` similar-items warning shows the full `file://` path and full untruncated details so the user can verify the match before deciding whether to create or update
+
+### Key Enhancement (Session 20)
+- New `Work/LLM_Context/Admin/standing_meetings.md` mapping turns recurring meetings into a lookup keyed by title (aliases, cadence, owner, Slack channel, attendees, purpose, recurring topics, prep style)
+- `prep meeting:` now uses the mapping as the primary lens when matched: purpose/topics/prep-style scope every downstream Granola/Slack/decisions query rather than running generic sweeps. Falls back to default discovery when no entry matches
+- Soft cadence-driven lookback (weekly ~7d, biweekly ~14d, monthly ~30d) aligns channel/DM/Granola review window to meeting rhythm. Extensible if a thread spans further
+- Seeded with People Allocation Weekly Sync entry #1; full cycle exercised end-to-end (prep, attend, post-meeting summary, item creation)
 
 ### Partially Working / Known Issues
 - None currently
