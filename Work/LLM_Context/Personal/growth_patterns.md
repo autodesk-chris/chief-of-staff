@@ -53,6 +53,9 @@ Agents should actively look for two things:
 - Heated or time-pressured discussions where the instinct to influence kicks in
 - Presenting a strategy or proposal that gets pushback
 
+**Positive example - People Allocation sync (4 June 2026):**
+Raised the bigger framing that half the Q2 consultant spend sits in Tools, so accelerating FTE hiring via remote + agency would compress that cost. Julie pushed back with new information: the bottleneck is candidate processing (Memo Services efficiency), not sourcing; recruiting capacity has already expanded to 4 recruiters + 1 sourcer on Norway. Chris's response was "Makes a lot of sense really. So I think that that's a big call out." He immediately updated rather than re-pitching the original framing or finding another angle to push the same point. Heard the diagnosis, accepted it, parked his idea, moved on. Classic Pattern 3 inverse - resisted the urge to explain harder when the other person already understood the system better than he did.
+
 **Related to but distinct from:** Pattern 4 (over-explaining in coaching). This pattern is about peer/leadership dynamics, not coaching direct reports.
 
 ---
