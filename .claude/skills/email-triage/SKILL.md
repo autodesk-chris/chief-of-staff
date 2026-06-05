@@ -188,6 +188,8 @@ Match by sender or subject:
 - Miro updates: `daily@updates.miro.com`, `*@updates.miro.com`, `The Miro Team`
 - Autodesk internal engagement digests: `noreply_autodesk@engage.mail.microsoft`, `*@engage.mail.microsoft` (Microsoft engagement platform pushing community/feed digests)
 - Autodesk Weekly Digest: subject contains "Autodesk Weekly Digest" (recurring internal community digest)
+- Forma Design Leadership Calendar announcements: `UnifiedDesignLeadershipCalendar@autodesk.com` (Town Halls, strategic calendar event announcements - the calendar entry itself is the source of truth, the email is redundant)
+- Autodesk Applause / Workhuman recognition emails (default to noise): `AutodeskApplause@globoforce.com`, `*@globoforce.com`, `*@workhuman.com`. **Always read body first.** If the body contains an approval signal ("requires your approval", "pending your approval", "you have been nominated to approve", "approve recognition"), route to `Action required` instead. Redemption reminders ("redeem now", "explore the store", "you've earned") are noise.
 - Conference registration / event marketing: subject contains "registration is open", "register now", "ITF 2026", "tuesday tidbits", "register today", "save your seat", "join us at" (combined with sender NOT in people.md). If uncertain, leave in inbox rather than auto-move.
 
 ## Uncertainty rule
