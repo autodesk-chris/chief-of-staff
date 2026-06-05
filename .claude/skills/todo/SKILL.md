@@ -87,6 +87,8 @@ After displaying the file, gather signals from five sources and present a bucket
 
 3. **Today's meetings** - m365 calendar via `list_events`, scoped to today. Flag "prep needed" for: 1:1 with a VIP or direct report, MFM, leadership sync, or any meeting where Chris is the organiser and the topic is not routine.
 
+   **Time zone conversion (required):** `list_events` returns each event's `start` time in the organiser's `startTz` (commonly `Europe/Oslo` = CEST/CET). Chris is in `Europe/Dublin` / `Europe/London` (IST/BST = UTC+1 in summer, GMT = UTC+0 in winter). Always convert event times to Chris's local clock before displaying or writing into the todo file. Run `date "+%z"` once at the start of the meeting block to confirm the current local offset, then subtract from each event's source TZ. Display only the local time - never the source TZ time. For Oslo-organised events in summer the offset is -1 hour (12:00 Oslo = 11:00 BST).
+
 4. **Slack signals** - for each VIP and each direct report:
    - Scan DMs in the last 5 days. Surface threads where the last message is from them (i.e. unanswered by Chris).
    - Scan @mentions in shared channels in the last 5 days. Surface those where Chris has not replied or reacted.

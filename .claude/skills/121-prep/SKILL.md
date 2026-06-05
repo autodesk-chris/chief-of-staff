@@ -1,12 +1,16 @@
 ---
 name: 121-prep
 description: >
-  Prepare for a 1-on-1 meeting by gathering context from observations, actions,
-  Granola, Slack DMs, and previous 121 notes. Accepts inline focal topics and
-  does deep research on them. Suggests additional topics for user selection,
-  then generates a focused, outcome-driven prep document. Use when "121: [name]",
-  "121 prep: [name]", "prep my 121 with [name]", "prepare for my 1:1 with [name]".
-  NOT for coaching check-ins (use coaching-prep). NOT for post-meeting (use post-meeting).
+  Prepare for a 1-on-1 meeting with a named person by gathering context from observations,
+  actions, Granola, Slack DMs, and previous 121 notes. Accepts inline focal topics and
+  inline reference materials (specific Slack messages, documents, files, OKRs, expectations
+  docs) and treats them as required anchors. Suggests additional topics for user selection,
+  then generates a focused, outcome-driven prep document. Use for ANY 1:1 with a named
+  person regardless of topic framing: "121: [name]", "121 prep: [name]", "prep my 121
+  with [name]", "prepare for my 1:1 with [name]", "prep me for my call on [topic] with
+  [name]", "I have a check-in with [name]", "prepare for my [meeting type] with [name]".
+  NOT for coaching check-ins (use coaching-prep). NOT for general team/strategy meetings
+  (use prep meeting via the Meetings agent). NOT for post-meeting (use post-meeting).
 ---
 
 # 121 prep
@@ -17,14 +21,21 @@ Prepare for a 1-on-1 meeting with a direct report or colleague. Gathers context 
 
 - `121: [name]`
 - `121 prep: [name]`
-- Natural language: "prep my 121 with [name]", "prepare for my 1:1 with [name]", "I have a check-in with [name]"
+- Natural language: any request to prepare for a 1:1 with a named person, regardless of topic framing. Examples:
+  - "prep my 121 with [name]"
+  - "prepare for my 1:1 with [name]"
+  - "I have a check-in with [name]"
+  - "prep me for my call on [topic] with [name]"
+  - "prepare for my [topic] meeting with [name]"
+  - "[name] and I have a [type] call today"
 
 **Routing note:** The meetings agent handles coaching plan detection. If the person is on an active coaching plan, the meetings agent routes to coaching-prep instead of this skill. This skill assumes the person is NOT on a coaching plan.
 
 ## Arguments
 
 - **person**: Name of the person (required)
-- **inline context**: The user may supply focal topics, desired outcomes, or specific research directions in their original message (e.g. "121: Even - focus on capacity study backlog"). Parse these and treat them as pre-selected priority topics that skip the suggestion step. They still appear in the agenda but don't need user confirmation.
+- **inline focal topics**: The user may supply focal topics, desired outcomes, or specific research directions in their original message (e.g. "121: Even - focus on capacity study backlog", "prep my call on IDP with Joe"). Parse these and treat them as pre-selected priority topics that skip the suggestion step. They still appear in the agenda but don't need user confirmation.
+- **inline reference materials**: The user may name specific source documents, Slack messages, files, or comparison frames they want included (e.g. "check Slack for the IDP doc he shared", "compare with my OKRs", "include the user engagement expectations doc", "use Confluence page X"). These are **required inputs**, not optional context. Fetch every named source in Step 1 and treat them as primary anchors in Step 2c deep research. If a named source cannot be found, ask the user before proceeding rather than silently skipping it.
 
 ## Process
 
@@ -163,14 +174,14 @@ Using only the selected topics, generate the prep document.
 [What you want to walk out with - a decision, a commitment, clarity on something]
 
 ### Why this matters now
-[Brief context bullets - data, patterns, deadlines]
+[ONE OR TWO succinct sentences. The data point, deadline, or pattern that makes this urgent right now. NOT a bulleted context dump - if you find yourself listing four bullets, you're explaining background, not stating why now.]
 
 ### Conversation flow
-[2-4 numbered questions that drive toward the outcome. Push toward decisions and commitments, not exploration.]
-- Anticipate likely pushback and prepare counters inline (indented under the question)
-- Include specific data points from deep research (metrics, timelines, comparable approaches)
-- Where possible, use the person's own strategy language and frameworks to frame questions - connects to how they already think about the problem
-- If a comparable approach exists (e.g. a peer solved this differently), reference it as a concrete alternative, not a judgment
+[2-4 numbered questions that drive toward the outcome. Push toward decisions and commitments, not exploration. Keep each question to one line where possible - the prep doc is a cheat sheet, not a script.]
+- Anticipate likely pushback as a single indented line under the question, only when the pushback is genuinely likely. Don't manufacture pushback for every question.
+- Reference specific data points inline (metrics, timelines, comparable approaches) - don't restate context that's already in 'Why this matters now'.
+- Where possible, use the person's own strategy language and frameworks to frame questions - connects to how they already think about the problem.
+- If a comparable approach exists (e.g. a peer solved this differently), reference it as a concrete alternative, not a judgment.
 
 ---
 
@@ -204,10 +215,12 @@ Sources: [list Granola meetings, observations, Slack DMs, Confluence pages used]
 - Structured to help Chris keep the conversation on track
 - Time-boxed sections so the conversation doesn't drift
 - Questions push toward decisions and commitments, not exploration
-- Anticipate pushback and prepare for it
+- Anticipate pushback only where genuinely likely, as a single inline line
 - Their agenda items come first - show respect for their time
 - Sentence case for all headings
 - No em dashes - use regular hyphens or restructure
+- 'Why this matters now' is 1-2 sentences max. If you need more, you're explaining background, not urgency.
+- Conversation flow questions are one line where possible. The prep doc is a cheat sheet, not a script.
 
 ### Step 4: Save and present
 
@@ -231,6 +244,9 @@ Each topic should have a clear "walk out with" outcome. If you can't articulate 
 
 ### Patterns over incidents
 When raising development feedback, connect observations across time. "The May 20 sync showed the authority that was missing in April" is more useful than "you were good in May."
+
+### Development patterns belong in observations, not the prep doc
+If you find yourself writing a multi-paragraph development thread that synthesises behaviour across weeks/months, save it as a fresh observation file (`Work/People/Observations/observation_[Name]_[YYYY-MM-DD].md`) and reference it in the prep doc rather than embedding the full pattern. The prep doc is for tomorrow's conversation; the observation is the durable record that later 121s, 360s, and performance reviews draw on. Always offer to create the observation alongside the prep doc when a pattern surfaces.
 
 ### Honest about trade-offs
 If there are 10 possible topics and only 30 minutes, say so. Help the user prioritise rather than cramming everything in.

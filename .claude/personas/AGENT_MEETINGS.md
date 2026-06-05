@@ -55,6 +55,11 @@ From title and context, determine:
 
 **For all meeting types, start by reading** `Work/LLM_Context/Contacts/people.md` to look up attendees and retrieve their **search terms**. Use all search terms (not just names) when querying Slack and Granola. This ensures you find conversations about associated companies, initiatives, and tools (e.g. searching for "Trig" when prepping for Mark Ryan). If a person isn't in the contacts file, ask the user for associated companies/initiatives and offer to add them afterward.
 
+**Standing meeting check (primary lens when matched):** Before any context-gathering, read `Work/LLM_Context/Admin/standing_meetings.md` and fuzzy-match the meeting title (and aliases) against entries there.
+
+- **If matched:** the entry is the primary source. Use its `Purpose`, `Recurring topics`, and `Prep style` as the lens that shapes every downstream query. Granola, Slack, decisions, and observations sweeps must be **scoped to those topics**, not run as generic sweeps. The listed Slack channel is the authoritative recent-signal source for this meeting. **Use the entry's `Cadence` as the default lookback window for channel/DM/Granola review** (weekly meeting = ~7 days, biweekly = ~14 days, monthly = ~30 days). This is a soft anchor: extend the window if a thread clearly spans further back, or if the cadence entry is missing recent activity. Anything outside the mapped purpose is excluded unless directly raised by the user's request or surfaced as a blocker in scoped sources. After the prep, propose updates to the mapping entry based on what was actually useful.
+- **If not matched:** fall back to the default discovery sweep (calendar, Granola, recent decisions, observations) using contacts.md search terms. If the meeting is clearly recurring, propose a new mapping entry after the prep.
+
 Based on meeting type, query relevant sources:
 
 **For coaching check-ins:**

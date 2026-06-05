@@ -1,14 +1,18 @@
 {
-  "last_run": "2026-06-01T19:30:00Z",
+  "last_run": "2026-06-04T10:42:00Z",
   "last_run_summary": {
-    "total_processed": 6,
-    "tier_1": 0,
-    "tier_2_inbox": 1,
-    "moved_action_required": 2,
+    "total_processed": 8,
+    "tier_1_vip": 0,
+    "tier_2_inbox": 2,
+    "moved_vip": 0,
+    "moved_action_required": 0,
     "moved_cc": 0,
     "moved_noise": 3,
     "moved_receipts": 0,
-    "moved_learning": 0,
-    "where_to_file": 0
+    "moved_learning": 1,
+    "where_to_file": 0,
+    "rule_updates": [
+      "Added 'Updated invitation:' subject prefix to Force-to-noise universal overrides"
+    ]
   }
 }

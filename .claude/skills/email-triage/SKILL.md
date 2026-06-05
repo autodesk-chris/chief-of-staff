@@ -186,6 +186,8 @@ Match by sender or subject:
 - Marketing / mass mail: `List-Unsubscribe` header present, sender not in people.md
 - Generic automated sender prefixes: `info@*`, `support@*`, `notifications@*`, `notification@*`, `noreply@*`, `no-reply@*`, `donotreply@*`. Excludes Help_Wolken (`Help_*@autodesk.com`), which has its own rule above and stays in inbox.
 - Miro updates: `daily@updates.miro.com`, `*@updates.miro.com`, `The Miro Team`
+- Autodesk internal engagement digests: `noreply_autodesk@engage.mail.microsoft`, `*@engage.mail.microsoft` (Microsoft engagement platform pushing community/feed digests)
+- Autodesk Weekly Digest: subject contains "Autodesk Weekly Digest" (recurring internal community digest)
 - Conference registration / event marketing: subject contains "registration is open", "register now", "ITF 2026", "tuesday tidbits", "register today", "save your seat", "join us at" (combined with sender NOT in people.md). If uncertain, leave in inbox rather than auto-move.
 
 ## Uncertainty rule

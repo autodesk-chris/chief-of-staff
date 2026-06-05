@@ -8,3 +8,32 @@ Many thanks
   
 
 Chris
+
+
+
+Thanks for your message. 
+
+  
+
+I’m on leave at the moment. Please contact the following people if you need help:
+
+  
+
+- Julie Sylvain - anything approvals or budget related
+    
+- Ben Storey - anything community of Marketing related
+    
+- Joseph Price - Anything Growth Team related
+    
+
+  
+
+For a timely reply please direct message them via Slack
+
+  
+
+Many thanks
+
+  
+
+Chris

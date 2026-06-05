@@ -61,6 +61,22 @@ Common mappings:
 
 All other workflows (post-meeting, coaching prep/review, call reflection, session logging, daily summary, 4Ps, todo, notepad processing, role expectations, strategy review, presentations) are auto-discovered via skill descriptions in `.claude/skills/*/SKILL.md`.
 
+### Meeting / call / prep routing checkpoint
+
+Any request to prepare for a meeting, call, sync, check-in, or 1:1 must route through Julie. Before gathering any context, identify the type and declare the route. Use this decision table:
+
+| Request shape | Route to |
+|---|---|
+| 1:1 with a named person, any topic framing ("prep my 1:1 with X", "call with X about Y", "I have a check-in with X", "prepare for my Z meeting with X") | `./pos "121: [name] focus: [topic if given]"` |
+| Person is on an active coaching plan (check project memory for `reference_[firstname]_coaching_confluence`) | coaching-prep skill (auto-routes from `121:`) |
+| Monthly Focus Meeting | `./pos "mfm review: [squad] [month]"` |
+| Anything else (team meeting, strategy session, exec review, vendor call) | `./pos "prep meeting: [title]"` |
+
+**Routing protocol:**
+1. State the route out loud before acting: "Routing this through `./pos '...'`."
+2. **Preserve the user's full ask as inline context.** If they named reference materials ("check Slack for the doc X shared", "compare with my OKRs", "include the user engagement expectations"), pass those through verbatim. They are required inputs, not background colour. The skill treats them as priority anchors that override its default discovery.
+3. If the request is genuinely ambiguous between two routes, ask which one before starting. Don't guess.
+
 ### Key locations
 
 - **Agent personas:** `.claude/personas/AGENT_*.md`

@@ -131,8 +131,8 @@ Agents should actively look for two things:
 After generating the session summary, review the full conversation for:
 - Moments matching known patterns above
 - New signals: asking for help with communication/framing, reworking content multiple times, expressing frustration about interactions, hesitation on people decisions, or any moment that suggests personal growth relevance
-- If anything is spotted, flag it concisely: *"Growth note: I noticed [specific observation]. Want to add this to your growth log?"*
-- If Chris confirms, append to this file under the relevant pattern or create a new pattern section
+- **Positive examples** (managing a pattern well): log automatically under the relevant pattern and mention briefly at session end ("logged a positive example on Pattern 5"). No confirmation needed
+- **Negative examples or new pattern signals**: flag concisely and wait for confirmation before logging: *"Growth note: I noticed [specific observation]. Want to add this to your growth log?"*
 - If nothing relevant, say nothing - no noise
 
 ### Daily summary
@@ -164,8 +164,54 @@ Review meeting notes and Slack context for pattern matches or new signals. Flag 
 
 ---
 
+## Framework: Commissioner vs Consultant
+
+This framework applies across Patterns 3, 4, 5, and 7. It provides a practical operating model for when and how to share ideas.
+
+**Commissioner mode (default):**
+- Set the outcome: what needs to be achieved
+- Set the constraints: timeline, budget, legal, dependencies
+- Set the quality bar: what good looks like, who the audience is
+- Then stop. Don't fill in the how.
+
+**Consultant mode (by invitation only):**
+- Only enter when explicitly asked, or after seeing their thinking first
+- Say it out loud: "Do you want me to share some ideas, or do you want to work this through?"
+- If invited, give 2-3 directional prompts, not 30 tactical suggestions
+- "Have you thought about X?" is different from "Do X by doing Y, Z, and W"
+
+**The test:** After writing feedback, ask - "Could I delete 80% of this and still communicate what I need?" If yes, you probably should.
+
+**Example - Forma Futures (May 2026):**
+- Commissioner version: "1,000 entries. 50%+ professional. Repeatable engine. Must be legally clean. Come back with a plan."
+- What actually happened: 6 strategic sections, ~30 tactical suggestions, specific people to contact, specific language to use. Team executed the playbook rather than building their own.
+
+**Positive follow-up - Forma Futures response to Simone's 14 points (1-2 June 2026):**
+Ten days after the consultant-heavy May 22 feedback, Chris responded to Simone's 14-point reply in strongly commissioner mode. Repeated "for you to decide" / "up to you to recommend" through 8 of the 14 points. Used curious questions ("What's the risk you're mitigating, and how big is it in practice?") instead of answers on student prize, public naming, ownership, and judges. Set the lens explicitly at the top ("how do we motivate participants vs how do we make it easy") and stated constraints (lightweight over formalisation) without prescribing methods. Notable self-check: asked Claude to challenge the draft before pushing - deliberate verification to ensure he stayed commissioner. Also caught a Claude draft that had slipped into prescriptive scope-document/sprint-kickoff/operating-principles language on the Forma Home accountability thread and rewrote it as curious questions to Heather ("why do you feel there needs to be three people leading?") with an empowerment move ("happy to be a contributor if you feel there is someone else that should take the lead").
+
+**Positive example - AutoCAD/DWG leadership-thread draft (2 June 2026):**
+After Arif posted Sales feedback in the leadership channel restating DWG as the #1 customer blocker, Chris briefed Claude to draft a framing reply that bridges Sales's pressure, Carl's platform concern, and Maria's pivot to AutoCAD Web. Brief itself was strongly commissioner: set the outcome (raise the open strategic question for Carl and leadership), set the constraints (short, supportive of Growth, ask for more discovery), and explicitly left the answer open. The resulting draft asks a curious question ("Is there a small, limited-scope file interoperability experiment we could run that informs platform direction without committing Forma to owning DWG long-term?") rather than telling Strategy what to do, opens with acknowledgement of Arif, and explicitly invites leadership steer rather than prescribing the call. Notable that he chose to raise the question in the leadership channel rather than answer it himself - resisting the instinct to solve a problem he had enough context to attempt.
+
+**Positive example - Joe IDP DM recap edits (3 June 2026):**
+Claude drafted a DM recap to Joe after the IDP check-in. Chris's edits were a clean shift toward Commissioner mode. Stripped Claude's manager-action commitments ("I'll test the org structure theory with Mark") and replaced with recipient-action verbs ("Build your general knowledge about the space so you are the go-to expert"). Added a Commissioner-style ask ("allocate some time in July to get up to speed on the team generally") rather than offering to help Joe prep. Also cut Claude's editorial commentary ("sharpened nicely", "muscle out for a spin") and self-congratulatory framing. Bottom line: Chris's instinct on direct-report comms is to put the verbs on the recipient and trust them with the how. Then asked Claude to review the edits and embed the learnings - deliberate verification of the pattern.
+
+**Why it matters:** You trade short-term speed for long-term capability. You can't assess strategic thinking if you've already filled the solution space. And you select for executors over strategists.
+
+---
+
+## Strength: Systems-level reading of group dynamics
+
+**What happens well:** In multi-person meetings with tension, Chris naturally reads the room at a systems level rather than just content level. Identifies when people are operating at different altitudes (e.g., product philosophy vs execution strategy) and validates both perspectives rather than picking a side. This is a genuine leadership strength - naming the dynamic without taking sides, then creating space for both to contribute.
+
+**Example (positive):** US Strategy Unit sync (19 May 2026). Zach and Maria were talking past each other - Zach at product philosophy/composability level, Maria at execution/validation level. Chris identified the altitude difference, validated both perspectives as necessary, and framed the healthy version: "platform/composability thinking over the long term, combined with fast experimentation and real-world customer learning in the short term." Also noted how Zach's rhetoric (strategic inevitability framing) could land as dismissive of execution concerns, even when not intended.
+
+**Why it matters:** This is the flip side of patterns 3 and 7. When Chris resists the urge to influence or solve, the systems-level read emerges naturally and is highly effective.
+
+---
+
 ### Active help (real-time during sessions)
 - **Slack drafting:** If helping draft a Slack message in a contentious thread, proactively check tone against Pattern 2.
+- **Commissioner check:** When helping draft feedback, strategy input, or direction to the team, check whether the message is in Commissioner or Consultant mode. Flag if it slides into Consultant without being invited. Suggest a Commissioner reframe.
 - **Message framing:** If Chris asks for help framing a message or document, note this as a growth-relevant moment at session end.
 - **Meeting prep:** When preparing for meetings where sensitive decisions will be discussed, remind about Pattern 1.
 - **Document writing:** If Chris asks for help structuring or rewriting communications, note the context at session end.

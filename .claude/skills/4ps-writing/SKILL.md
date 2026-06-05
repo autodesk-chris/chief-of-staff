@@ -22,6 +22,15 @@ When user says "write 4Ps", "draft 4Ps", "help with this week's 4Ps", or similar
 - **Problems** are current regardless of week.
 - **Priorities** are ongoing and usually don't change week to week.
 
+## Dating rules
+
+- Always use the **Monday** of the current working week for the title and filename, regardless of which day the 4Ps is written.
+- Title format: `## 4Ps - Week of {Month} {DD}, {YYYY}` where DD is Monday's date.
+- Filename format: `4ps_YYYY-MM-DD.md` where YYYY-MM-DD is Monday's date.
+- Progress range: explicit Mon-Fri of the previous week (e.g. "Progress (week of May 25-29)").
+- Plans range: explicit Mon-Fri of the current week (e.g. "Plans (week of June 1-5)").
+- **Verify before saving:** confirm today's day of week, compute the Monday, and double-check the title, filename, Progress range, and Plans range all line up. Date mistakes are easy to make and corrode trust.
+
 ## Audience
 
 The 4Ps are read by Chris's organisation - squad leads, their reports, and cross-functional partners. See `Work/LLM_Context/Squads/Squads_overview.md` for team context. Write as a leadership update for this audience, not as a personal task tracker. The 4Ps are shared in Slack - write for scanning, not reading. Readers spend 60 seconds on this.
@@ -72,4 +81,4 @@ Significant decisions made during the week should be flagged as candidate progre
 
 ## Output location
 
-Save to `Work/4Ps/{Month}/4ps_YYYY-MM-DD.md` (e.g. `Work/4Ps/May/4ps_2026-05-12.md`).
+Save to `Work/Inbox/4Ps/{Month}/4ps_YYYY-MM-DD.md` where YYYY-MM-DD is the **Monday** of the current working week (e.g. `Work/Inbox/4Ps/June/4ps_2026-06-01.md`).
