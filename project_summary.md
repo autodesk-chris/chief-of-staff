@@ -1,6 +1,6 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-05 (Session 20)
+**Last Updated:** 2026-06-07 (Session 21)
 **Current Phase:** Phase 3.7 - Standing Meetings Mapping + Primary-Lens Meeting Prep
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo, and a standing-meetings reference mapping that drives meeting prep from the meeting's known purpose, channel, and cadence
 
@@ -603,7 +603,18 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 20: Phase 3.7 Complete (2026-06-05) ← **Current**
+### Session 21: Content + Pattern Logging (2026-06-07) ← **Current**
+- **Strategic Accounts MFM summary applied the focused format** (validates the Session 20 mfm-summary skill rewrite): key takeaways, decisions, actions with owners and due dates, pre-read delta table, not-covered list. Cut the previous narrative summary and Slack block; tightened from 100 lines to 68
+- **Growth pattern - Commissioner positive example:** appended a third positive case to `growth_patterns.md` covering three clean outcome-and-bar moves in the Strategic Accounts MFM (prep doc asked Anders to restate output-shaped outcomes without prescribing rewrites; in the meeting set outcomes and asked Sid/Robin to fill in the method; left adoption-ownership note for Anders to draft). Same shape as Joe IDP and Maria recaps - name the outcome and quality bar, leave the how to the recipient
+- **Mairead 121 prep generated via 121-prep skill** (file in private `Work/People/121s/Mairead/`, not tracked). Iterated to focus on her two priorities (US hire + US market understanding), with design competition as reflection-only and goals/OKRs/strategy/AI strategy review pushed to the London 16-17 working sessions
+- **Files:**
+  - `Work/Process/MFM/June/strategic_accounts_mfm_summary.md` (rewrite)
+  - `Work/LLM_Context/Personal/growth_patterns.md` (Strategic Accounts MFM positive example)
+- **Commit:** `4847a61 strategic-accounts MFM: focused summary + Commissioner pattern example`
+
+---
+
+### Session 20: Phase 3.7 Complete (2026-06-05)
 - **Standing meetings reference mapping:** new `Work/LLM_Context/Admin/standing_meetings.md` lookup file keyed by meeting title, with fields for aliases, cadence, owner, Slack channel, core attendees, purpose, recurring topics, prep style, and prior prep location
 - **AGENT_MEETINGS.md primary-lens rule:** when `prep meeting:` runs and the title fuzzy-matches a mapping entry, the entry becomes the PRIMARY source for context-gathering, not a supplement. The entry's `Purpose`, `Recurring topics`, and `Prep style` scope every downstream Granola/Slack/decisions query. Generic sweeps only happen when no entry matches
 - **Cadence-driven soft lookback:** the entry's `Cadence` drives the channel/DM/Granola review window (weekly = ~7 days, biweekly = ~14, monthly = ~30). Soft anchor, not a hard rule - extends if a thread spans further
