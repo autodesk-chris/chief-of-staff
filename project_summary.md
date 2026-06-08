@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-07 (Session 21)
-**Current Phase:** Phase 3.7 - Standing Meetings Mapping + Primary-Lens Meeting Prep
-**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo, and a standing-meetings reference mapping that drives meeting prep from the meeting's known purpose, channel, and cadence
+**Last Updated:** 2026-06-08 (Session 22)
+**Current Phase:** Phase 3.8 - /todo Meeting Lookback Generalisation
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo, standing-meetings reference mapping, and meeting-lookback logic that handles weekends, holidays, and PTO instead of literal yesterday
 
 ---
 
@@ -28,7 +28,8 @@
 - ✅ **Phase 3.4:** Thread Review Skill with Slack Draft Push (Complete)
 - ✅ **Phase 3.5:** Todo Today's Options + VIP Source Unification (Complete)
 - ✅ **Phase 3.6:** Todo Completion-Sync + Similar-Items Warning (Complete)
-- ✅ **Phase 3.7:** Standing Meetings Mapping + Primary-Lens Meeting Prep (Complete) ← **This Session**
+- ✅ **Phase 3.7:** Standing Meetings Mapping + Primary-Lens Meeting Prep (Complete)
+- ✅ **Phase 3.8:** /todo Meeting Lookback Generalisation (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -603,7 +604,25 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 21: Content + Pattern Logging (2026-06-07) ← **Current**
+### Session 22: Phase 3.8 Complete (2026-06-08) ← **Current**
+- **Problem identified mid-`/todo`:** on Sunday 2026-06-07 the workflow scanned literally yesterday (Saturday, empty) and silently dropped Friday's two meetings. Existing `feedback_monday_meetings.md` memory only codified the Monday-to-Friday case; gaps from weekends, post-holiday returns, and PTO weren't handled
+- **`scripts/parse_command.py` /todo branch:** Granola-side scan now walks back up to 7 days from yesterday and stops at the first date with meetings. Skips empty dates (weekends, holidays, PTO). Confirms before creating items per `feedback_confirm_before_creating_items`
+- **`scripts/todo.py` `get_previous_working_day`:** rewritten to scan `Work/Daily_Logs/` for the most recent date with a `daily_summary_*.md` or `claude_sessions_*.md` file (proxy for "a day Chris actually worked"). Falls back to Monday-to-Friday rule if no log file found in 7-day window. Verified: Sun 6/7 returns Fri 6/5, correctly skips empty Sat 6/6
+- **Memory:** rewrote `feedback_monday_meetings.md` to generalise from "Mondays look back to Friday" to "most recent active day, skip weekends/holidays/PTO". MEMORY.md index updated to match
+- **Friday gaps closed:** verified Forma Futures Contest Strategy fully processed (4 decisions + 12 actions). Mairead 121 was partially processed (US Comm Mgr hiring, design competition captured) but the 121 log hadn't been updated past 2026-04-27 and London June 16-17 working sessions weren't captured anywhere. Wrote 5 June 121 log entry and created `task_Lock_prep__agenda_for_London_June_16-17_sessions_with_Mairead.md`
+- **Bonus task captured:** investigated FY27Q2 Portfolio Optimization & Reinvestment requirement via Confluence (pages 869665006 + 880967681); created focused task for Chris's section of the pre-read (10% give-back, 8 Growth squads = 29 heads, two tables + 8-min in-room slot)
+- **Files:**
+  - `scripts/parse_command.py` (/todo lookback walk)
+  - `scripts/todo.py` (`get_previous_working_day` rewrite)
+  - `~/.claude/projects/-Users-smallc-AI-Chief-of-staff/memory/feedback_monday_meetings.md` (generalised)
+  - `~/.claude/projects/-Users-smallc-AI-Chief-of-staff/memory/MEMORY.md` (index updated)
+  - `Work/People/121s/Mairead/121_log.md` (5 June entry, private, not tracked)
+  - 2 new tasks in `Work/Inbox/Tasks/` (private, not tracked)
+- **Commit:** `e236214 julie /todo: look back to most recent active day, not literal yesterday`
+
+---
+
+### Session 21: Content + Pattern Logging (2026-06-07)
 - **Strategic Accounts MFM summary applied the focused format** (validates the Session 20 mfm-summary skill rewrite): key takeaways, decisions, actions with owners and due dates, pre-read delta table, not-covered list. Cut the previous narrative summary and Slack block; tightened from 100 lines to 68
 - **Growth pattern - Commissioner positive example:** appended a third positive case to `growth_patterns.md` covering three clean outcome-and-bar moves in the Strategic Accounts MFM (prep doc asked Anders to restate output-shaped outcomes without prescribing rewrites; in the meeting set outcomes and asked Sid/Robin to fill in the method; left adoption-ownership note for Anders to draft). Same shape as Joe IDP and Maria recaps - name the outcome and quality bar, leave the how to the recipient
 - **Mairead 121 prep generated via 121-prep skill** (file in private `Work/People/121s/Mairead/`, not tracked). Iterated to focus on her two priorities (US hire + US market understanding), with design competition as reflection-only and goals/OKRs/strategy/AI strategy review pushed to the London 16-17 working sessions
