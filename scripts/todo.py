@@ -767,12 +767,9 @@ def generate_todo():
             # Reload tasks to include the new one
             tasks = get_items_from_folder(inbox_path / "Tasks")
 
-        content += """## Monday reminder: weekly 4Ps
-
-**Time to write your 4Ps.** Review daily summaries from last week and draft your update.
-Run `./pos "4ps"` or `./pos "generate 4ps"` to get started.
-
-"""
+        # Monday 4Ps reminder is added to the Pinned section by the /todo skill,
+        # not as a standalone section here.
+        pass
 
     # Overdue tasks first
     if overdue_tasks:

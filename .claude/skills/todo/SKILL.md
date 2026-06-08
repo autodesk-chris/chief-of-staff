@@ -163,9 +163,10 @@ Save the file and confirm to the user with a short line, e.g. "Focus today saved
 
 If the user picks `none`, skip writing the section.
 
-**Monday pinned addition:** On Mondays, also prepend a pinned item:
+**Monday pinned additions:** On Mondays, prepend two pinned items in this order:
 ```
 - Weekly prep block (2h): email triage, 4Ps writing, /todo run, week planning.
+- Write weekly 4Ps: review daily summaries from last week and draft update. Run `./pos "4ps"` to start.
 ```
 
 ## Summarisation guidelines
