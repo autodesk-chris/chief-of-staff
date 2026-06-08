@@ -491,15 +491,16 @@ def execute_command(command_text):
         return f"""TODO_WITH_MEETING_EXTRACT:{today_date}
 
 Claude should automatically:
-1. Query yesterday's meetings: mcp__granola__list_meetings(time_range="this_week") and filter for yesterday ({yesterday_date})
-2. For each meeting from yesterday that hasn't been processed:
+1. Query recent meetings: mcp__granola__list_meetings(time_range="last_week" or "this_week" as needed to cover the look-back window).
+2. Identify the most recent date prior to today ({today_date}) that has Granola meetings. Start at yesterday ({yesterday_date}) and walk back up to 7 days, skipping any date with zero meetings (weekends, holidays, time off). Stop at the first date with meetings: that is the look-back date.
+3. For each meeting from the look-back date that has not already been processed (check Work/Inbox/Actions/, Work/Decisions/, recent 121 logs, and recent post-meeting summaries):
    - Get details: mcp__granola__get_meetings(meeting_ids=["<id>"])
    - Extract actions, decisions, tasks, observations from the summary
-   - Create items using ./pos commands
-3. After processing all meetings, generate the to-do list:
+   - Create items using ./pos commands (confirm with user before creating per feedback_confirm_before_creating_items)
+4. After processing all meetings, generate the to-do list:
    - Run: ./pos "/todo-generate"
 
-IMPORTANT: Execute this workflow automatically without asking for confirmation."""
+IMPORTANT: Execute this workflow automatically without asking for confirmation on the look-back scan itself. Confirm only before creating items from extracted content."""
 
     # Internal command to just generate to-do list (called after meeting extraction)
     if command_text == '/todo-generate':

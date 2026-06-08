@@ -61,7 +61,12 @@ def is_team_member(assignee, team_members):
 
 def get_previous_working_day(today):
     """
-    Get the previous working day date.
+    Get the most recent prior day that has a daily summary file.
+
+    Walks back up to 7 days from yesterday and returns the first date with a
+    daily_summary_YYYY-MM-DD.md or claude_sessions_YYYY-MM-DD.md file in
+    Work/Daily_Logs/. Falls back to a weekday-aware default (Monday -> Friday,
+    otherwise yesterday) if no log file is found in the window.
 
     Args:
         today: datetime.date object for today
@@ -69,12 +74,19 @@ def get_previous_working_day(today):
     Returns:
         datetime.date object for previous working day
     """
-    # If today is Monday (weekday 0), return Friday
+    logs_dir = Path(__file__).parent.parent / "Work" / "Daily_Logs"
+    candidate = today - timedelta(days=1)
+    for _ in range(7):
+        if logs_dir.exists():
+            ds = logs_dir / f"daily_summary_{candidate.isoformat()}.md"
+            cs = logs_dir / f"claude_sessions_{candidate.isoformat()}.md"
+            if ds.exists() or cs.exists():
+                return candidate
+        candidate = candidate - timedelta(days=1)
+    # Fallback: Monday -> Friday, else yesterday
     if today.weekday() == 0:
         return today - timedelta(days=3)
-    # Otherwise return yesterday
-    else:
-        return today - timedelta(days=1)
+    return today - timedelta(days=1)
 
 
 def read_previous_day_summary(previous_date):
