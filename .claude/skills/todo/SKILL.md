@@ -99,12 +99,22 @@ After displaying the file, gather signals from five sources and present a bucket
    - Due today
    - Due in <=3 days
 
-**Display format in terminal** (numbered globally so user can pick by number):
+**Compute available focus time (display before the menu):**
+
+- Baseline workday: 08:30-18:00 local = 9.5h.
+- **Self-blocks count as work time** (strategic work, meeting prep, or lunch). Do NOT subtract them.
+- Subtract real meetings only (not self-blocks).
+- **On Mondays, subtract an additional 2h for the weekly prep block** (email triage, 4Ps writing, /todo run, week planning). Also surface this as a pinned item.
+- Display the resulting number, e.g. "Available focus time today: 6.0h".
+
+**Display format in terminal** (numbered globally so user can pick by number). Bucket options into Strategic (4Ps) and Tactical (tasks + Slack replies). Size each tactical pick:
 
 ```
 ## Today's options
 
-### This week's 4Ps priorities
+**Available focus time today: 6.0h** (workday 9.5h - 1.5h meetings - 2h Monday prep)
+
+### Strategic - this week's 4Ps priorities
 1. [priority text]
 2. ...
 
@@ -112,37 +122,51 @@ After displaying the file, gather signals from five sources and present a bucket
 3. 09:00 - [title] (prep needed: [reason])
 4. ...
 
-### From VIPs (last 5 days)
-5. **Carl** DM: "[subject/first line]" - 2d ago, unanswered
-6. **Amy** @mention in #channel: "[context]" - yesterday
+### Tactical - from VIPs / direct reports (last 5 days)
+5. **Carl** DM: "[subject/first line]" - 2d ago, unanswered (S, ~15min)
+6. **Amy** @mention in #channel: "[context]" - yesterday (S, ~15min)
 ...
 
-### From direct reports (last 5 days)
-7. **Joseph** DM: ...
+### Tactical - tasks due today / overdue / next 3 days
+7. [task title] (overdue 5d, M ~60min)
+8. [task title] (due today, L ~120min)
 ...
-
-### Tasks due today / overdue / next 3 days
-8. [task title] (overdue 5d)
-9. ...
 ```
 
-**Prompt user:** "Which items do you want to focus on today? (numbers, comma-separated, or `all`, or `none`)"
+Size key: S = <30min, M = 30-90min, L = 90min+.
+
+**Prompt user:** "Which items do you want to focus on today? (numbers, comma-separated, or `none`)"
+
+### Step 5.5: Challenge before writing
+
+After the user picks, run these checks. If any fire, surface the issue and ask the user to revise before writing the Focus today section. Do NOT save until challenges are resolved (either revised picks or explicit confirmation to override).
+
+- **Over the cap.** If picks > 3: respond "That's [N] items, cap is 3. Which [N-3] drop?"
+- **No strategic item.** If 0 strategic picked but 4Ps priorities exist: respond "No strategic item picked. Want to add [top 4Ps priority]?"
+- **Over-commit.** If sum of sized minutes > available focus time: respond "[picked minutes] mins picked vs [available] mins free. Drop one, or move a meeting?"
+- **Meeting-heavy day.** If meetings consume >60% of the 9.5h workday: list the meetings and ask "Meetings take [X]h of 9.5h today. Any of these movable? [list]"
+
+Be direct. State the rule, state the gap, ask for the revision. Don't soften.
 
 ### Step 6: Write Focus today section
 
-Once the user has selected, insert a `## Focus today` section into the todo file **immediately after `## Pinned`** (and before the condensed yesterday overview), containing only the selected items. Format each as a bullet with a source tag:
+Once challenges are resolved, insert a `## Focus today` section into the todo file **immediately after `## Pinned`** (and before the condensed yesterday overview), containing only the selected items (max 3). Format each as a bullet with a source tag and size:
 
 ```
 ## Focus today
-- [4Ps] Ship monetisation strategy alignment
-- [Meeting prep] 14:00 leadership sync - bring monetisation v2
-- [Carl] Reply to DM on monetisation timeline
-- [Task] Complete weekly 4Ps (due today)
+- [4Ps] Trig - one-to-one user monitoring (L, ~3h block)
+- [Task] Fix capacity/strategy data (M, ~90min)
+- [Task] Glint follow-up - Kaylin Glazer (S, ~30min)
 ```
 
-Save the file and confirm to the user with a short line, e.g. "Focus today saved (4 items)."
+Save the file and confirm to the user with a short line, e.g. "Focus today saved (3 items, ~5h)."
 
 If the user picks `none`, skip writing the section.
+
+**Monday pinned addition:** On Mondays, also prepend a pinned item:
+```
+- Weekly prep block (2h): email triage, 4Ps writing, /todo run, week planning.
+```
 
 ## Summarisation guidelines
 
