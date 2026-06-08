@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-08 (Session 23)
-**Current Phase:** Phase 3.9 - /todo Focus Discipline + Workday Time Math
-**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, standing-meetings reference mapping, and meeting-lookback logic that handles weekends, holidays, and PTO
+**Last Updated:** 2026-06-08 (Session 24)
+**Current Phase:** Phase 3.10 - HTML Dashboard with Local Hub
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, and a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files
 
 ---
 
@@ -30,7 +30,8 @@
 - ✅ **Phase 3.6:** Todo Completion-Sync + Similar-Items Warning (Complete)
 - ✅ **Phase 3.7:** Standing Meetings Mapping + Primary-Lens Meeting Prep (Complete)
 - ✅ **Phase 3.8:** /todo Meeting Lookback Generalisation (Complete)
-- ✅ **Phase 3.9:** /todo Focus Discipline + Workday Time Math (Complete) ← **This Session**
+- ✅ **Phase 3.9:** /todo Focus Discipline + Workday Time Math (Complete)
+- ✅ **Phase 3.10:** HTML Dashboard with Local Hub (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -605,7 +606,29 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 23: Phase 3.9 Complete (2026-06-08) ← **Current**
+### Session 24: Phase 3.10 Complete (2026-06-08) ← **Current**
+- **Local HTML dashboard for the daily todo.** Single-page React + Tailwind + Geist UI rendered from today's todo .md, served by a small local hub. Bauhaus design (no shadows, hairline borders, rounded-sm, 10px tracked labels) per build brief at `Work/Notes/julie_2/Dashboard/Todo Dashboard - Build Brief & Code Handoff.md`
+- **Layout (12-col grid):** Pinned (3) + Focus today (3) + Due today (6) hero row; This week (9, 4 day columns) + Reminders (3, Geist Mono numbered) middle row; Open actions full-width with By person / By date toggle, per-tile clickable overdue/upcoming pill filters, deterministic avatar colors, click-to-expand action rows
+- **Multi-dashboard hub.** `Work/Notes/julie_2/Dashboard/_hub.py` is a stdlib HTTP server that auto-discovers any sibling folder with a `render.py` exposing META/render()/optional toggle(). Routes: `GET /` lists all dashboards, `GET /<name>/` renders one, `POST /<name>/toggle` mutates state. Adding a new dashboard = drop a folder. No hub restart needed (modules reload on every request)
+- **launchd-managed.** `_hub.plist` registered at `~/Library/LaunchAgents/com.chris.dashboard-hub.plist`. Auto-starts at login, restarts on crash, binds to `127.0.0.1:8765` only. Logs at `~/Library/Logs/dashboard-hub.log`. Verified running (`launchctl list | grep dashboard-hub`)
+- **Click-to-tick.** Checkboxes on Due today, Reminders, Tasks-this-week, and expanded Open actions. Frontend posts `{lineNumber, checked}` to `/todo/toggle`. Backend calls `./pos "update: TITLE status: completed"` to update source files via existing fuzzy match, then flips `[ ]` to `[x]` in the .md. Optimistic UI with rollback on failure
+- **Same-day persistence fix (the two bugs the user caught).** `scripts/todo.py get_items_from_folder()` was filtering all completed items, dropping ticked items on regen. Fixed to keep items completed today. `generate_todo()` was rebuilding the .md from scratch and wiping skill-curated sections; added `extract_sections_from_md()` to preserve Pinned + Focus today + Yesterday's overview verbatim across same-day regenerations. New day generates fresh; same day preserves state
+- **Focus items as commitments.** New SKILL.md Step 6.5: after writing Focus today, ensure each focus item has a task due today - re-date an existing matching task or create a new tracking task (batched user confirmation per the existing `feedback_confirm_before_creating_items` rule). Re-runs `/todo-generate` so the new tasks appear in Due today
+- **Project structure for the dashboard (gitignored, lives in `Work/Notes/julie_2/Dashboard/`):**
+  - `_hub.py` (multi-dashboard HTTP server)
+  - `_hub.plist` (launchd manifest)
+  - `README.md` (install/uninstall/restart instructions)
+  - `todo/render.py` (todo dashboard parser + JSX renderer)
+- **New memory:** `reference_julie2_dashboard_folder.md` codifying the convention that all dashboard artifacts live in `Work/Notes/julie_2/Dashboard/`
+- **Files (visible in repo):**
+  - `scripts/todo.py` (preservation + completed-today retention)
+  - `scripts/parse_command.py` (rebuild hook points at the new render.py location)
+  - `.claude/skills/todo/SKILL.md` (new Step 6.5)
+- **Commit:** `870d01a todo: preserve skill-curated sections + ensure focus items land in due today`
+
+---
+
+### Session 23: Phase 3.9 Complete (2026-06-08)
 - **Problem:** `/todo` Step 5 surfaced ~19 options and let the user pick freely. Predictable failure mode is over-selection - the Focus today list became a wish list, not a forcing function. Also assumed self-blocks were unavailable time, shrinking the day artificially
 - **Three rules added** based on Chris's working pattern:
   1. **Workday = 08:30-18:00 (9.5h)**, self-blocks are work time (strategic / meeting prep / lunch 12:30-14:00), Monday subtracts an additional 2h for the weekly prep block (email triage, 4Ps writing, /todo run, week planning)
