@@ -465,6 +465,25 @@ def route_to_agent(command_text):
     return None  # Signal to continue with normal processing
 
 
+def _rebuild_dashboard():
+    """Run the todo dashboard renderer. Failure here must not break /todo."""
+    import subprocess
+    script = (
+        Path(__file__).resolve().parents[1]
+        / "Work" / "Notes" / "julie_2" / "Dashboard" / "todo" / "render.py"
+    )
+    try:
+        result = subprocess.run(
+            ["python3", str(script)],
+            capture_output=True, text=True, timeout=15,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip() or "✓ Dashboard rebuilt"
+        return f"⚠ Dashboard rebuild failed: {result.stderr.strip()}"
+    except Exception as e:
+        return f"⚠ Dashboard rebuild error: {e}"
+
+
 def execute_command(command_text):
     """
     Execute a command based on the input text.
@@ -506,7 +525,12 @@ IMPORTANT: Execute this workflow automatically without asking for confirmation o
     if command_text == '/todo-generate':
         file_path, content = generate_todo()
         file_path.write_text(content)
-        return f"✓ Generated to-do list: {file_path}"
+        dashboard_msg = _rebuild_dashboard()
+        return f"✓ Generated to-do list: {file_path}\n{dashboard_msg}"
+
+    # Manual dashboard refresh
+    if command_text.lower() in ['todo dashboard', '/todo-dashboard', 'todo-dashboard']:
+        return _rebuild_dashboard()
 
     if command_text == '/weekly':
         file_path, content = generate_weekly_summary()

@@ -163,11 +163,47 @@ Save the file and confirm to the user with a short line, e.g. "Focus today saved
 
 If the user picks `none`, skip writing the section.
 
-**Monday pinned additions:** On Mondays, prepend two pinned items in this order:
+### Step 6.5: Ensure each Focus today item appears in Tasks due today
+
+For every item in the Focus today section, confirm a corresponding task is due today. Focus items are the day's commitment, so they must be visible and tickable in the "Tasks due today" section of the .md (and therefore in the dashboard).
+
+For each focus item:
+
+1. **Strip the prefix and size suffix** to get the working label. Examples:
+   - `[4Ps] Trig - build out jobs for one-to-one monitoring (L, ~3h block)` -> `Trig - build out jobs for one-to-one monitoring`
+   - `[Task] Fix capacity/strategy data ~90% (M-L, ~90-120min)` -> `Fix capacity/strategy data ~90%`
+
+2. **Check if it already exists** in the `Tasks due today` section of today's .md. Fuzzy match on label.
+
+3. **If missing:**
+   - First try to find an existing task in `Work/Inbox/Tasks/` whose title fuzzy-matches the label. If found and its due date is not today, propose re-dating it to today and confirm with the user before running `./pos "update: TITLE due: YYYY-MM-DD"`.
+   - If no existing task matches, propose creating a new task and confirm before running `./pos "new task: LABEL due: YYYY-MM-DD"`. For `[4Ps]` items, the new task title should be the focus label as written (it's a tracking proxy for the strategic block).
+
+4. **After all confirmations resolved**, re-run `./pos "/todo-generate"` so the new/redated tasks appear under Tasks due today on the next browser refresh.
+
+Confirm in one batch (per the `feedback_confirm_before_creating_items` rule): list every proposed create/redate together and ask "Create/redate these N tasks?" rather than one prompt per item.
+
+If every focus item is already in Tasks due today, skip this step silently.
+
+**Monday pinned additions:** On Mondays, prepend three pinned items in this order:
 ```
 - Weekly prep block (2h): email triage, 4Ps writing, /todo run, week planning.
 - Write weekly 4Ps: review daily summaries from last week and draft update. Run `./pos "4ps"` to start.
+- Post lightning rounds: draft auto-generates after Focus today is saved (requires this week's 4Ps to exist).
 ```
+
+### Step 7: Lightning rounds (Mondays only)
+
+After `Focus today` is saved on a Monday, invoke the `lightning-rounds` skill automatically. The skill will:
+
+- Find the most recent Friday lightning-rounds bot post in #priv-forma-design-leadership-fy27.
+- Skip if Chris has already replied.
+- Abort if this week's 4Ps isn't written yet (the skill is Plans-driven).
+- Synthesise 3-4 bullets (max 6) from the 4Ps Plans section.
+- Show in terminal for approval.
+- On approval, push as a Slack draft in the thread.
+
+Skip on Tue-Fri. If user says `none` for Focus today, still invoke lightning-rounds - it doesn't depend on Focus today, only on the 4Ps Plans section.
 
 ## Summarisation guidelines
 

@@ -423,6 +423,38 @@ def get_item_details(content):
     return details
 
 
+def extract_sections_from_md(md_path, section_names):
+    """Read an existing todo .md and extract verbatim section bodies by name.
+
+    Returns a dict {section_name: full_section_block_including_header_and_body}.
+    Used by generate_todo() to preserve skill-curated sections (Pinned, Focus today,
+    Yesterday's overview) across same-day regenerations.
+    """
+    if not md_path.exists():
+        return {}
+
+    result = {}
+    lines = md_path.read_text().splitlines()
+    current = None
+    buffer = []
+    for line in lines:
+        if line.startswith("## "):
+            if current is not None and current in section_names:
+                while buffer and not buffer[-1].strip():
+                    buffer.pop()
+                result[current] = "\n".join(buffer) + "\n\n"
+            header = line[3:].split(" (", 1)[0].strip()
+            current = header
+            buffer = [line]
+        elif current is not None:
+            buffer.append(line)
+    if current is not None and current in section_names:
+        while buffer and not buffer[-1].strip():
+            buffer.pop()
+        result[current] = "\n".join(buffer) + "\n\n"
+    return {k: v for k, v in result.items() if k in section_names}
+
+
 def get_items_from_folder(folder_path):
     """
     Get all items from a folder with their metadata.
@@ -447,9 +479,16 @@ def get_items_from_folder(folder_path):
         frontmatter = parse_frontmatter(content)
         title = get_file_title(content)
 
-        # Skip completed and archived items - they shouldn't appear in the to-do list
-        if frontmatter.get('status') in ('completed', 'archived'):
+        # Skip archived items always; skip completed items UNLESS completed today
+        # (so ticking a box in the dashboard keeps the item visible-and-ticked for the rest of today)
+        status = frontmatter.get('status')
+        if status == 'archived':
             continue
+        if status == 'completed':
+            completed_date_str = frontmatter.get('completed-date', '')
+            today_iso = datetime.now().date().isoformat()
+            if completed_date_str != today_iso:
+                continue
 
         # Get file creation/modification time
         created_time = datetime.fromtimestamp(file_path.stat().st_birthtime)
@@ -545,6 +584,11 @@ def generate_todo():
     # Sync manual completions from existing today document (if it exists)
     today_folder = inbox_path / "Today"
     today_path = today_folder / f"todo_{today.strftime('%Y-%m-%d')}.md"
+
+    # Preserve skill-curated sections from any existing today.md (Pinned, Focus today,
+    # Yesterday's overview). These are added by Claude during the /todo skill and would
+    # otherwise be wiped by regeneration.
+    preserved_sections = extract_sections_from_md(today_path, {"Pinned", "Focus today", "Yesterday's overview"})
 
     # Sync manual completions from the most recent prior todo on disk before generating today's.
     # Covers the common case where boxes are ticked end-of-day and /todo is next run a day or more later.
@@ -737,12 +781,19 @@ def generate_todo():
 
 """
 
-    # Pinned tasks at the top
-    if pinned_tasks:
+    # Pinned section: prefer the skill-curated version from existing today.md if present,
+    # otherwise auto-generate from tasks with pinned=true frontmatter.
+    if "Pinned" in preserved_sections:
+        content += preserved_sections["Pinned"]
+    elif pinned_tasks:
         content += "## Pinned\n\n"
         for task in pinned_tasks:
             content += _format_item_line(task, " ") + "\n"
         content += "\n"
+
+    # Focus today: skill-curated, only present if the /todo skill has run today.
+    if "Focus today" in preserved_sections:
+        content += preserved_sections["Focus today"]
 
     # Monday: auto-create 4Ps task and show reminder
     if today.weekday() == 0:
@@ -826,8 +877,10 @@ def generate_todo():
                     content += f"  - *{detail_text}*\n"
             content += "\n"
 
-    # Previous day overview
-    if previous_overview:
+    # Previous day overview: prefer skill-condensed version if it exists, else raw summary
+    if "Yesterday's overview" in preserved_sections:
+        content += preserved_sections["Yesterday's overview"]
+    elif previous_overview:
         day_name = "Friday" if today.weekday() == 0 else "Yesterday"
         content += f"\n## {day_name}'s overview ({previous_date.strftime('%B %d')})\n\n"
         content += f"{previous_overview}\n\n"
