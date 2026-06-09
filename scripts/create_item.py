@@ -350,6 +350,48 @@ def create_item(item_type, title, due_date=None, details="", tags=None, **kwargs
     return file_path
 
 
+def get_planner_id(file_path):
+    """Return the planner-id from a task file's frontmatter, or None if absent."""
+    import re
+    try:
+        content = Path(file_path).read_text()
+    except (FileNotFoundError, OSError):
+        return None
+    match = re.search(r'^planner-id:\s*(.+)$', content, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def link_planner_id_to_file(file_path, planner_id):
+    """Add a planner-id field to a task file's frontmatter (idempotent).
+
+    If the field already exists, overwrite with the new value.
+    """
+    import re
+    file_path = Path(file_path)
+    content = file_path.read_text()
+
+    if re.search(r'^planner-id:', content, re.MULTILINE):
+        updated = re.sub(
+            r'^planner-id:.*$',
+            f'planner-id: {planner_id}',
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+    else:
+        # Insert after the type: line
+        updated = re.sub(
+            r'^(type:\s*\w+)$',
+            f'\\1\nplanner-id: {planner_id}',
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+
+    file_path.write_text(updated)
+    return file_path
+
+
 def update_item_status(item_type, title, new_status, status_note=None, file_path=None):
     """
     Update the status of an existing task, idea, feature, or action.

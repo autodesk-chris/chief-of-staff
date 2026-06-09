@@ -19,7 +19,7 @@ import logging
 # Add parent directory to path to import other scripts
 sys.path.insert(0, str(Path(__file__).parent))
 
-from create_item import create_item, update_item_status
+from create_item import create_item, update_item_status, get_planner_id, link_planner_id_to_file
 from create_observation import create_observation, create_360_review
 from utils import parse_tags, find_item_by_title
 from todo import generate_todo, generate_weekly_summary, update_todo_document
@@ -222,6 +222,31 @@ def parse_update_command(command_text):
         'status': status,
         'note': note
     }
+
+
+def parse_link_command(command_text):
+    """Parse 'link: TITLE planner-id: XYZ' to retroactively link a local task to a Planner task.
+
+    Returns a dict with 'title' and 'planner_id', or None if not a link command.
+    Raises ValueError if planner-id is missing or title is empty.
+    """
+    if not command_text.startswith('link:'):
+        return None
+
+    remaining = command_text[5:].strip()
+
+    pid_match = re.search(r'\s+planner-id:\s*(\S+)', remaining)
+    if not pid_match:
+        raise ValueError("planner-id is required. Format: link: TITLE planner-id: XYZ")
+
+    planner_id = pid_match.group(1).strip()
+    title_end = remaining.find(' planner-id:')
+    title = remaining[:title_end].strip()
+
+    if not title:
+        raise ValueError("Item title is required. Format: link: TITLE planner-id: XYZ")
+
+    return {'title': title, 'planner_id': planner_id}
 
 
 def parse_natural_language_status(command_text):
@@ -1068,12 +1093,15 @@ Processed by Meetings Agent with auto-extraction
         else:
             item_type, file_path, file_title, score = matches[0]
 
-        # Update the item status
+        # Update the item status (pass the matched file_path so we don't
+        # reconstruct it from the title - file names don't always round-trip)
+        matched_path = file_path
         file_path = update_item_status(
             item_type=item_type,
             title=file_title,
             new_status=status,
-            status_note=note
+            status_note=note,
+            file_path=matched_path,
         )
 
         # Auto-update today document
@@ -1081,14 +1109,65 @@ Processed by Meetings Agent with auto-extraction
 
         # Build result message
         note_text = f" (note: {note})" if note else ""
-        return f"✓ Marked {item_type} '{file_title}' as {status}{note_text}\n✓ Updated: {file_path}\n✓ Updated to-do list: {today_path}"
+        result = f"✓ Marked {item_type} '{file_title}' as {status}{note_text}\n✓ Updated: {file_path}\n✓ Updated to-do list: {today_path}"
+
+        # Planner write-back signal: if the local file has a planner-id, emit an
+        # action line so the calling Claude session can push to Planner via MCP.
+        planner_id = get_planner_id(file_path)
+        if planner_id:
+            if status == 'completed':
+                result += (
+                    f"\n[PLANNER_LINKED] id={planner_id} status=completed "
+                    "action=mark-complete prompt-for-comment=optional"
+                )
+            elif status in ('blocked', 'waiting'):
+                result += (
+                    f"\n[PLANNER_LINKED] id={planner_id} status={status} "
+                    f"action=append-note prompt-for-comment=required prefix={status.upper()}"
+                )
+            # Other statuses (active, in-progress, on-hold, archived) do not push.
+
+        return result
+
+    # Handle link command (retroactively connect a local task to a Planner task)
+    if command_text.startswith('link:'):
+        parsed = parse_link_command(command_text)
+
+        title = parsed['title']
+        planner_id = parsed['planner_id']
+
+        matches = find_item_by_title(title)
+        if not matches:
+            return f"✗ No items found matching: '{title}'"
+
+        if len(matches) > 1:
+            best_score = matches[0][3]
+            second_score = matches[1][3]
+            if best_score - second_score >= 0.2:
+                item_type, file_path, file_title, score = matches[0]
+            else:
+                options_text = "\nMultiple items found. Please be more specific or use the exact title:\n"
+                for i, (itype, fpath, ftitle, score) in enumerate(matches[:5], 1):
+                    options_text += f"  {i}. [{itype}] {ftitle} (match: {score:.0%})\n"
+                return f"✗ Ambiguous match.{options_text}"
+        else:
+            item_type, file_path, file_title, score = matches[0]
+
+        existing = get_planner_id(file_path)
+        link_planner_id_to_file(file_path, planner_id)
+
+        if existing and existing != planner_id:
+            return f"✓ Updated planner-id on {item_type} '{file_title}': {existing} → {planner_id}\n✓ File: {file_path}"
+        if existing == planner_id:
+            return f"⚠ Already linked: {item_type} '{file_title}' has planner-id {planner_id}\n✓ File: {file_path}"
+        return f"✓ Linked {item_type} '{file_title}' to Planner task {planner_id}\n✓ File: {file_path}"
 
     # Handle strategy queries (detected by keywords like OKR, strategy, bet)
     agent, confidence = detect_agent(command_text)
     if agent == 'strategy':
         return format_strategy_response(command_text)
 
-    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'update:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/todo', or '/weekly'")
+    raise ValueError("Unknown command format. Use 'new task:', 'new idea:', 'new feature:', 'update:', 'link:', 'complete task:', 'archive idea:', 'observation:', '360 review:', '/todo', or '/weekly'")
 
 
 def main():

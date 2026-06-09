@@ -205,6 +205,35 @@ When the user asks to mark something as complete, blocked, in progress, etc., **
 - Don't read files to confirm existence
 - Just run the update command - fuzzy matching handles everything
 
+### Planner write-back on status changes
+
+Local task files can be linked to Microsoft Planner tasks via a `planner-id:` field in their frontmatter. The Python script writes the local file; Claude pushes the change to Planner via the m365 MCP because the script has no Graph API access.
+
+When `./pos "update: ..."` output contains a line starting with `[PLANNER_LINKED]`, parse it and act:
+
+```
+[PLANNER_LINKED] id=<planner-task-id> status=<status> action=<action> prompt-for-comment=<optional|required> [prefix=<BLOCKED|WAITING>]
+```
+
+**`action=mark-complete` (status=completed):**
+1. Ask the user: "Add a comment to the Planner task? (Enter to skip, or type a one-line note)"
+2. Call `update_planner_task` with `percentComplete: 100`.
+3. If the user provided a comment OR if appending a default closure note, also call `update_planner_task_details` to prepend `YYYY-MM-DD: <comment>` (or `YYYY-MM-DD: Completed locally.` when no user comment) to the existing description.
+
+**`action=append-note` (status=blocked or waiting):**
+1. Required: ask the user for a one-line reason.
+2. Call `update_planner_task_details` to prepend `YYYY-MM-DD <PREFIX>: <reason>` to the description. Do NOT change `percentComplete`.
+
+**Don't push** for other statuses (active, in-progress, on-hold, archived). The `[PLANNER_LINKED]` line only appears for completed/blocked/waiting.
+
+**Linking a pre-existing local task to a Planner task retroactively:**
+
+```bash
+./pos "link: [task title] planner-id: [planner task ID]"
+```
+
+Fuzzy-matches the title against existing local items and adds `planner-id:` to the frontmatter. After linking, the next status change on that file will trigger the write-back signal above.
+
 ### Archiving Completed Items
 
 ```bash
