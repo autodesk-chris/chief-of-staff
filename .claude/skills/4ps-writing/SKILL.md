@@ -82,3 +82,22 @@ Significant decisions made during the week should be flagged as candidate progre
 ## Output location
 
 Save to `Work/Inbox/4Ps/{Month}/4ps_YYYY-MM-DD.md` where YYYY-MM-DD is the **Monday** of the current working week (e.g. `Work/Inbox/4Ps/June/4ps_2026-06-01.md`).
+
+## Slack draft formatting
+
+When pushing the 4Ps as a Slack draft via `slack_send_message_draft`, the tool interprets content as **standard markdown**, not Slack-native mrkdwn. This means:
+
+- Use `**text**` for bold (single `*text*` renders as italic - do NOT use it for emphasis).
+- Italics, underline, and other rich styles are not supported by the draft tool. Bold is the only emphasis available.
+
+Slack draft conversion rules:
+
+1. **Title:** wrap in `**...**` (bold). Example: `**4Ps - Week of June 8, 2026**`.
+2. **Subheads** (Priorities, Progress, Plans, Problems, Key leadership discussions): wrap in `**...**` (bold). Underline is not supported in markdown-rendered drafts.
+3. **Bullet leads** (the short bold phrase that opens each bullet): wrap in `**...**`.
+4. **Body text:** plain text, no italics. Do not wrap body sentences in single asterisks.
+5. **Bullets:** use `•` (Unicode bullet) instead of `-` for cleaner Slack rendering.
+6. **Numbered Priorities:** keep `1.`, `2.`, etc. - Slack renders these natively.
+7. **Footer:** append the Claude disclaimer on a new line wrapped in `_..._` (italics is appropriate here as a disclaimer).
+
+The Markdown file saved locally keeps standard `##` headings and `-` bullets - the conversion above is only for the Slack draft body.

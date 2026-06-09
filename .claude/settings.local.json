@@ -138,7 +138,22 @@
       "mcp__plugin_m365_m365__list_events",
       "mcp__slack__slack_read_file",
       "mcp__plugin_m365_m365__get_planner_task",
-      "Bash(date *)"
+      "Bash(date *)",
+      "Bash(git check-ignore *)",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\"; grep -E \"status:|due-date:|completed-date:\" {} | head -3')",
+      "Bash(awk '/## Yesterday/,/## Overdue|## Tasks due today|## Reminders/' /Users/smallc/AI/Chief_of_staff/Work/Inbox/Today/todo_2026-06-07.md)",
+      "Bash(awk '/^##.*Priorities|^##.*Plans/,/^##/' /Users/smallc/AI/Chief_of_staff/Work/Inbox/4Ps/June/4ps_2026-06-01.md)",
+      "Bash(open *)",
+      "Bash(curl -s -o /dev/null -w \"landing %{http_code}\\\\n\" http://localhost:8765/)",
+      "Bash(curl -s -o /dev/null -w \"todo    %{http_code}\\\\n\" http://localhost:8765/todo/)",
+      "Bash(curl -s http://localhost:8765/todo/)",
+      "Bash(pkill -f \"/Users/smallc/AI/Chief_of_staff/Work/Notes/julie_2/Dashboard/_hub.py\")",
+      "Bash(cp /Users/smallc/AI/Chief_of_staff/Work/Notes/julie_2/Dashboard/_hub.plist ~/Library/LaunchAgents/com.chris.dashboard-hub.plist)",
+      "Bash(launchctl load *)",
+      "Bash(python -c \"from scripts.create_item import get_planner_id, link_planner_id_to_file; print\\('imports OK'\\)\")",
+      "Bash(python -c \"from scripts.parse_command import parse_link_command; print\\('parse_link_command OK'\\); print\\(parse_link_command\\('link: Fix capacity/strategy data planner-id: t6IEa-QTxUiHVuQPn0N-TGQAKllu'\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"people_allocation %{http_code}\\\\n\" http://localhost:8765/people_allocation/)",
+      "Bash(git rm *)"
     ]
   },
   "hooks": {
