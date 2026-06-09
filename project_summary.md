@@ -1,8 +1,8 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-08 (Session 24)
-**Current Phase:** Phase 3.10 - HTML Dashboard with Local Hub
-**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, and a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files
+**Last Updated:** 2026-06-09 (Session 25)
+**Current Phase:** Phase 3.11 - Planner Write-Back Integration
+**Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
 
@@ -31,7 +31,8 @@
 - ✅ **Phase 3.7:** Standing Meetings Mapping + Primary-Lens Meeting Prep (Complete)
 - ✅ **Phase 3.8:** /todo Meeting Lookback Generalisation (Complete)
 - ✅ **Phase 3.9:** /todo Focus Discipline + Workday Time Math (Complete)
-- ✅ **Phase 3.10:** HTML Dashboard with Local Hub (Complete) ← **This Session**
+- ✅ **Phase 3.10:** HTML Dashboard with Local Hub (Complete)
+- ✅ **Phase 3.11:** Planner Write-Back Integration (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -606,7 +607,20 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 24: Phase 3.10 Complete (2026-06-08) ← **Current**
+### Session 25: Phase 3.11 Complete (2026-06-09) ← **Current**
+- **Problem:** Planner-sync was one-way (Planner → local). When Chris marked a planner-linked task complete locally, Planner stayed open. Concrete miss: "Fix capacity/strategy data" was completed in the local todo on 2026-06-08 but still showed `percentComplete: 0` when the API was queried 24h later
+- **Design choice: local-first with a relayed push.** Python writes the local file; Claude pushes to Planner via the m365 MCP. The Python script has no Graph API credentials, so it emits a `[PLANNER_LINKED]` action line in `./pos` output and Claude (always in the loop because `./pos` runs in Claude Code) reads the signal and makes the MCP call. Rejected alternatives: fuzzy auto-matching at task creation (too magic), pure mirror without local files (loses rich context), bidirectional sync with conflict resolution (over-engineered for current usage)
+- **Status-aware action signal.** Completed → mark Planner 100% + optional dated comment prepended to description. Blocked/waiting → append a dated note (`YYYY-MM-DD BLOCKED: reason`), don't change percentComplete (Planner has no native blocked state). Other statuses (active, in-progress, on-hold, archived) do NOT emit the signal - no push happens
+- **New `link:` command.** `./pos "link: TITLE planner-id: XYZ"` fuzzy-matches a local task and adds `planner-id:` to its frontmatter. Solves the case where a Planner task and a local task were created independently and need to be connected after the fact
+- **Bug fix (pre-existing, surfaced by the smoke test).** `update:` handler was passing the matched title to `update_item_status` without the matched file_path, causing the function to reconstruct the filename from the title and fail when the actual file name differed (e.g. `task_Fix_capacity_strategy_data.md` vs the full title with special chars). Now passes `file_path` through
+- **Files:**
+  - `scripts/create_item.py` (new `get_planner_id` and `link_planner_id_to_file` helpers)
+  - `scripts/parse_command.py` (new `parse_link_command` and `link:` handler; `[PLANNER_LINKED]` emission from `update:` handler; pass-through fix for matched file_path)
+  - `CLAUDE.md` (new "Planner write-back on status changes" section documenting the `[PLANNER_LINKED]` protocol so future Claude sessions act on it consistently)
+- **Smoke test:** `./pos "update: Fix capacity/strategy data status: completed"` → signal fired correctly. Push step intentionally not executed (user opted not to commit a Planner-side change during testing)
+- **Commit:** `4bedecc planner write-back: push completion/blocked/waiting from local to Planner`
+
+### Session 24: Phase 3.10 Complete (2026-06-08)
 - **Local HTML dashboard for the daily todo.** Single-page React + Tailwind + Geist UI rendered from today's todo .md, served by a small local hub. Bauhaus design (no shadows, hairline borders, rounded-sm, 10px tracked labels) per build brief at `Work/Notes/julie_2/Dashboard/Todo Dashboard - Build Brief & Code Handoff.md`
 - **Layout (12-col grid):** Pinned (3) + Focus today (3) + Due today (6) hero row; This week (9, 4 day columns) + Reminders (3, Geist Mono numbered) middle row; Open actions full-width with By person / By date toggle, per-tile clickable overdue/upcoming pill filters, deterministic avatar colors, click-to-expand action rows
 - **Multi-dashboard hub.** `Work/Notes/julie_2/Dashboard/_hub.py` is a stdlib HTTP server that auto-discovers any sibling folder with a `render.py` exposing META/render()/optional toggle(). Routes: `GET /` lists all dashboards, `GET /<name>/` renders one, `POST /<name>/toggle` mutates state. Adding a new dashboard = drop a folder. No hub restart needed (modules reload on every request)
