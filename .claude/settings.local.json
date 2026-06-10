@@ -155,7 +155,8 @@
       "Bash(curl -s -o /dev/null -w \"people_allocation %{http_code}\\\\n\" http://localhost:8765/people_allocation/)",
       "Bash(git rm *)",
       "Bash(awk '{print $1, $5, $NF}')",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "mcp__plugin_m365_m365__read_event"
     ]
   },
   "hooks": {
