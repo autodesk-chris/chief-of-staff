@@ -153,7 +153,9 @@
       "Bash(python -c \"from scripts.create_item import get_planner_id, link_planner_id_to_file; print\\('imports OK'\\)\")",
       "Bash(python -c \"from scripts.parse_command import parse_link_command; print\\('parse_link_command OK'\\); print\\(parse_link_command\\('link: Fix capacity/strategy data planner-id: t6IEa-QTxUiHVuQPn0N-TGQAKllu'\\)\\)\")",
       "Bash(curl -s -o /dev/null -w \"people_allocation %{http_code}\\\\n\" http://localhost:8765/people_allocation/)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(awk '{print $1, $5, $NF}')",
+      "Bash(gh auth *)"
     ]
   },
   "hooks": {

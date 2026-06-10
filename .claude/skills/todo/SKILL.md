@@ -69,6 +69,20 @@ If the state file is missing or `last_run` is null, show:
 
 If `last_run` is more than 36 hours ago, append a flag: "(stale, scheduled run may have failed; check log at Work/.state/email_triage.log)".
 
+After the Pinned items, append a `### Meetings` subsection listing today's calendar meetings (real meetings only - skip all-day placeholders and self-blocks). One line per meeting in the form `HH:MM-HH:MM Title (organiser / context if useful) - prep: [reason]` where the prep note is optional. Times must be in Chris's local clock (BST/GMT), not the source TZ. This subsection is rendered as a "Meetings" panel inside the Pinned tile on the dashboard.
+
+Example:
+```
+## Pinned
+- **Review email triage output**: last run today 09:00. 4 items in Action required folder. Check and clear.
+
+### Meetings
+- 11:30-12:30 Updated Org Model - Resource Allocation Meeting
+- 15:00-15:30 Growth FY28-FY30 Business Case Alignment (Maria, Arif, Elvan) - prep: review deck
+```
+
+If there are no meetings today, omit the `### Meetings` subsection entirely.
+
 ### Step 4: Update and display
 
 Replace the yesterday overview section in the file with the condensed version. Display the updated to-do list to the user with the Pinned section at the top.
