@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-09 (Session 25)
-**Current Phase:** Phase 3.11 - Planner Write-Back Integration
+**Last Updated:** 2026-06-10 (Session 26)
+**Current Phase:** Phase 3.12 - Dashboard Meetings Sub-Block
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -32,7 +32,8 @@
 - ✅ **Phase 3.8:** /todo Meeting Lookback Generalisation (Complete)
 - ✅ **Phase 3.9:** /todo Focus Discipline + Workday Time Math (Complete)
 - ✅ **Phase 3.10:** HTML Dashboard with Local Hub (Complete)
-- ✅ **Phase 3.11:** Planner Write-Back Integration (Complete) ← **This Session**
+- ✅ **Phase 3.11:** Planner Write-Back Integration (Complete)
+- ✅ **Phase 3.12:** Dashboard Meetings Sub-Block (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -607,7 +608,16 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 25: Phase 3.11 Complete (2026-06-09) ← **Current**
+### Session 26: Phase 3.12 Complete (2026-06-10) ← **Current**
+- **Meetings sub-block on the dashboard.** Added a `### Meetings` subsection inside `## Pinned` in today's todo .md. The dashboard renderer reads the subsection and surfaces it as a labeled sub-block within the existing Pinned tile (no new tile, keeps the 12-col grid intact)
+- **Design choice: .md as source, dashboard as view.** Meetings live in the markdown so they're visible in Obsidian and survive `/todo-generate` regenerations via the existing skill-curated-sections preservation. Renderer is a pure read - no calendar fetch at render time, no extra auth surface
+- **Files:**
+  - `.claude/skills/todo/SKILL.md` (Step 3 now writes `### Meetings` after Pinned items; format `HH:MM-HH:MM Title (organiser/context) - prep: [reason]` in Chris's local clock; skip all-day placeholders and self-blocks; omit subsection when empty)
+  - `Work/Notes/julie_2/Dashboard/todo/render.py` (gitignored; extracts `Pinned > subs > Meetings` into a `meetings` array; JSX renders a "Meetings" sub-label + items below the pinned list when non-empty)
+- **Same-session todo flow improvements (not phase work, captured for traceability).** Bulk task re-dates via direct frontmatter edit when `./pos update:` requires a status; per-direct-report notepad entries for 360 review sharing (created Joe's notepad as it didn't exist)
+- **Commit:** `02c96cd todo dashboard: add Meetings sub-block to Pinned tile`
+
+### Session 25: Phase 3.11 Complete (2026-06-09)
 - **Problem:** Planner-sync was one-way (Planner → local). When Chris marked a planner-linked task complete locally, Planner stayed open. Concrete miss: "Fix capacity/strategy data" was completed in the local todo on 2026-06-08 but still showed `percentComplete: 0` when the API was queried 24h later
 - **Design choice: local-first with a relayed push.** Python writes the local file; Claude pushes to Planner via the m365 MCP. The Python script has no Graph API credentials, so it emits a `[PLANNER_LINKED]` action line in `./pos` output and Claude (always in the loop because `./pos` runs in Claude Code) reads the signal and makes the MCP call. Rejected alternatives: fuzzy auto-matching at task creation (too magic), pure mirror without local files (loses rich context), bidirectional sync with conflict resolution (over-engineered for current usage)
 - **Status-aware action signal.** Completed → mark Planner 100% + optional dated comment prepended to description. Blocked/waiting → append a dated note (`YYYY-MM-DD BLOCKED: reason`), don't change percentComplete (Planner has no native blocked state). Other statuses (active, in-progress, on-hold, archived) do NOT emit the signal - no push happens
