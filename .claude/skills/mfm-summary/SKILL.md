@@ -83,7 +83,9 @@ Granola: [Link to Granola note]
 
 ## Actions
 
-- [ ] [Owner] - [Action] ([date or week])
+In the saved file and the Confluence page, actions name the actual delivery person, not the squad lead. This is the team-facing record, so it should reflect who is doing the work.
+
+- [ ] [Delivery person] - [Action] ([date or week])
 - [ ] ...
 
 ## Updates from pre-read
@@ -112,6 +114,10 @@ If no MFM prep was available, omit the "Not covered from previous MFM" section e
 
 Display the Slack summary in the chat for the user to copy. Do not save it to the file. Use two subheads (Key takeaways, Actions) plus a Confluence reference placeholder.
 
+In the Slack summary, actions are attributed to the squad lead (the accountable owner), even where delivery is delegated. The Confluence/file version is the team-facing record and names the delivery person; the Slack summary is the leadership-facing record and names the accountable owner. This split is intentional.
+
+Items that Chris owns and has already actioned should appear as a single Actions line ("Chris: already followed up - ...") rather than as a separate item. Items that were in the prep doc but did not get airtime should be surfaced in Actions as a re-ask ("[Squad lead]: re-ask of the meeting - ...") so they are not buried.
+
 Format:
 
 ```
@@ -121,7 +127,7 @@ Format:
 * [5 short takeaways drawn from the saved doc]
 
 *Actions*
-* [Owner]: [Action] ([when])
+* [Squad lead]: [Action] ([when])
 * ...
 
 Full notes in Confluence: [link to be added]
@@ -136,36 +142,64 @@ Guidelines for the Slack summary:
 
 Display the proposed Julie items in the chat for the user to confirm. Do not save them to the file.
 
+Rules:
+- The assignee on every squad-derived Julie action is the squad lead. The Julie tracker is the accountable-owner view, matching the Slack summary.
+- The title leads with the delivery person where delegated: `[Delivery person] to [verb] [object]`. If the squad lead is also the delivery person, use `[Verb] [object]`.
+- The detail field always names the delivery person explicitly ("Owned by [lead], delivery by [name]") and captures the rationale.
+- Default due date is mid-month (the Monday roughly two weeks before next MFM). Only use end-of-month for items that genuinely need the full window (proposals, multi-stage builds).
+- Do NOT propose Julie items that Chris owns and has already actioned. Surface those in the Slack summary as a single callout line only.
+- Do NOT propose Julie items where Chris is the owner unless he has not yet started.
+
 Format:
 
 ```
 Proposed Julie items:
-1. `new action: [title]` assignee: [Person] - due: [YYYY-MM-DD]
+1. `new action: [Delivery person] to [verb] [object]` assignee: [Squad lead] - due: [YYYY-MM-DD]
+   details: Owned by [Squad lead], delivery by [Person]. [Rationale and context.]
 2. ...
 
 Confirm before I create them.
 ```
 
-Only create items after the user confirms. Use `./pos "new action: ..."` for actions with an assignee, `./pos "new task: ..."` for items owned by Chris.
+Only create items after the user confirms. Use `./pos "new action: ..."`.
 
 ### Step 8: Publish to Confluence
 
 After the local file is saved, publish the summary to Confluence so the team can reference it.
 
+**Preview first - always:**
+
+Before calling `createConfluencePage`, show the user in the terminal:
+- The exact title of the page that will be created.
+- The parent folder ID (and the month folder name).
+- The full markdown body that will be sent.
+
+Ask for explicit confirmation ("Publish to Confluence? Y/N"). Do not publish without it. The user has caught content-level issues at the Slack/Julie stage before; the Confluence page is the most permanent of the three outputs and should get the same preview treatment.
+
 **Location:**
-- Parent folder for all MFM summaries: `843778273` in the `fdo` space (cloudId `0e31f281-3568-4559-ae88-153abcdead38`, spaceId `641548109`).
-- Each month gets its own subfolder under that parent (e.g. June, July). The subfolder is itself a Confluence folder, not a page.
+- MFM summaries live in monthly folders inside the `fdo` space (cloudId `0e31f281-3568-4559-ae88-153abcdead38`, spaceId `641548109`).
+- Known month folder IDs:
+  - June 2026: `906999057`
+- Each month is a Confluence folder (parentType `folder`, not a page). Folder creation is not supported by the MCP, so new month folders must be created manually by the user.
 
 **Process:**
-1. Use `getConfluencePageDescendants(pageId="843778273")` or a CQL query to find an existing folder for the target month under `843778273`.
-2. If a folder for the month exists, use its ID as the `parentId`. Confirm the folder ID with the user before creating the page.
-3. If no folder exists for the month, ask the user to create it manually (folder creation is not supported by the MCP) and provide its ID, or fall back to using `843778273` directly and flag that the month folder needs creating.
-4. Create the page with `createConfluencePage` using `contentFormat: "markdown"`. Title format: `[Squad] MFM - [Month] [Year] - Summary` (sentence case, with the year).
-5. Capture the returned page URL.
+1. If the target month's folder ID is in the table above, use it.
+2. If not, find the folder by searching for an existing summary in that month and reading its `parentId`. CQL example: `title ~ "MFM" AND title ~ "[Month] [Year]" AND title ~ "Summary"`. Use `getConfluencePage` on a hit to read `parentId` and `parentType` (must be `folder`).
+3. If no summaries exist yet for the target month, ask the user to create the folder manually and supply its ID. Once supplied, add it to the table above.
+4. Show the preview (title, parent folder ID, full body) and get explicit confirmation.
+5. Create the page with `createConfluencePage` using `contentFormat: "markdown"`. Title format: `[Squad] MFM - [Month] [Year] - Summary` (sentence case, with the year).
+6. Capture the returned page URL.
 
 ### Step 9: Update the Slack draft with the Confluence link
 
 After the page is published, replace the `[link to be added]` placeholder in the Slack draft with the actual Confluence URL. Push the draft again to Slack (this overwrites the prior draft in the DM thread).
+
+**Verify the draft actually landed.** `slack_send_message_draft` silent-fails when a draft already exists for the channel: it returns `result: "Draft message is created"` regardless. The authoritative signal is the presence of `draft_id` in the response.
+
+- If `draft_id` is present: report the channel link to Chris.
+- If `draft_id` is absent: tell Chris the existing draft is blocking the push, ask him to delete or send the old draft, then retry. Do not report success on the basis of the `result` string alone.
+
+See `[[feedback_draft_never_send]]` for the global rule.
 
 ### Step 10: Confirm and offer next steps
 
