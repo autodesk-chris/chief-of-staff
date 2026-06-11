@@ -334,6 +334,10 @@ Before any analytics work (direct queries or invoking analytics skills), read `W
 - Use `site_design_analysis_run` for analysis events, not `Activation: Triggered Analysis` (dead) or `Any Forma Analysis` (black box)
 - Full research log at `Work/Notes/Data/data_understanding_site_design_analytics.md`
 
+## Frameworks
+
+Before answering questions about strategy, product scoping, user outcomes, or team operating models, check `Work/LLM_Context/Frameworks/INDEX.md` to see if a defined framework applies. If one does, ground the answer in it. Index lists each framework with a one-line trigger so you can scan quickly.
+
 ## Automation Expectations
 
 For this project, be **proactive and automated**:
