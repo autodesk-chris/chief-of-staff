@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-10 (Session 26)
-**Current Phase:** Phase 3.12 - Dashboard Meetings Sub-Block
+**Last Updated:** 2026-06-11 (Session 27)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -33,7 +33,8 @@
 - ✅ **Phase 3.9:** /todo Focus Discipline + Workday Time Math (Complete)
 - ✅ **Phase 3.10:** HTML Dashboard with Local Hub (Complete)
 - ✅ **Phase 3.11:** Planner Write-Back Integration (Complete)
-- ✅ **Phase 3.12:** Dashboard Meetings Sub-Block (Complete) ← **This Session**
+- ✅ **Phase 3.12:** Dashboard Meetings Sub-Block (Complete)
+- ✅ **Phase 3.13:** 121-prep Slack thread depth (Complete) ← **This Session**
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -608,7 +609,18 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 26: Phase 3.12 Complete (2026-06-10) ← **Current**
+### Session 27: Phase 3.13 Complete (2026-06-11) ← **Current**
+- **Problem surfaced during Even 121 prep:** the skill's Slack context gathering relied on `slack_search_public_and_private` results alone, which truncate context to 1-2 adjacent messages. Real signal was hiding in thread replies - decisions, pushback, owners, "who owes whom a reply". The Even prep had to be regenerated after the user asked "do you check the replies attached to conversations?"
+- **Fix:** added two new steps to `121-prep/SKILL.md` Step 1:
+  1. **Slack channel activity (last 7 days):** broaden beyond DMs to capture threads the person started or was tagged in across channels
+  2. **Slack threads - REQUIRED follow-up:** for any surfaced message with `Reply count > 0`, call `slack_read_thread` and extract who responded with what position, what was decided, what's still open, and whether Chris owes someone a reply
+- **Behaviour change confirmed in-session.** Re-running thread reads on the Even 121 surfaced: Chris owes Even feedback on the recipe/dishes doc ("Looking forward to reviewing the above" was unanswered); Chris owes Maria an example on the technical-discovery thread; Unified Project thread converged on concrete fixes (NoHubs `trial` branch, polling trial state, remove invite modal). None of this was visible from the search snippets
+- **Files:**
+  - `.claude/skills/121-prep/SKILL.md` (+11 lines, new "Slack channel activity" and "Slack threads - REQUIRED follow-up step" subsections in Step 1)
+- **Same-session prep artefact:** `Work/People/121s/Even/2026-06-11_Even_121_prep.md` (4-topic discussion-led agenda; not committed - lives outside the repo's commit pattern for 121 prep docs)
+- **Commit:** `1386b3f 121-prep: require slack_read_thread for surfaced threads`
+
+### Session 26: Phase 3.12 Complete (2026-06-10)
 - **Meetings sub-block on the dashboard.** Added a `### Meetings` subsection inside `## Pinned` in today's todo .md. The dashboard renderer reads the subsection and surfaces it as a labeled sub-block within the existing Pinned tile (no new tile, keeps the 12-col grid intact)
 - **Design choice: .md as source, dashboard as view.** Meetings live in the markdown so they're visible in Obsidian and survive `/todo-generate` regenerations via the existing skill-curated-sections preservation. Renderer is a pure read - no calendar fetch at render time, no extra auth surface
 - **Files:**
