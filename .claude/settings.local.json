@@ -156,7 +156,8 @@
       "Bash(git rm *)",
       "Bash(awk '{print $1, $5, $NF}')",
       "Bash(gh auth *)",
-      "mcp__plugin_m365_m365__read_event"
+      "mcp__plugin_m365_m365__read_event",
+      "Bash(git *)"
     ]
   },
   "hooks": {
