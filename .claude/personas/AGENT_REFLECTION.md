@@ -262,6 +262,8 @@ mcp__slack__slack_read_channel(
 )
 ```
 
+**Group DM handling:** entries with `"type": "group_dm"` are Group DMs, not channels. For these, skip the `to:<@user>` search in Step 1 (every message is implicitly to the user). Treat all human messages in the lookback window as candidate signal, and produce a short standalone digest section per Group DM with: 1-line topic summary, key takeaways, any actions/asks directed at the user.
+
 Identify:
 - **New threads** started in the last 48 hours
 - **Updated threads** that had new replies in the last 48 hours

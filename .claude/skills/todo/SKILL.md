@@ -58,16 +58,22 @@ Read `Work/.state/email_triage.json` to get the last triage run timestamp and co
 ```
 ## Pinned
 - **Review email triage output**: last run {last_run timestamp formatted as "today HH:MM" or "yesterday HH:MM"}. {moved_action_required} items in Action required folder. Check and clear.
+- **Run slack report**: {status} - generates daily digest across monitored channels and Group DMs (see `.slack_digest_config.json`). Trigger with `./pos "slack report"`.
 ```
 
-If the state file is missing or `last_run` is null, show:
+For the slack report line, determine `{status}` by checking whether `Work/Inbox/Today/slack_report_{today}.md` exists:
+- File missing: `not yet run today`
+- File present: `ran today {HH:MM from file mtime}, re-run if you want a fresh sweep`
+
+If the email triage state file is missing or `last_run` is null, show:
 
 ```
 ## Pinned
 - **Email triage not yet run today**: run "triage inbox" manually or wait for the 9am scheduled run.
+- **Run slack report**: not yet run today - generates daily digest across monitored channels and Group DMs. Trigger with `./pos "slack report"`.
 ```
 
-If `last_run` is more than 36 hours ago, append a flag: "(stale, scheduled run may have failed; check log at Work/.state/email_triage.log)".
+If `last_run` is more than 36 hours ago, append a flag to the email triage line: "(stale, scheduled run may have failed; check log at Work/.state/email_triage.log)".
 
 After the Pinned items, append a `### Meetings` subsection listing today's calendar meetings (real meetings only - skip all-day placeholders and self-blocks). One line per meeting in the form `HH:MM-HH:MM Title (organiser / context if useful) - prep: [reason]` where the prep note is optional. Times must be in Chris's local clock (BST/GMT), not the source TZ. This subsection is rendered as a "Meetings" panel inside the Pinned tile on the dashboard.
 

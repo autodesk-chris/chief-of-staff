@@ -71,6 +71,13 @@
       "name": "#forma-design-marketing",
       "purpose": "Marketing squad updates",
       "monitor_level": "full"
+    },
+    {
+      "id": "C0B2566FP0D",
+      "name": "group-dm-pavlov-arne-mark",
+      "purpose": "Group DM with Arne and Mark on Pavlov/Trig cohort setup and instrumentation",
+      "monitor_level": "full",
+      "type": "group_dm"
     }
   ],
   "monitor_levels": {
