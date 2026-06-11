@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-11 (Session 27)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth
+**Last Updated:** 2026-06-11 (Session 28)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Session 28 is non-phase: Kjetil FSM drafting + planner-sync daily cadence + dishes framework)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -609,7 +609,18 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 27: Phase 3.13 Complete (2026-06-11) ← **Current**
+### Session 28: Kjetil FSM thread + misc updates (2026-06-11) ← **Current**
+- **Drafted leadership guidance for Kjetil on Building Design FSM.** Picked up the May 26 leadership thread (`What does 'experiencing Forma's value' for the first time mean?`) where Carl/Hans/Khushal aligned on the three-tier framework (FSM = first data-driven answer to a design question; KUI = complete loop once; Upgrade trigger = repeated loops). Kjetil had asked for substance beyond the playbook's "pick one and measure". Drafted reply pushed as a Slack draft into `#forma-squad-building-design` thread: three definitions + three sets of guiding questions (FSM candidates, KUI observability, Upgrade trigger framing) + four-lens ranking framework for choosing among candidates (strategic fit, user pull, reachability, measurability) with a "would they tell a colleague" tiebreaker
+- **Pattern 2 positive example logged.** Caught that quoting Khushal back as leadership consensus could read as leading/presumptuous in the public thread - first asked for a neutral header, then dropped the section entirely when the revised framing still wasn't landing. Appended to `Work/LLM_Context/Personal/growth_patterns.md` (not committed - lives locally)
+- **Misc commit bundle (8 files, `ee9f79a`).** Not session-driven, but bundled and pushed at session end:
+  - `planner-sync` + `todo` SKILL.md: cadence shifted from weekly (>6 days) to daily (>20h). Reasoning: weekly was leaving stale tasks invisible to /todo's selection menu when Planner moved faster than the sync
+  - New `Work/LLM_Context/Frameworks/dishes_framework.md`: cooking metaphor (dish/recipe/ingredient) for outcome-based delivery. Dish = use case the user pays for; recipe = workflow; ingredients = capabilities
+  - New `Work/Decisions/decision_Designer-per-squad_expectation_reset.md`: from the 10 June org model resource allocation sync with Julie
+  - New `Work/People/Projects/Glint action plan.md`: project planning file
+  - State file updates (email_triage, planner_sync) from routine skill runs
+- **Commit:** `ee9f79a Misc updates: planner-sync to daily, dishes framework, new decision/project docs`
+
+### Session 27: Phase 3.13 Complete (2026-06-11)
 - **Problem surfaced during Even 121 prep:** the skill's Slack context gathering relied on `slack_search_public_and_private` results alone, which truncate context to 1-2 adjacent messages. Real signal was hiding in thread replies - decisions, pushback, owners, "who owes whom a reply". The Even prep had to be regenerated after the user asked "do you check the replies attached to conversations?"
 - **Fix:** added two new steps to `121-prep/SKILL.md` Step 1:
   1. **Slack channel activity (last 7 days):** broaden beyond DMs to capture threads the person started or was tagged in across channels
