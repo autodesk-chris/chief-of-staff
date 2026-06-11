@@ -72,6 +72,17 @@ Run all of these without asking permission:
 - Look for messages where they share topics they want to discuss (e.g. "for tomorrow let's discuss: ...", "agenda for our 121", bullet lists of topics)
 - Also note any unresolved threads, requests, or commitments from the DM
 
+**Slack channel activity - last 7 days:**
+- Search channels for messages from the person: `mcp__slack__slack_search_public_and_private(query="from:<@USERID> after:YYYY-MM-DD")`
+- Note threads they started or were tagged in that are still open
+
+**Slack threads - REQUIRED follow-up step:**
+- For any Slack message surfaced above that has `Reply count > 0` (group DM, channel post, or DM thread), call `mcp__slack__slack_read_thread` to read the full reply chain. Do NOT rely on the `Context before/after` snippets returned by search - they truncate after 1-2 messages and you will miss decisions, pushback, owners, and unresolved questions.
+- Prioritise threads that: (a) Chris started or was tagged in, (b) the person started, (c) have 5+ replies (indicates substantive discussion), (d) relate to selected focal topics.
+- For each thread read, extract: who responded with what position, what was decided, what's still open, who owes whom a reply.
+- If Chris is the last substantive responder OR if Chris owes someone a reply, surface that explicitly as a topic ("you owe X a response on Y").
+- If a topic that looked active in the initial search turns out to have stalled in the thread (no replies in 3+ days), flag that too - stalled threads are usually meeting fodder.
+
 **Person's 121 notepad (if exists):**
 - Check for `Work/People/121s/[person_name]/notepad.md` - may contain running notes for the next 121
 
