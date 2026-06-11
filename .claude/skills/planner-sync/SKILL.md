@@ -5,8 +5,8 @@ description: >
   Pulls tasks due within the next 2 weeks, dedupes against existing task files
   via planner-id, auto-creates solo-assigned tasks, and prompts for confirmation
   on group/team-assigned tasks. Use when "sync planner", "pull planner tasks",
-  "planner sync", or "refresh planner tasks". Also auto-invoked weekly by the
-  /todo skill (every 7 days).
+  "planner sync", or "refresh planner tasks". Also auto-invoked daily by the
+  /todo skill (when state is >20h old).
 ---
 
 # Planner sync
@@ -17,7 +17,7 @@ Sync tasks from Microsoft Planner (https://planner.cloud.microsoft) into
 ## Trigger
 
 - "sync planner", "pull planner tasks", "planner sync", "refresh planner tasks"
-- Auto-invoked from the `todo` skill when state file indicates >6 days since last run
+- Auto-invoked from the `todo` skill when state file indicates >20 hours since last run
 
 ## Scope rules
 

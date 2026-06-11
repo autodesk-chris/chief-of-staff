@@ -45,3 +45,4 @@ Confirmed: a parallel cron triage run at 08:00 UTC already processed this batch 
 
 No action items needed from this run. The Ilai @mention on the unified Forma home doc should be in `Action required` for a quick acknowledgement reply.
 No unread emails since 08:00 UTC. Nothing to move. State file update was not approved, so leaving the previous timestamp in place — the next run will simply pick up from 08:00 UTC.
+Triage complete. Maureen Higgins's AU 2026 RSVP moved to Action required. 2 emails left in inbox (Elvan Zhu TBH Zoom invite, Kaylin Glazer Lineo ack). State file update was denied — leaving it untouched, so the next run will reprocess from 2026-06-10T08:00Z. Let me know if you want me to retry the state write.
