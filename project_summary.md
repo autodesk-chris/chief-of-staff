@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-11 (Session 28)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Session 28 is non-phase: Kjetil FSM drafting + planner-sync daily cadence + dishes framework)
+**Last Updated:** 2026-06-11 (Session 29)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-29 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -609,7 +609,17 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 28: Kjetil FSM thread + misc updates (2026-06-11) ← **Current**
+### Session 29: Slack digest Group DM + todo Pinned trigger (2026-06-11) ← **Current**
+- **Triggered by a daily-digest-for-a-channel ask.** Chris linked a Slack URL (`C0B2566FP0D`) and asked whether existing Julie capability covered it. Reviewed `slack report`, `thread-review`, and channel groups - none produced the lightweight "should I review this more closely" per-channel signal he wanted. Decision: extend existing `slack report` rather than build a new `channel-digest` skill (kept surface area smaller)
+- **Identified the linked channel is a Group DM, not a public channel.** Pavlov/Trig conversation with Arne and Mark on cohort setup and instrumentation. This matters because the existing report's Step 1 `to:<@user>` search doesn't work the same way on Group DMs, but `slack_read_channel` does
+- **Three edits shipped:**
+  - `.slack_digest_config.json`: added `C0B2566FP0D` with new `"type": "group_dm"` field as a discriminator for future per-type handling
+  - `.claude/personas/AGENT_REFLECTION.md`: added a Group DM handling note in Step 3 - skip the `to:<@user>` search for `type: group_dm` entries (every message is implicitly to the user), produce a standalone digest section per Group DM with topic summary + key takeaways + actions/asks
+  - `.claude/skills/todo/SKILL.md`: added a second Pinned item in Step 3 - checks for `Work/Inbox/Today/slack_report_YYYY-MM-DD.md` and surfaces `not yet run today` or `ran today HH:MM, re-run if you want a fresh sweep` with the trigger command inline. Daily digest is now one click away from the morning todo view
+- **Design choice: per-channel last-digest tracking deferred.** Chris initially picked "since last digest" for the window question, then reverted to "add to slack report config" with the existing 48h fixed lookback. Per-channel timestamp state would have required a Python code change to whatever drives the report; not worth it for one Group DM. Revisit if the digest list grows materially or the 48h window starts producing repeats
+- **Commit:** `abd6773 Slack digest: add Pavlov Group DM + todo Pinned trigger`
+
+### Session 28: Kjetil FSM thread + misc updates (2026-06-11)
 - **Drafted leadership guidance for Kjetil on Building Design FSM.** Picked up the May 26 leadership thread (`What does 'experiencing Forma's value' for the first time mean?`) where Carl/Hans/Khushal aligned on the three-tier framework (FSM = first data-driven answer to a design question; KUI = complete loop once; Upgrade trigger = repeated loops). Kjetil had asked for substance beyond the playbook's "pick one and measure". Drafted reply pushed as a Slack draft into `#forma-squad-building-design` thread: three definitions + three sets of guiding questions (FSM candidates, KUI observability, Upgrade trigger framing) + four-lens ranking framework for choosing among candidates (strategic fit, user pull, reachability, measurability) with a "would they tell a colleague" tiebreaker
 - **Pattern 2 positive example logged.** Caught that quoting Khushal back as leadership consensus could read as leading/presumptuous in the public thread - first asked for a neutral header, then dropped the section entirely when the revised framing still wasn't landing. Appended to `Work/LLM_Context/Personal/growth_patterns.md` (not committed - lives locally)
 - **Misc commit bundle (8 files, `ee9f79a`).** Not session-driven, but bundled and pushed at session end:
