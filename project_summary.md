@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-11 (Session 29)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-29 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support)
+**Last Updated:** 2026-06-11 (Session 30)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-30 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -609,7 +609,19 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 29: Slack digest Group DM + todo Pinned trigger (2026-06-11) ← **Current**
+### Session 30: Dishes framework refinement + Frameworks discoverability (2026-06-11) ← **Current**
+- **Refined the dishes framework into a standalone reference.** Started from the question "have I defined the dishes framework?" - found it embedded in `Growth_strategy_framing_v4.md` and the May 26 Kjetil FSM Slack thread, but no single source. Extracted, refined through three rounds of user edits, and saved as `Work/LLM_Context/Frameworks/dishes_framework.md`
+- **Three substantive edits during refinement.** (1) Opening line reframed from "growth strategy / US market fit" to "how we think about creating value for users and enabling fast experimentation". (2) Worked example demoted from "first and most important recipe" to "one example of the framework applied" - the framework is the deliverable, not the capacity study. (3) Removed "every dish has a First Strike" framing - was creating confusion that there could be multiple FSMs. Replaced with "one First Strike, many dishes" + team instruction reframed to "define the usage metric that shows users are getting value" (not "define your FSM")
+- **New conceptual additions.** Section "Dishes are nested, not fixed" - parking analysis can be a dish for one user segment and an ingredient for another; the framing follows the user. Scoping rule of thumb: "if a team can't describe a dish small enough to test live with users, typically in a sprint (not months), the scope is wrong". Section "Dishes and First Strike" maps FSM/KUI/Upgrade-trigger to the cooking metaphor (first bite / one serving / repeat consumption)
+- **Frameworks discoverability scaffolding.** Created `Work/LLM_Context/Frameworks/INDEX.md` as a registry with trigger keywords per framework. Added a "Frameworks" section to `CLAUDE.md` pointing future sessions to the index so frameworks get picked up when strategy/product-scoping topics come up. Pattern: add new framework file, append one line to INDEX.md, no CLAUDE.md change needed
+- **Confluence draft created.** Pushed the framework to Confluence as a draft child page under the FDO Frameworks folder (page 918360004, status=draft, title "DRAFT - The dishes framework"). Three draft markers applied: status=draft (unpublished), title prefix, and warning panel at top. Originally placed under Decision Log then moved to Frameworks folder when user clarified
+- **Files:**
+  - `Work/LLM_Context/Frameworks/dishes_framework.md` (auto-committed in `ee9f79a` during the session)
+  - `Work/LLM_Context/Frameworks/INDEX.md` (new, +5 lines)
+  - `CLAUDE.md` (+6 lines, new Frameworks section)
+- **Commit:** `f248777 Frameworks index: register dishes framework and wire up auto-discovery`
+
+### Session 29: Slack digest Group DM + todo Pinned trigger (2026-06-11)
 - **Triggered by a daily-digest-for-a-channel ask.** Chris linked a Slack URL (`C0B2566FP0D`) and asked whether existing Julie capability covered it. Reviewed `slack report`, `thread-review`, and channel groups - none produced the lightweight "should I review this more closely" per-channel signal he wanted. Decision: extend existing `slack report` rather than build a new `channel-digest` skill (kept surface area smaller)
 - **Identified the linked channel is a Group DM, not a public channel.** Pavlov/Trig conversation with Arne and Mark on cohort setup and instrumentation. This matters because the existing report's Step 1 `to:<@user>` search doesn't work the same way on Group DMs, but `slack_read_channel` does
 - **Three edits shipped:**
