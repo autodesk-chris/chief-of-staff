@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-11 (Session 30)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-30 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability)
+**Last Updated:** 2026-06-16 (Session 31)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-31 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -609,7 +609,23 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 30: Dishes framework refinement + Frameworks discoverability (2026-06-11) ← **Current**
+### Session 31: Dashboard Babel pin + action assignee canonicalisation (2026-06-16) ← **Current**
+- **Dashboard at `http://localhost:8765/todo/` was rendering blank** with `Uncaught SyntaxError: Cannot use import statement outside a module` from `@babel/standalone`'s `transformScriptTags`. Root cause: the unpinned `babel.min.js` from unpkg now emits the React preset's "automatic" JSX runtime, which inserts `import { jsx as _jsx } from "react/jsx-runtime"` into the transformed output - illegal in a classic `<script>`. Fix: pin `<script src="https://unpkg.com/@babel/standalone@7.23.7/babel.min.js">` so the React preset stays on the classic runtime (`React.createElement`, no imports). One-line change in `Work/Notes/julie_2/Dashboard/todo/render.py:737` (gitignored, not in commit).
+- **Open actions section had duplicate tiles** for the same person (e.g. "Anders" and "Anders Wester" rendered as separate cards). Caused by free-text `assignee:` values in action frontmatter - some captures used short names, others used full names. Two-part fix:
+  - **Capture-time canonicalisation.** New `scripts/people_lookup.py` parses `people.md`, builds an alias map (canonical name + Search-terms column + first-name-if-unique-across-org), exposes `canonicalize(name) -> (canonical, candidates)`. Hooked into `scripts/create_item.py:create_item()` for `item_type == 'action'`: unique match rewrites `assignee` to canonical, ambiguous match raises with candidate list, no match warns but still saves (so unknown external people don't block capture).
+  - **Backfill of existing files.** Two-pass rewrite of `Work/Inbox/Actions/*.md` `assignee:` field: 33 files in pass 1 (Anders/Even/Joseph/Mairead/Robin/Sid/Ben/Clement/Lavinia/Simen/Alexandra short names), then 19 more in pass 2 after adding Maria Chefneux to `people.md` and the 'Joe' alias to Joseph Price. Plus 1 typo fix ("Amar" -> "Ammar Naqvi"). Total 53 files. Result: every person now renders as a single tile in the dashboard's Open actions section.
+- **`people.md` additions.** New `## Monetisation squad` section with Maria Chefneux as squad lead (she was previously referenced only narratively as "Monetisation PM" in First Strike's key relationships). Added `Joe` to Joseph Price's search terms so future captures using just "Joe" canonicalise without needing the first-name-unique fallback (which fails when canonical is "Joseph" not "Joe").
+- **Design choice: render-time dedupe vs file rewrite.** Considered grouping tiles in `render.py` via fuzzy match without touching files. Rejected - keeps the underlying data inconsistent, every new action perpetuates the split, and downstream consumers (4Ps roundup, scan slack, etc.) inherit the noise. File rewrite is one-time pain for permanent fix.
+- **Edge cases left as-is.** `Chris, Mairead` (joint owner - skipped because canonicaliser only handles single people), `Engineering managers` (group label - intentionally not in people.md). Both render as their own tiles which is correct.
+- **Files:**
+  - `scripts/people_lookup.py` (new, ~125 lines)
+  - `scripts/create_item.py` (canonicalisation hook in `create_item()`, +25 lines)
+  - `Work/LLM_Context/Contacts/people.md` (new Monetisation squad section, Joe alias)
+  - `Work/Notes/julie_2/Dashboard/todo/render.py` (Babel pin - not in commit, gitignored)
+  - 53 files in `Work/Inbox/Actions/` (assignee rewrites - not in commit, gitignored)
+- **Commit:** `eb8fb09 Canonicalise action assignees against people.md`
+
+### Session 30: Dishes framework refinement + Frameworks discoverability (2026-06-11)
 - **Refined the dishes framework into a standalone reference.** Started from the question "have I defined the dishes framework?" - found it embedded in `Growth_strategy_framing_v4.md` and the May 26 Kjetil FSM Slack thread, but no single source. Extracted, refined through three rounds of user edits, and saved as `Work/LLM_Context/Frameworks/dishes_framework.md`
 - **Three substantive edits during refinement.** (1) Opening line reframed from "growth strategy / US market fit" to "how we think about creating value for users and enabling fast experimentation". (2) Worked example demoted from "first and most important recipe" to "one example of the framework applied" - the framework is the deliverable, not the capacity study. (3) Removed "every dish has a First Strike" framing - was creating confusion that there could be multiple FSMs. Replaced with "one First Strike, many dishes" + team instruction reframed to "define the usage metric that shows users are getting value" (not "define your FSM")
 - **New conceptual additions.** Section "Dishes are nested, not fixed" - parking analysis can be a dish for one user segment and an ingredient for another; the framing follows the user. Scoping rule of thumb: "if a team can't describe a dish small enough to test live with users, typically in a sprint (not months), the scope is wrong". Section "Dishes and First Strike" maps FSM/KUI/Upgrade-trigger to the cooking metaphor (first bite / one serving / repeat consumption)
