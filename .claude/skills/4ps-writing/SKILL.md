@@ -83,6 +83,10 @@ Significant decisions made during the week should be flagged as candidate progre
 
 Save to `Work/Inbox/4Ps/{Month}/4ps_YYYY-MM-DD.md` where YYYY-MM-DD is the **Monday** of the current working week (e.g. `Work/Inbox/4Ps/June/4ps_2026-06-01.md`).
 
+## Slack draft destination
+
+Push the 4Ps draft to **#forma-growth-4ps** (channel id `C08K0S64RJP`). Do not push to the leadership channel, that one is reserved for the weekly tactical/lightning-rounds reply.
+
 ## Slack draft formatting
 
 When pushing the 4Ps as a Slack draft via `slack_send_message_draft`, the tool interprets content as **standard markdown**, not Slack-native mrkdwn. This means:
