@@ -26,6 +26,7 @@ from utils import (
     extract_title_from_file,
     similarity_ratio
 )
+from people_lookup import canonicalize as canonicalize_person
 
 # Item type definitions
 ITEM_TYPES = {
@@ -313,6 +314,29 @@ def create_item(item_type, title, due_date=None, details="", tags=None, **kwargs
     # Validate inputs
     if item_type not in ITEM_TYPES:
         raise ValueError(f"Invalid item type: {item_type}. Must be one of: {', '.join(ITEM_TYPES.keys())}")
+
+    # Canonicalise action assignees against people.md so "Anders" and
+    # "Anders Wester" land in the same dashboard tile.
+    if item_type == 'action' and kwargs.get('assignee'):
+        raw_assignee = kwargs['assignee'].strip()
+        # Skip group/multi-name assignees - canonicalisation only handles single people.
+        if ',' not in raw_assignee and ' and ' not in raw_assignee.lower():
+            canonical, candidates = canonicalize_person(raw_assignee)
+            if canonical:
+                if canonical != raw_assignee:
+                    print(f"ℹ️  Canonicalised assignee: '{raw_assignee}' -> '{canonical}'", file=sys.stderr)
+                kwargs['assignee'] = canonical
+            elif candidates:
+                raise ValueError(
+                    f"Ambiguous assignee '{raw_assignee}' - matches multiple people: "
+                    f"{', '.join(candidates)}. Please supply the full name."
+                )
+            else:
+                print(
+                    f"⚠️  Assignee '{raw_assignee}' not found in people.md. "
+                    f"Saving as-is; consider adding to Work/LLM_Context/Contacts/people.md.",
+                    file=sys.stderr,
+                )
 
     # Validate item-specific requirements
     data = {'title': title, 'details': details, 'tags': tags, **kwargs}

@@ -18,7 +18,7 @@ This file is a local cache for meeting prep search enrichment. Refresh from Conf
 
 | Name                       | Role                                              | Domain                                                 | Search terms                                                                  |
 | -------------------------- | ------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| Joseph Price               | Squad Lead, direct report                         | Strategy, OKRs, experiment pipeline, Trig AI, Intercom | Joseph Price, Joe Price, Trig, Intercom, user engagement, scaled user success |
+| Joseph Price               | Squad Lead, direct report                         | Strategy, OKRs, experiment pipeline, Trig AI, Intercom | Joseph Price, Joe, Joe Price, Trig, Intercom, user engagement, scaled user success |
 | Arne Magnus Bassoe-Eriksen | Adoption Specialist                               | Re-engagement, Trig AI, AI tools, agent skills         | Arne Magnus, Arne Bassoe-Eriksen, Trig, re-engagement, lifecycle              |
 | Kevin Vong                 | Product Support Specialist                        | User support, FIN AI, Intercom, Revit/ACC/BIM          | Kevin Vong, FIN, Intercom, Revit, ACC, BIM, support                           |
 | Malak Mansour              | Learning Content Specialist                       | Learning materials, help center, video tutorials       | Malak Mansour, help center, learning content, GeT experiment                  |
@@ -53,6 +53,14 @@ This file is a local cache for meeting prep search enrichment. Refresh from Conf
 
 **Key accounts:** Jacobs, Arcadis, AECOM, Sweco, Foster+Partners, Stantec, BDP
 **Key relationships:** Sales leadership, CS team, Ken (CS)
+
+---
+
+## Monetisation squad
+
+| Name           | Role               | Domain                                                 | Search terms                                |
+| -------------- | ------------------ | ------------------------------------------------------ | ------------------------------------------- |
+| Maria Chefneux | Monetisation PM    | Monetisation strategy, pricing, free plan transition   | Maria Chefneux, Maria, Monetisation, pricing |
 
 ---
 
