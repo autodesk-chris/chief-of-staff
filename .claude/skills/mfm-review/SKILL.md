@@ -50,7 +50,19 @@ Prepare a focused, conversation-ready prep doc for a Monthly Focus Meeting. The 
 2. Extract: Priorities, Plans, Problems. These drive the '4Ps lens' section.
 3. If the 4Ps for this week is missing, fall back to the most recent available.
 
-### Step 5: Build action carry-forward
+### Step 5a: Extract the pre-read summary
+
+Read the current pre-read carefully and pull out the following. These become the 'Pre-read summary' block at the top of the prep doc. Bullets throughout - no prose paragraphs.
+
+- Key points: the substantive things the squad is doing, deciding, or shifting this period. Include named workstreams, ownership changes, scope shifts, new hires, and anything framed as a shift in direction. Aim for 8-12 bullets.
+- Strong points of view: any position the squad has taken that is opinionated (e.g. 'metering only the heavy tail', 'isolated add-on will not count as validation', 'shift to hybrid monetisation'). These are the sentences worth flagging because they commit the squad to a stance.
+- Key data points: put in a table with columns Metric | Value | Context. Include every numeric anchor the squad relies on - baselines, targets, current values, distributions. This is the reference the user will scan mid-meeting.
+- Decisions in the pre-read: choices the squad has already made and is presenting as settled (not asks). Bullet each one.
+- Asks: explicit requests of leadership or partner teams. Include the ask and the blocker it unblocks.
+
+The summary is the first section of the prep doc. Its job is to let the user skip reading the full pre-read if short on time.
+
+### Step 5b: Build action carry-forward
 
 Reconcile what the squad committed to at the last MFM (from Granola) and what they said in the prior pre-read against what landed in the current pre-read.
 
@@ -86,6 +98,32 @@ Use this structure exactly. Sentence case headings. No em dashes. No bold inside
 Source: [pre-read URL] | Previous: [Granola notes URL]
 
 Main focus this meeting: [one sentence stating the dominant topic].
+
+## Pre-read summary
+
+### Key points
+
+- [8-12 bullets covering substantive shifts, workstreams, ownership changes, scope changes, new hires, direction shifts]
+
+### Strong points of view
+
+- [Opinionated positions the squad has taken. Each one committing to a stance. Skip this subsection if the pre-read has none.]
+
+### Key data points
+
+| Metric | Value | Context |
+| --- | --- | --- |
+| [Metric name] | [Value] | [One-line context] |
+
+### Decisions in the pre-read
+
+- [Choices presented as settled, not asks]
+
+### Asks
+
+- [Explicit requests of leadership or partner teams, with what each unblocks]
+
+---
 
 ## Your 4Ps lens (week of [date])
 
