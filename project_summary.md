@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-06-16 (Session 31)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-31 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation)
+**Last Updated:** 2026-07-08 (Session 32)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-32 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation, mfm-review pre-read summary section)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -34,7 +34,7 @@
 - ✅ **Phase 3.10:** HTML Dashboard with Local Hub (Complete)
 - ✅ **Phase 3.11:** Planner Write-Back Integration (Complete)
 - ✅ **Phase 3.12:** Dashboard Meetings Sub-Block (Complete)
-- ✅ **Phase 3.13:** 121-prep Slack thread depth (Complete) ← **This Session**
+- ✅ **Phase 3.13:** 121-prep Slack thread depth (Complete)
 
 **Overall Status:** Full Julie agent system operational with 7 specialized agents. Comprehensive Slack integration (report, commitment scanning, 4Ps roundup, leadership update) and Confluence MCP integration for live strategy/OKR/operating model access.
 
@@ -609,7 +609,16 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 31: Dashboard Babel pin + action assignee canonicalisation (2026-06-16) ← **Current**
+### Session 32: mfm-review pre-read summary section (2026-07-08) ← **Current**
+- **Extended mfm-review skill to open the prep doc with a Pre-read summary block.** Prompted by prep for the Monetisation July MFM, where Chris wanted a document overview at the top before the standard prep flow. Subsections: Key points (8-12 bullets), Strong points of view, Key data points (table), Decisions in the pre-read, Asks. Job of the section is to let the user skip reading the full pre-read if short on time.
+- **New Step 5a** in the skill instructs how to extract each subsection. Data points go into a Metric / Value / Context table so mid-meeting scanning is fast. Strong POVs subsection can be omitted if the pre-read has none.
+- **Template in Step 7 updated** with the summary block inserted between the meeting header and the 4Ps lens.
+- **Also cleaned up memory:** deleted two redundant reference files (`reference_first_strike_mfm_folder.md`, `reference_marketing_mfm_folder.md`) that duplicated the authoritative squad-to-Confluence mapping in `.claude/personas/AGENT_MFM.md`. Confirmed the mfm-review skill reads the persona (Step 1.2 + 2.2) as the single source of truth for all five squad folder IDs (Marketing, Strategic Accounts, First Strike, Monetisation, User Engagement).
+- **Files:**
+  - `.claude/skills/mfm-review/SKILL.md` (+39/-1)
+- **Commit:** `7174674 mfm-review: add pre-read summary as first section of prep doc`
+
+### Session 31: Dashboard Babel pin + action assignee canonicalisation (2026-06-16)
 - **Dashboard at `http://localhost:8765/todo/` was rendering blank** with `Uncaught SyntaxError: Cannot use import statement outside a module` from `@babel/standalone`'s `transformScriptTags`. Root cause: the unpinned `babel.min.js` from unpkg now emits the React preset's "automatic" JSX runtime, which inserts `import { jsx as _jsx } from "react/jsx-runtime"` into the transformed output - illegal in a classic `<script>`. Fix: pin `<script src="https://unpkg.com/@babel/standalone@7.23.7/babel.min.js">` so the React preset stays on the classic runtime (`React.createElement`, no imports). One-line change in `Work/Notes/julie_2/Dashboard/todo/render.py:737` (gitignored, not in commit).
 - **Open actions section had duplicate tiles** for the same person (e.g. "Anders" and "Anders Wester" rendered as separate cards). Caused by free-text `assignee:` values in action frontmatter - some captures used short names, others used full names. Two-part fix:
   - **Capture-time canonicalisation.** New `scripts/people_lookup.py` parses `people.md`, builds an alias map (canonical name + Search-terms column + first-name-if-unique-across-org), exposes `canonicalize(name) -> (canonical, candidates)`. Hooked into `scripts/create_item.py:create_item()` for `item_type == 'action'`: unique match rewrites `assignee` to canonical, ambiguous match raises with candidate list, no match warns but still saves (so unknown external people don't block capture).
