@@ -219,54 +219,80 @@ Save to `Shortlisted/cv_screening_YYYY-MM-DD.md` in the role folder (create Shor
 
 **Command:** `interview prep: [name] for [role]`
 
+**Design principles:**
+- Investigation should be thorough, output should be succinct
+- The prep doc is read in the room (or minutes before), not at a desk with time to filter
+- Priority-rank questions, don't dump them
+- One tight CV summary beats separate strong-signals / gaps / red-flag / yellow-flag sections
+- The user knows what a red flag looks like, they don't need it labelled
+
 **Process:**
-1. Read evaluation guide
-2. Read candidate CV from `Shortlisted/`
-3. Read CV screen notes (if available)
-4. **Research companies from CV work history:**
-   - Extract company names from CV
-   - Check for LinkedIn URL on CV to verify correct companies
-   - Web search each company to gather:
-     - What they do / industry sector
-     - Company size and scale
-     - Relevance to target role
-   - Add findings to Company Context section
-5. Generate targeted interview questions:
-   - Questions to verify CV claims
-   - Questions to probe identified gaps
-   - Behavioral questions for each competency
-   - Role-specific situational questions
+
+1. Read evaluation guide (if exists) and JD.
+2. **Parse JD language for excluders vs stretches:**
+   - "Must have", "required", "essential" = excluder / gate
+   - "Ideal candidate", "preferred", "nice to have", "would be great" = stretch
+   - If JD wording is ambiguous on a key competency, ask the user before writing questions
+3. Read candidate CV from `Shortlisted/` (or `Shortlist/` - check both).
+4. Read CV screen notes if available.
+5. **Research companies from CV work history** to add colour to the CV summary. Extract company names, LinkedIn URL if on CV, web search each: what they do, size, region, any brand/compliance flags. Findings fold INTO the CV-at-a-glance paragraph, not a separate table. Only surface a company as its own line if it's material (e.g. sanctions/compliance flag, direct competitor, well-known reference).
+6. Read the most recent 1-2 prep docs in the same folder to match house style/tone.
+7. **Generate tiered questions:**
+   - **Must-ask** (3-4 questions): the real gates. Excluders per the JD, plus any Forma-standard gates (experiment mindset, AI daily practice) if the role touches product.
+   - **Nice-to-ask** (2-3 questions): stretches and self-assessment probes. Used when the interviewer has more question time than the must-asks fill.
+8. Each question follows a standard block: exact ask, why it matters (one line), listen for / red flag signal (one line), optional follow-up trigger.
 
 **Output format:**
+
 ```markdown
-# Interview Prep: [Name] for [Role]
+# Interview prep: [Name] for [Role]
 
-## Company Context
+## Context
 
-| Company | Industry | What They Do | Relevance to Role |
-|---------|----------|--------------|-------------------|
-| [Company 1] | [Sector] | [Brief description] | [How it relates to target role] |
-| [Company 2] | [Sector] | [Brief description] | [How it relates to target role] |
+- Interviewers: [names]. [Duration] total
+- Role framing: [1-2 lines: contract type, location, budget if relevant]
+- What this call is for: [1 line - e.g. "growth fit + operating style, craft screened separately"]
+- JD reads [X] as excluder, [Y] as stretch. Real gates: [named gates]
 
-## CV Claims to Verify
-- [Claim from CV] → Ask: "[Question]"
+## CV at a glance
 
-## Gaps to Probe
-- [Gap identified] → Ask: "[Question]"
+[One tight paragraph. Cover: current role, years experience, location, primary vehicle (studio/employer), notable clients/companies with brief colour where material. Weave in any compliance or brand flags here, don't paragraph them.]
 
-## Competency Questions
+[Second paragraph on craft: end-to-end scope, tools, analytics stack overlap with ours, AI presence on CV. Note claims vs evidence distinctions.]
 
-### [Competency 1]
-- [Behavioral question]
-- [Follow-up probe]
+[Third paragraph on headline metrics and what to probe. Then a "Watch:" line calling out the 3-5 most important gaps in one sentence each, comma-separated.]
 
-### [Competency 2]
-- [Behavioral question]
-- [Follow-up probe]
+## Must-ask questions
 
-## Red Flags to Watch For
-- [Based on CV or role requirements]
+### 1. [Competency name] (~[N] min)
+"[Exact question]"
+
+Why: [one line]
+Listen for: [one line, including red flag]
+Follow-up if strong: [optional one line]
+
+### 2. ...
+
+### 3. ...
+
+## Nice-to-ask (if time)
+
+### 4. [Competency name]
+"[Exact question]"
+
+Why: [one line]
+
+### 5. ...
+
+## Walk out with
+
+1. [Question the interviewer should be able to answer after the call]
+2. ...
+3. ...
+[4-6 items]
 ```
+
+**Length target:** roughly half a screen for the questions block, plus one short paragraph for the CV summary. If the doc is longer than ~80 lines, the skill has over-produced.
 
 ---
 
