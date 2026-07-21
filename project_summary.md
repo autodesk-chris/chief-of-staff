@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-07-08 (Session 32)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-32 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation, mfm-review pre-read summary section)
+**Last Updated:** 2026-07-16 (Session 33)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-33 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation, mfm-review pre-read summary section, interview prep skill overhaul)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -609,7 +609,19 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 32: mfm-review pre-read summary section (2026-07-08) ← **Current**
+### Session 33: Interview prep skill overhaul (2026-07-16) ← **Current**
+- **Reshaped the Hiring agent's interview prep workflow after a live prep run for Hanna Fataliieva** produced a 140-line doc when Chris had ~10 min of question time. Root causes: no time-budget calibration, no excluder-vs-stretch framing (PLG treated as a gate when JD wording made it a stretch), no question priority, wordy separate signals/gaps/red-flag/yellow-flag sections.
+- **New design principles** in `AGENT_HIRING.md`: investigation thorough, output succinct; prep doc read in-the-room not at a desk; priority-rank questions don't dump them; one tight CV summary beats separate signal/gap/flag lists; length capped ~80 lines.
+- **JD wording drives excluder vs stretch inference** ("must have/required/essential" = gate; "ideal candidate/preferred" = stretch). Skill asks only if wording is ambiguous.
+- **Tiered questions** replace flat lists: Must-ask (3-4 questions, the real gates) + Nice-to-ask (2-3 stretches/self-assessment probes). Same doc works for a 10-min slot or a full 45-min interview. Standard block format per question: exact ask, why (1 line), listen for + red flag (1 line), optional follow-up.
+- **CV at a glance** paragraph replaces the separate Company Context table, Strong signals list, Gaps list, Red flags list, Yellow flags list. Company research folds in as colour, only material items (compliance flags, direct competitors, well-known references) get their own mention.
+- **Live regeneration** of the Hanna prep in the new format: ~65 lines vs ~140, 4 priority-ranked questions with drop-if-time markers, CV summary at ~90 words weaving in the Russian-market client flag + Miranda compliance note.
+- **Files:**
+  - `.claude/personas/AGENT_HIRING.md` (Interview Prep workflow rewrite, +61/-35)
+  - `Work/People/Hiring/Designer/Shortlist/Hanna_Fataliieva_interview_prep.md` (regenerated, gitignored)
+- **Commit:** `d6c2c22 hiring: tier interview prep questions and fold CV summary inline`
+
+### Session 32: mfm-review pre-read summary section (2026-07-08)
 - **Extended mfm-review skill to open the prep doc with a Pre-read summary block.** Prompted by prep for the Monetisation July MFM, where Chris wanted a document overview at the top before the standard prep flow. Subsections: Key points (8-12 bullets), Strong points of view, Key data points (table), Decisions in the pre-read, Asks. Job of the section is to let the user skip reading the full pre-read if short on time.
 - **New Step 5a** in the skill instructs how to extract each subsection. Data points go into a Metric / Value / Context table so mid-meeting scanning is fast. Strong POVs subsection can be omitted if the pre-read has none.
 - **Template in Step 7 updated** with the summary block inserted between the meeting header and the 4Ps lens.
