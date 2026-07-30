@@ -19,9 +19,9 @@ MFM documents live in Confluence (fdo space), inside the Growth and Adoption Pro
 | Marketing | `722332003` | `{Month} 2026 – Squad Focus Meeting – Marketing` | Ben Storey | `ancestor = 722332003 AND type = page` |
 | Strategic Accounts | `719586327` | `Strategic Accounts – {Month} Review` or `Strategic Accounts - {Month} Review` | Anders Wester | `ancestor = 719586327 AND type = page` |
 | First Strike | `712784768` | `2026 {Month} Monthly Planning Meeting - Growth` (also `- SD FSM`, `- Board FSM`) | Even Olstad, Katarina Plavec | `ancestor = 712784768 AND type = page` |
-| Monetisation | _(no folder ID)_ | _(no pages yet)_ | _(TBD)_ | _(TBD - update when first MFM is created)_ |
+| Monetisation | `856500256` | `NN_{Month} [Monthly] Focus Meeting` (e.g. `03_June Focus Meeting`) | Maria Chefneux | `parent = 856500256 ORDER BY lastmodified DESC` |
 | User Engagement | `747097031` | `{Month} 26 Monthly Focus Meeting` | Joseph Price | `ancestor = 747097031 AND type = page` |
-| Community | _(no folder ID)_ | _(no pages yet - currently covered within Marketing MFM)_ | _(TBD)_ | _(TBD - update when Community separates from Marketing)_ |
+| Community | `944215356` | `YYYY Month - Monthly Focus Meeting - Community` (e.g. `2026 July - Monthly Focus Meeting - Community`) | Mairead Morgan | `ancestor = 944215356 AND type = page` |
 
 **Note on title patterns:** Squads are inconsistent. Titles may include year as `2026` or `26`, month as full name or abbreviation, and various suffixes. Always match the target month by scanning all results rather than relying on exact title format.
 

@@ -4,11 +4,12 @@ description: >
   Process a Monthly Focus Meeting after it happens. Finds the meeting in Granola
   (confirms with user before proceeding), extracts decisions, actions, and updates
   from the pre-read, then cross-references against the MFM review prep to identify
-  what was not covered from the previous MFM. Produces a structured summary file
-  (without Slack block or Julie items), then shows the Slack-ready summary and
-  proposed Julie items in the terminal for confirmation. Use when "mfm summary:
-  [squad] [month]", "post mfm: [squad]", "summarise the mfm", or after attending
-  an MFM. NOT for pre-meeting review (use mfm-review).
+  what was not covered from the previous MFM. Runs in two gated steps: (1) draft
+  the summary in the terminal and iterate to approval before saving; (2) only once
+  the summary is approved and saved, generate the Slack-ready summary and proposed
+  Julie items in the terminal for confirmation. Use when "mfm summary: [squad]
+  [month]", "post mfm: [squad]", "summarise the mfm", or after attending an MFM.
+  NOT for pre-meeting review (use mfm-review).
 ---
 
 # MFM summary
@@ -57,9 +58,14 @@ If the MFM review was loaded in Step 1, surface only:
 
 Do not include an "addressed" recap or a "new items surfaced" section in the saved file. Anything genuinely new and important belongs in the Key takeaways section at the top.
 
-### Step 5: Generate the saved summary file
+### Step 5: Draft the summary in terminal, iterate to approval, then save
 
-Create file at: `Work/Process/MFM/{Month}/{squad}_mfm_summary.md`
+This is a two-part step and a hard gate for the rest of the skill. Do NOT generate Slack or Julie output until the summary file has been approved and saved.
+
+1. Draft the full summary content in the terminal using the structure below. Do not save the file yet.
+2. Ask the user for comment. Iterate on the draft until they approve. Expect meaningful edits on the first pass (owner reassignments, framing, deletions).
+3. Only once the user has explicitly approved, save the file to `Work/Process/MFM/{Month}/{squad}_mfm_summary.md`.
+4. Do not proceed to Step 6 (Slack) or Step 7 (Julie) until the summary is saved.
 
 Use the following structure exactly. Sentence case for headings. No bold inside bullets or prose. Use single quotes for emphasis or referenced terms; double quotes only for direct quotes from the meeting.
 
@@ -112,6 +118,8 @@ If no MFM prep was available, omit the "Not covered from previous MFM" section e
 
 ### Step 6: Show Slack-ready summary in terminal
 
+Only run this step after Step 5 has been approved and the summary file has been saved. If the summary is still in draft/iteration, do not produce Slack output yet.
+
 Display the Slack summary in the chat for the user to copy. Do not save it to the file. Use two subheads (Key takeaways, Actions) plus a Confluence reference placeholder.
 
 In the Slack summary, actions are attributed to the squad lead (the accountable owner), even where delivery is delegated. The Confluence/file version is the team-facing record and names the delivery person; the Slack summary is the leadership-facing record and names the accountable owner. This split is intentional.
@@ -139,6 +147,8 @@ Guidelines for the Slack summary:
 - Keep it scannable - aim for 5 takeaways and 3-5 actions.
 
 ### Step 7: Show proposed Julie items in terminal
+
+Only run this step after Step 5 has been approved and the summary file has been saved. Slack and Julie can be shown together in one turn once the summary is locked.
 
 Display the proposed Julie items in the chat for the user to confirm. Do not save them to the file.
 
@@ -180,6 +190,7 @@ Ask for explicit confirmation ("Publish to Confluence? Y/N"). Do not publish wit
 - MFM summaries live in monthly folders inside the `fdo` space (cloudId `0e31f281-3568-4559-ae88-153abcdead38`, spaceId `641548109`).
 - Known month folder IDs:
   - June 2026: `906999057`
+  - July 2026: `907097357`
 - Each month is a Confluence folder (parentType `folder`, not a page). Folder creation is not supported by the MCP, so new month folders must be created manually by the user.
 
 **Process:**
