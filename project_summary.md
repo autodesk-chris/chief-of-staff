@@ -1,7 +1,7 @@
 # Project Summary - Chief of Staff Personal OS (Julie System)
 
-**Last Updated:** 2026-07-16 (Session 33)
-**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-33 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation, mfm-review pre-read summary section, interview prep skill overhaul)
+**Last Updated:** 2026-07-30 (Session 34)
+**Current Phase:** Phase 3.13 - 121-prep Slack thread depth (Sessions 28-34 are non-phase: Kjetil FSM drafting, planner-sync daily cadence, dishes framework, slack digest Group DM support, dishes framework refinement + Frameworks discoverability, dashboard Babel pin + action assignee canonicalisation, mfm-review pre-read summary section, interview prep skill overhaul, PLG approach document)
 **Overall Status:** Full hierarchical agent system with Slack, Confluence, M365 email triage, voice-aware Slack thread review, daily focus menu for /todo with 3-item cap and challenge logic, a local React + Tailwind dashboard served by a launchd-managed hub on localhost:8765 with click-to-tick that mutates source files, and bidirectional Microsoft Planner integration (planner-sync pulls open Planner tasks; status changes on planner-linked local tasks emit a [PLANNER_LINKED] signal so Claude pushes completion/blocked/waiting back to Planner via the m365 MCP)
 
 ---
@@ -609,7 +609,31 @@ e89e46f - Add Milestone 3: Specialized Domain Agents
   - `.claude/skills/thread-review/SKILL.md` (new, ~215 lines)
 - **Commit:** `15648c3 Add thread-review skill: Slack thread analysis with voice-aware draft response`
 
-### Session 33: Interview prep skill overhaul (2026-07-16) ← **Current**
+### Session 34: PLG approach document (2026-07-30) ← **Current**
+- **Built a canonical PLG and experimentation approach document** by consolidating scattered sources: Growth thesis v3, Growth & Adoption framing v4, the Typeform interview content, the Dec 2025 Gamma deck (Building a Product-Led motion in Forma Design), Carl DM (14 Oct 2025 PLG definition), the Free Product-Led Playbook, and local experimentation notes on hypothesis/prediction and problem statements.
+- **Gap analysis against Wes Bush's Playbook.** The nine components (Winning Strategy, Ideal User, Intentional Model, Irresistible Offer, Frictionless Onboarding, Powerful Pricing, Actionable Data, Growth Process, Elite Team) surfaced four major gaps in the initial draft: Winning Strategy framework, Ideal User methodology, Intentional Model (free vs paid), Powerful Pricing.
+- **Chris's differentiated positions added** in response to the gap analysis:
+  - **Ideal user vs target user.** Ideal = getting value from the product as it exists today (gaps included) and willing to pay for it in that form. Target = the next segment. PMF is per-user-segment, but focus must be singular - win with the ideal user first before moving on.
+  - **Endgame** with four measurable tests: value (workflow completion), retention (US on par with Norway), willingness to pay (priced revenue not signalled intent), referral.
+  - **Monetisation model.** Free-to-paid motion, with paid as subscription-plus-usage hybrid. What sits in subscription vs usage and where the free/paid gate falls is deliberately deferred to test-and-learn.
+- **Two live copies.** Local at `Work/LLM_Context/PLG and experimentation/plg_and_experimentation_approach.md`, and Confluence page 1032522220 in the fdo space (Sources section omitted from the Confluence version by design).
+- **Accumulated work committed alongside** in five additional commits: MFM Monetisation and Community folder IDs plus June/July MFM outputs, eight decision records from recent sessions, the critique skill, growth_patterns updates, and accumulated permission grants in settings.local.json.
+- **Files:**
+  - `Work/LLM_Context/PLG and experimentation/plg_and_experimentation_approach.md` (new, 205 lines)
+  - `.claude/personas/AGENT_MFM.md`, `.claude/skills/mfm-summary/SKILL.md`, `Work/LLM_Context/MFM_review_framework.md`, `Work/Process/MFM/**` (MFM sweep)
+  - `Work/Decisions/decision_*.md` × 8
+  - `.claude/skills/critique/SKILL.md` (new)
+  - `Work/LLM_Context/Personal/growth_patterns.md`
+  - `.claude/settings.local.json`
+- **Commits:**
+  - `9c52a0a PLG: add approach document`
+  - `6079e6c MFM: fill Monetisation and Community folder IDs; add June/July outputs`
+  - `4186cfe Decisions: record 8 accumulated decisions from recent sessions`
+  - `45ed769 Skills: add critique skill`
+  - `bf6e699 growth_patterns: log recent leadership pattern observations`
+  - `8f10c57 Settings: accumulated permission grants and enable forma-design-insights plugin`
+
+### Session 33: Interview prep skill overhaul (2026-07-16)
 - **Reshaped the Hiring agent's interview prep workflow after a live prep run for Hanna Fataliieva** produced a 140-line doc when Chris had ~10 min of question time. Root causes: no time-budget calibration, no excluder-vs-stretch framing (PLG treated as a gate when JD wording made it a stretch), no question priority, wordy separate signals/gaps/red-flag/yellow-flag sections.
 - **New design principles** in `AGENT_HIRING.md`: investigation thorough, output succinct; prep doc read in-the-room not at a desk; priority-rank questions don't dump them; one tight CV summary beats separate signal/gap/flag lists; length capped ~80 lines.
 - **JD wording drives excluder vs stretch inference** ("must have/required/essential" = gate; "ideal candidate/preferred" = stretch). Skill asks only if wording is ambiguous.
